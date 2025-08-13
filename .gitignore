@@ -37,3 +37,8 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+.idea/curate.iml
+.gitignore
+.idea/modules.xml
+.idea/vcs.xml
+.idea/caches/deviceStreaming.xml

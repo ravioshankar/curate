@@ -1,50 +1,84 @@
-# Welcome to your Expo app 👋
+# Curate - Smart Inventory Management App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform inventory management app built with Expo, React Native, and Redux Toolkit.
 
-## Get started
+## Project Structure
+
+```
+curate/
+├── app/                     # Expo Router pages
+│   ├── (tabs)/             # Tab-based navigation
+│   │   ├── _layout.tsx     # Tab layout configuration
+│   │   ├── index.tsx       # Main home screen
+│   │   └── placeholder*.tsx # Tab placeholders
+│   └── _layout.tsx         # Root layout
+├── src/                     # Source code (shared business logic)
+│   ├── components/         # Reusable UI components
+│   │   ├── common/         # Shared UI components
+│   │   ├── forms/          # Form-specific components
+│   │   └── providers/      # Context/Provider components
+│   ├── screens/            # Screen components
+│   ├── services/           # API/Storage services
+│   │   └── StorageService.ts # Data persistence abstraction
+│   ├── store/              # Redux state management
+│   │   └── store.ts        # Redux Toolkit store configuration
+│   ├── types/              # TypeScript interfaces
+│   │   └── inventory.ts    # Inventory-related types
+│   ├── utils/              # Utility functions
+│   │   └── inventoryUtils.ts # Business logic utilities
+│   └── data/               # Mock data & constants
+│       └── mockInventory.ts # Sample inventory data
+├── components/             # Legacy/Expo-specific components
+├── constants/              # App constants
+├── hooks/                  # Custom React hooks
+├── assets/                 # Static assets
+└── types/                  # Legacy types (to be migrated)
+```
+
+## Architecture Principles
+
+### State Management
+- **Redux Toolkit**: Centralized state management
+- **Async Actions**: Proper handling of async operations
+- **Type Safety**: Full TypeScript integration
+
+### Service Layer
+- **StorageService**: Abstracted data persistence
+- **Separation of Concerns**: Business logic separated from UI
+- **Error Handling**: Proper try/catch patterns
+
+### Component Architecture
+- **Screen Components**: Page-level components in `src/screens/`
+- **Reusable Components**: Shared UI components in `src/components/`
+- **Provider Pattern**: Redux provider wrapper
+
+### Cross-Platform Support
+- **React Native**: Mobile-first approach
+- **Expo Web**: Web compatibility
+- **Shared Codebase**: Same code for mobile and web
+
+## Getting Started
 
 1. Install dependencies
-
    ```bash
    npm install
    ```
 
-2. Start the app
-
+2. Start the development server
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Open the app in:
+   - [Expo Go](https://expo.dev/go) for mobile testing
+   - Web browser for web testing
+   - iOS Simulator or Android Emulator
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Features
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Dashboard**: Overview of inventory statistics
+- **Inventory Management**: Add, view, and search items
+- **Data Persistence**: Local storage with AsyncStorage
+- **Cross-Platform**: Works on iOS, Android, and Web
+- **Type Safety**: Full TypeScript support
+- **State Management**: Redux Toolkit for scalable state management
