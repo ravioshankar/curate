@@ -12,27 +12,40 @@ curate/
 │   │   ├── index.tsx       # Main home screen
 │   │   └── placeholder*.tsx # Tab placeholders
 │   └── _layout.tsx         # Root layout
-├── src/                     # Source code (shared business logic)
-│   ├── components/         # Reusable UI components
-│   │   ├── common/         # Shared UI components
+├── src/                     # Source code (business logic)
+│   ├── components/         # Business logic components
+│   │   ├── common/         # Shared business components
+│   │   │   ├── InventoryCard.tsx
+│   │   │   ├── StatCard.tsx
+│   │   │   ├── Header.tsx
+│   │   │   └── NavButton.tsx
 │   │   ├── forms/          # Form-specific components
 │   │   └── providers/      # Context/Provider components
 │   ├── screens/            # Screen components
+│   │   ├── DashboardScreen.tsx
+│   │   └── HomePage.tsx
 │   ├── services/           # API/Storage services
-│   │   └── StorageService.ts # Data persistence abstraction
+│   │   └── StorageService.ts
 │   ├── store/              # Redux state management
-│   │   └── store.ts        # Redux Toolkit store configuration
+│   │   ├── InventoryStore.ts
+│   │   └── store.ts
 │   ├── types/              # TypeScript interfaces
-│   │   └── inventory.ts    # Inventory-related types
+│   │   └── inventory.ts
 │   ├── utils/              # Utility functions
-│   │   └── inventoryUtils.ts # Business logic utilities
+│   │   └── inventoryUtils.ts
 │   └── data/               # Mock data & constants
-│       └── mockInventory.ts # Sample inventory data
-├── components/             # Legacy/Expo-specific components
+│       └── mockInventory.ts
+├── components/             # UI/Theme components
+│   ├── ui/                 # Platform-specific UI
+│   ├── ThemedText.tsx
+│   ├── ThemedView.tsx
+│   ├── Collapsible.tsx
+│   ├── ExternalLink.tsx
+│   ├── HapticTab.tsx
+│   └── ParallaxScrollView.tsx
 ├── constants/              # App constants
 ├── hooks/                  # Custom React hooks
-├── assets/                 # Static assets
-└── types/                  # Legacy types (to be migrated)
+└── assets/                 # Static assets
 ```
 
 ## Architecture Principles

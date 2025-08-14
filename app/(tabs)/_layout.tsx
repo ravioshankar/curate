@@ -1,12 +1,11 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -19,35 +18,32 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: {
-          height: 80,
-          paddingBottom: 20,
+          height: 60,
+          paddingBottom: 10,
           paddingTop: 10,
+          paddingHorizontal: 0,
+        },
+        tabBarItemStyle: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          margin: 0,
         },
       }}>
-      <Tabs.Screen
-        name="placeholder1"
-        options={{
-          title: '',
-          tabBarIcon: () => null,
-          tabBarButton: () => null,
-        }}
-      />
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={32} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Icon name="home" size={32} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="placeholder2"
+        name="inventory"
         options={{
-          title: '',
-          tabBarIcon: () => null,
-          tabBarButton: () => null,
+          title: 'Inventory',
+          tabBarIcon: ({ color }) => <Icon name="inventory" size={32} color={color} />,
         }}
       />
-
     </Tabs>
   );
 }

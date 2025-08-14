@@ -34,6 +34,13 @@ export const addItem = createAsyncThunk(
   }
 );
 
+export const updateItem = createAsyncThunk(
+  'inventory/updateItem',
+  async (item: InventoryItem) => {
+    return await StorageService.updateItem(item);
+  }
+);
+
 const inventorySlice = createSlice({
   name: 'inventory',
   initialState,
@@ -56,6 +63,9 @@ const inventorySlice = createSlice({
         state.isLoading = false;
       })
       .addCase(addItem.fulfilled, (state, action) => {
+        state.inventory = action.payload;
+      })
+      .addCase(updateItem.fulfilled, (state, action) => {
         state.inventory = action.payload;
       });
   },

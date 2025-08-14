@@ -1,19 +1,20 @@
 import { StyleSheet } from 'react-native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { ThemedText } from '../../../components/ThemedText';
+import { ThemedView } from '../../../components/ThemedView';
 
 interface StatCardProps {
   title: string;
   value: number;
-  icon: React.ReactNode;
+  iconName: string;
   color: string;
 }
 
-export function StatCard({ title, value, icon, color }: StatCardProps) {
+export function StatCard({ title, value, iconName, color }: StatCardProps) {
   return (
     <ThemedView style={[styles.container, { backgroundColor: color }]}>
       <ThemedView style={styles.iconContainer}>
-        {icon}
+        <Icon name={iconName} size={24} color="white" />
       </ThemedView>
       <ThemedView style={styles.textContainer}>
         <ThemedText style={styles.title}>{title}</ThemedText>

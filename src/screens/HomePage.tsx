@@ -2,7 +2,7 @@ import { StyleSheet, ScrollView } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import { StatCard } from './StatCard';
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem } from '../src/types/inventory';
 
 interface HomePageProps {
   inventory: InventoryItem[];

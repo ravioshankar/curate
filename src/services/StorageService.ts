@@ -28,4 +28,13 @@ export class StorageService {
     await this.saveInventory(newInventory);
     return newInventory;
   }
+
+  static async updateItem(updatedItem: InventoryItem): Promise<InventoryItem[]> {
+    const inventory = await this.getInventory();
+    const newInventory = inventory.map(item => 
+      item.id === updatedItem.id ? updatedItem : item
+    );
+    await this.saveInventory(newInventory);
+    return newInventory;
+  }
 }

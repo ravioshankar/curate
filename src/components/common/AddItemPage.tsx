@@ -1,8 +1,9 @@
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
-import { InventoryItem } from '../types/inventory';
+import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { InventoryItem } from '../src/types/inventory';
+import { ThemedText } from '../../../components/ThemedText';
+import { ThemedView } from '../../../components/ThemedView';
 
 interface AddItemPageProps {
   onAddItem: (item: InventoryItem) => void;
@@ -15,19 +16,43 @@ interface FormErrors {
 
 export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
   const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    location: '',
-    lastUsed: '',
-    imageUrl: '',
-    pricePaid: '',
-    priceExpected: ''
+    name: 'Vintage Lamp',
+    category: 'Home Decor',
+    location: 'Living Room Shelf',
+    lastUsed: new Date().toISOString().split('T')[0],
+    imageUrl: 'https://placehold.co/400x300/A78BFA/ffffff?text=Vintage+Lamp',
+    pricePaid: '75',
+    priceExpected: '100'
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false); // Always hide the modal on Android after an action
+      // Only update the date if the user confirmed a selection ('set' event)
+    if (event.type === 'set' && date) {
+      setSelectedDate(date);
+      const formattedDate = date.toISOString().split('T')[0];
+      setFormData(prev => ({ ...prev, lastUsed: formattedDate }));
+    }
+      // If event.type was 'dismissed', 'date' is typically undefined, and no update occurs, which is correct.
+    } else if (Platform.OS === 'ios') {
+      // For iOS with the 'spinner' display, onChange fires on any value change.
+      // We'll update the state live. The picker remains visible
+      // as setShowDatePicker is not set to false here for iOS.
+      if (date) { // 'date' will be the newly selected date from the spinner
+        setSelectedDate(date);
+        const formattedDate = date.toISOString().split('T')[0];
+        setFormData(prev => ({ ...prev, lastUsed: formattedDate }));
+      }
+    }
   };
 
   const validateForm = (): boolean => {
@@ -94,12 +119,24 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
           value={formData.location}
           onChangeText={(value) => handleChange('location', value)}
         />
-        <InputField
-          label="Last Used Date"
-          value={formData.lastUsed}
-          onChangeText={(value) => handleChange('lastUsed', value)}
-          placeholder="YYYY-MM-DD"
-        />
+        <ThemedView style={styles.inputContainer}>
+          <ThemedText style={styles.label}>Last Used Date</ThemedText>
+          <TouchableOpacity 
+            style={styles.dateButton} 
+            onPress={() => setShowDatePicker(true)}
+          >
+            <ThemedText style={styles.dateButtonText}>{formData.lastUsed}</ThemedText>
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              maximumDate={new Date()}
+              onChange={handleDateChange}
+            />
+          )}
+        </ThemedView>
         <InputField
           label="Image URL"
           value={formData.imageUrl}
@@ -165,6 +202,7 @@ function InputField({ label, value, onChangeText, placeholder, keyboardType = 'd
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
   },
   header: {
     flexDirection: 'row',
@@ -229,5 +267,16 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontSize: 12,
     marginTop: 4,
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: 'white',
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: '#000',
   },
 });

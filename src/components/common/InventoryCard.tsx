@@ -2,7 +2,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem } from '../src/types/inventory';
 
 interface InventoryCardProps {
   item: InventoryItem;

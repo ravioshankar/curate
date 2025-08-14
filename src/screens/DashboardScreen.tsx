@@ -1,14 +1,21 @@
-import { StyleSheet, ScrollView } from 'react-native';
-import { useSelector } from 'react-redux';
+import { StyleSheet, ScrollView, Text } from 'react-native';
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
-import { StatCard } from '../../components/StatCard';
+import { StatCard } from '../components/common/StatCard';
 import { RootState } from '../store/store';
 import { calculateInventoryStats } from '../utils/inventoryUtils';
+import { loadInventory } from '../store/store';
 
 export function DashboardScreen() {
+  const dispatch = useDispatch();
   const inventory = useSelector((state: RootState) => state.inventory.inventory);
   const stats = calculateInventoryStats(inventory);
+
+  useEffect(() => {
+    dispatch(loadInventory() as any);
+  }, [dispatch]);
   
   const longUnusedItems = inventory.filter(item => {
     const lastUsedDate = new Date(item.lastUsed);
@@ -20,24 +27,24 @@ export function DashboardScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <ThemedText type="title" style={styles.title}>Dashboard</ThemedText>
-      
+        
       <ThemedView style={styles.statsContainer}>
         <StatCard 
           title="Total Items" 
           value={stats.totalItems} 
-          icon={<ThemedText style={styles.iconText}>📦</ThemedText>}
+          iconName="inventory"
           color="#6366F1" 
         />
         <StatCard 
           title="Categories" 
           value={stats.categories} 
-          icon={<ThemedText style={styles.iconText}>🏷️</ThemedText>}
+          iconName="category"
           color="#06B6D4" 
         />
         <StatCard 
           title="Unused > 1yr" 
           value={stats.unusedItems} 
-          icon={<ThemedText style={styles.iconText}>⏰</ThemedText>}
+          iconName="schedule"
           color="#EF4444" 
         />
       </ThemedView>
@@ -69,6 +76,7 @@ export function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
   },
   title: {
     marginBottom: 24,
@@ -79,7 +87,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   iconText: {
-    fontSize: 20,
+    fontSize: 24,
+    color: 'white',
+    textAlign: 'center',
   },
   reviewSection: {
     backgroundColor: 'rgba(0, 0, 0, 0.05)',

@@ -1,11 +1,11 @@
 import { Provider } from 'react-redux';
 import { store } from '../../src/store/store';
-import { DashboardScreen } from '../../src/screens/DashboardScreen';
+import { InventoryScreen } from '../../src/screens/InventoryScreen';
 
-export default function HomeScreen() {
+export default function InventoryTab() {
   return (
     <Provider store={store}>
-      <DashboardScreen />
+      <InventoryScreen />
     </Provider>
   );
 }
