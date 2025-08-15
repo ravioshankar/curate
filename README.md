@@ -9,42 +9,30 @@ curate/
 ├── app/                     # Expo Router pages
 │   ├── (tabs)/             # Tab-based navigation
 │   │   ├── _layout.tsx     # Tab layout configuration
-│   │   ├── index.tsx       # Main home screen
-│   │   └── placeholder*.tsx # Tab placeholders
-│   └── _layout.tsx         # Root layout
-├── src/                     # Source code (business logic)
-│   ├── components/         # Business logic components
-│   │   ├── common/         # Shared business components
-│   │   │   ├── InventoryCard.tsx
-│   │   │   ├── StatCard.tsx
-│   │   │   ├── Header.tsx
-│   │   │   └── NavButton.tsx
-│   │   ├── forms/          # Form-specific components
-│   │   └── providers/      # Context/Provider components
+│   │   ├── index.tsx       # Dashboard tab
+│   │   ├── inventory.tsx   # Inventory tab
+│   │   └── profile.tsx     # Profile tab
+│   ├── _layout.tsx         # Root layout
+│   └── +not-found.tsx      # 404 page
+├── src/                     # Business logic
+│   ├── components/         # Business components
+│   │   ├── common/         # Shared components
+│   │   ├── layout/         # Layout components
+│   │   └── providers/      # Context providers
 │   ├── screens/            # Screen components
-│   │   ├── DashboardScreen.tsx
-│   │   └── HomePage.tsx
-│   ├── services/           # API/Storage services
-│   │   └── StorageService.ts
-│   ├── store/              # Redux state management
-│   │   ├── InventoryStore.ts
-│   │   └── store.ts
-│   ├── types/              # TypeScript interfaces
-│   │   └── inventory.ts
+│   ├── services/           # Data services
+│   ├── store/              # Redux state
+│   ├── types/              # TypeScript types
 │   ├── utils/              # Utility functions
-│   │   └── inventoryUtils.ts
-│   └── data/               # Mock data & constants
-│       └── mockInventory.ts
-├── components/             # UI/Theme components
-│   ├── ui/                 # Platform-specific UI
+│   └── data/               # Mock data
+├── components/             # UI components
 │   ├── ThemedText.tsx
 │   ├── ThemedView.tsx
-│   ├── Collapsible.tsx
-│   ├── ExternalLink.tsx
-│   ├── HapticTab.tsx
-│   └── ParallaxScrollView.tsx
+│   ├── IconSymbol.tsx
+│   ├── TabBarBackground.tsx
+│   └── [other UI components]
 ├── constants/              # App constants
-├── hooks/                  # Custom React hooks
+├── hooks/                  # Custom hooks
 └── assets/                 # Static assets
 ```
 
@@ -91,7 +79,35 @@ curate/
 
 - **Dashboard**: Overview of inventory statistics
 - **Inventory Management**: Add, view, and search items
-- **Data Persistence**: Local storage with AsyncStorage
+- **Data Persistence**: Local database storage
 - **Cross-Platform**: Works on iOS, Android, and Web
 - **Type Safety**: Full TypeScript support
 - **State Management**: Redux Toolkit for scalable state management
+- **Currency Support**: Multi-currency with flag display
+- **Mobile Optimized**: Touch-friendly interface
+
+## Database
+
+### Storage Solution
+- **AsyncStorage**: Cross-platform local storage
+- **Persistent Data**: Survives app restarts and updates
+- **Structured Storage**: Separate inventory and settings data
+- **Type-Safe Operations**: Full TypeScript integration
+
+### Database Service (`DatabaseService.ts`)
+```typescript
+// Inventory operations
+await databaseService.saveInventoryItem(item);
+const items = await databaseService.getInventoryItems();
+await databaseService.deleteInventoryItem(id);
+
+// Settings operations
+await databaseService.saveSettings(settings);
+const settings = await databaseService.getSettings();
+```
+
+### Data Structure
+- **Inventory Items**: JSON objects with id, name, category, location, prices, etc.
+- **User Settings**: Currency preferences, theme, notifications
+- **Auto-Initialization**: Database setup on first app launch
+- **Mock Data**: Sample inventory items for new users

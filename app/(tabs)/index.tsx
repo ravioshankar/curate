@@ -1,11 +1,5 @@
-import { Provider } from 'react-redux';
-import { store } from '../../src/store/store';
 import { DashboardScreen } from '../../src/screens/DashboardScreen';
 
 export default function HomeScreen() {
-  return (
-    <Provider store={store}>
-      <DashboardScreen />
-    </Provider>
-  );
+  return <DashboardScreen />;
 }

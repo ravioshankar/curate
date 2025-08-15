@@ -1,9 +1,12 @@
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-import { InventoryItem } from '../src/types/inventory';
+import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { InventoryItem } from '../../types/inventory';
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useCurrency } from '../providers/CurrencyContext';
+import { getCurrencyInfo } from '../../utils/currencyUtils';
 
 interface AddItemPageProps {
   onAddItem: (item: InventoryItem) => void;
@@ -15,6 +18,16 @@ interface FormErrors {
 }
 
 export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const tintColor = useThemeColor({}, 'tint');
+  const cardBg = useThemeColor({ light: 'white', dark: '#1f1f1f' }, 'background');
+  const borderColor = useThemeColor({ light: 'rgba(0, 0, 0, 0.2)', dark: '#333' }, 'text');
+  const formBg = useThemeColor({ light: 'rgba(0, 0, 0, 0.05)', dark: 'rgba(255, 255, 255, 0.05)' }, 'background');
+  const placeholderColor = useThemeColor({ light: '#999', dark: '#666' }, 'text');
+  const { currency } = useCurrency();
+  const currentCurrency = getCurrencyInfo(currency);
+  
   const [formData, setFormData] = useState({
     name: 'Vintage Lamp',
     category: 'Home Decor',
@@ -94,7 +107,7 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
         <ThemedText type="title">Add New Item</ThemedText>
         <TouchableOpacity onPress={onBack} style={styles.closeButton}>
@@ -102,27 +115,40 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
         </TouchableOpacity>
       </ThemedView>
 
-      <ThemedView style={styles.form}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <ThemedView style={[styles.form, { backgroundColor: formBg }]}>
         <InputField
           label="Item Name *"
           value={formData.name}
           onChangeText={(value) => handleChange('name', value)}
           error={errors.name}
+          cardBg={cardBg}
+          borderColor={borderColor}
+          textColor={textColor}
+          placeholderColor={placeholderColor}
         />
         <InputField
           label="Category"
           value={formData.category}
           onChangeText={(value) => handleChange('category', value)}
+          cardBg={cardBg}
+          borderColor={borderColor}
+          textColor={textColor}
+          placeholderColor={placeholderColor}
         />
         <InputField
           label="Location"
           value={formData.location}
           onChangeText={(value) => handleChange('location', value)}
+          cardBg={cardBg}
+          borderColor={borderColor}
+          textColor={textColor}
+          placeholderColor={placeholderColor}
         />
         <ThemedView style={styles.inputContainer}>
           <ThemedText style={styles.label}>Last Used Date</ThemedText>
           <TouchableOpacity 
-            style={styles.dateButton} 
+            style={[styles.dateButton, { borderColor, backgroundColor: cardBg }]} 
             onPress={() => setShowDatePicker(true)}
           >
             <ThemedText style={styles.dateButtonText}>{formData.lastUsed}</ThemedText>
@@ -141,31 +167,44 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
           label="Image URL"
           value={formData.imageUrl}
           onChangeText={(value) => handleChange('imageUrl', value)}
+          cardBg={cardBg}
+          borderColor={borderColor}
+          textColor={textColor}
+          placeholderColor={placeholderColor}
         />
-        <InputField
-          label="Price Paid ($)"
+        <CurrencyInputField
+          label="Price Paid"
           value={formData.pricePaid}
           onChangeText={(value) => handleChange('pricePaid', value)}
-          keyboardType="numeric"
+          currency={currentCurrency}
+          cardBg={cardBg}
+          borderColor={borderColor}
+          textColor={textColor}
+          placeholderColor={placeholderColor}
         />
-        <InputField
-          label="Expected Price ($)"
+        <CurrencyInputField
+          label="Expected Price"
           value={formData.priceExpected}
           onChangeText={(value) => handleChange('priceExpected', value)}
-          keyboardType="numeric"
+          currency={currentCurrency}
+          cardBg={cardBg}
+          borderColor={borderColor}
+          textColor={textColor}
+          placeholderColor={placeholderColor}
         />
 
         <TouchableOpacity 
-          style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]} 
+          style={[styles.submitButton, { backgroundColor: isSubmitting ? '#9CA3AF' : tintColor }]} 
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
-          <ThemedText style={styles.submitText}>
+          <ThemedText style={[styles.submitText, { color: 'white' }]}>
             {isSubmitting ? 'Adding...' : 'Add Item'}
           </ThemedText>
         </TouchableOpacity>
-      </ThemedView>
-    </ScrollView>
+        </ThemedView>
+      </ScrollView>
+    </ThemedView>
   );
 }
 
@@ -176,25 +215,72 @@ interface InputFieldProps {
   placeholder?: string;
   keyboardType?: 'default' | 'numeric';
   error?: string;
+  cardBg: string;
+  borderColor: string;
+  textColor: string;
+  placeholderColor: string;
 }
 
-function InputField({ label, value, onChangeText, placeholder, keyboardType = 'default', error }: InputFieldProps) {
+function InputField({ label, value, onChangeText, placeholder, keyboardType = 'default', error, cardBg, borderColor, textColor, placeholderColor }: InputFieldProps) {
   const hasError = error;
   
   return (
     <ThemedView style={styles.inputContainer}>
       <ThemedText style={[styles.label, hasError && styles.labelError]}>{label}</ThemedText>
       <TextInput
-        style={[styles.input, hasError && styles.inputError]}
+        style={[styles.input, { borderColor, backgroundColor: cardBg, color: textColor }, hasError && styles.inputError]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         keyboardType={keyboardType}
-        placeholderTextColor="#999"
+        placeholderTextColor={placeholderColor}
       />
       {hasError && (
         <ThemedText style={styles.errorText}>{hasError}</ThemedText>
       )}
+    </ThemedView>
+  );
+}
+
+interface CurrencyInputFieldProps {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  currency: { flag: string; symbol: string };
+  cardBg: string;
+  borderColor: string;
+  textColor: string;
+  placeholderColor: string;
+}
+
+function CurrencyInputField({ label, value, onChangeText, currency, cardBg, borderColor, textColor, placeholderColor }: CurrencyInputFieldProps) {
+  const handleTextChange = (text: string) => {
+    // Only allow numbers and decimal point
+    const numericText = text.replace(/[^0-9.]/g, '');
+    // Ensure only one decimal point
+    const parts = numericText.split('.');
+    const validText = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : numericText;
+    onChangeText(validText);
+  };
+  
+  return (
+    <ThemedView style={styles.inputContainer}>
+      <ThemedText style={styles.label}>{label}</ThemedText>
+      <View style={[styles.currencyInputContainer, { borderColor, backgroundColor: cardBg }]}>
+        <View style={styles.currencyPrefix}>
+          <ThemedText style={styles.currencyFlag}>{currency.flag}</ThemedText>
+          <ThemedText style={[styles.currencySymbol, { color: textColor }]}>{currency.symbol}</ThemedText>
+        </View>
+        <TextInput
+          style={[styles.currencyInput, { color: textColor }]}
+          value={value}
+          onChangeText={handleTextChange}
+          placeholder="0.00"
+          keyboardType="decimal-pad"
+          returnKeyType="done"
+          placeholderTextColor={placeholderColor}
+        />
+      </View>
     </ThemedView>
   );
 }
@@ -219,64 +305,78 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   form: {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
     borderRadius: 12,
     padding: 20,
     gap: 16,
   },
   inputContainer: {
+    gap: 8,
     backgroundColor: 'transparent',
   },
   label: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
-    marginBottom: 8,
-    opacity: 0.8,
+  },
+  labelError: {
+    color: '#ef4444',
   },
   input: {
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.2)',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: 'white',
+  },
+  inputError: {
+    borderColor: '#ef4444',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+  },
+  dateButtonText: {
+    fontSize: 16,
   },
   submitButton: {
-    backgroundColor: '#6366F1',
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
   },
   submitText: {
-    color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
-  submitButtonDisabled: {
-    backgroundColor: '#9CA3AF',
-  },
-  labelError: {
-    color: '#EF4444',
-  },
-  inputError: {
-    borderColor: '#EF4444',
-    borderWidth: 2,
-  },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  dateButton: {
+  currencyInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.2)',
     borderRadius: 8,
-    padding: 12,
-    backgroundColor: 'white',
+    overflow: 'hidden',
   },
-  dateButtonText: {
+  currencyPrefix: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 6,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(0,0,0,0.1)',
+  },
+  currencyFlag: {
+    fontSize: 18,
+  },
+  currencySymbol: {
     fontSize: 16,
-    color: '#000',
+    fontWeight: '600',
+  },
+  currencyInput: {
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
   },
 });

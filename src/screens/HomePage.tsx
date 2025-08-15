@@ -9,14 +9,15 @@ interface HomePageProps {
 }
 
 export function HomePage({ inventory }: HomePageProps) {
-  const longUnusedItems = inventory.filter(item => {
+  const safeInventory = inventory || [];
+  const longUnusedItems = safeInventory.filter(item => {
     const lastUsedDate = new Date(item.lastUsed);
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     return lastUsedDate < oneYearAgo;
   });
 
-  const categories = new Set(inventory.map(item => item.category)).size;
+  const categories = new Set(safeInventory.map(item => item.category)).size;
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -25,7 +26,7 @@ export function HomePage({ inventory }: HomePageProps) {
       <ThemedView style={styles.statsContainer}>
         <StatCard 
           title="Total Items" 
-          value={inventory.length} 
+          value={safeInventory.length} 
           icon={<ThemedText style={styles.iconText}>📦</ThemedText>}
           color="#6366F1" 
         />

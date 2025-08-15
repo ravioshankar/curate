@@ -1,6 +1,10 @@
 import { InventoryItem, InventoryStats } from '../types/inventory';
 
 export const calculateInventoryStats = (inventory: InventoryItem[]): InventoryStats => {
+  if (!inventory || !Array.isArray(inventory)) {
+    return { totalItems: 0, categories: 0, unusedItems: 0 };
+  }
+
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
@@ -21,6 +25,7 @@ export const generateId = (): string => {
 };
 
 export const filterInventory = (inventory: InventoryItem[], searchText: string): InventoryItem[] => {
+  if (!inventory || !Array.isArray(inventory)) return [];
   if (!searchText) return inventory;
   
   const search = searchText.toLowerCase();

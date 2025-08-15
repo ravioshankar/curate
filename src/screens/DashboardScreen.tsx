@@ -6,18 +6,18 @@ import { ThemedView } from '../../components/ThemedView';
 import { StatCard } from '../components/common/StatCard';
 import { RootState } from '../store/store';
 import { calculateInventoryStats } from '../utils/inventoryUtils';
-import { loadInventory } from '../store/store';
+import { loadInventory } from '../store/inventoryStore';
 
 export function DashboardScreen() {
   const dispatch = useDispatch();
-  const inventory = useSelector((state: RootState) => state.inventory.inventory);
+  const inventory = useSelector((state: RootState) => state.inventory.items);
   const stats = calculateInventoryStats(inventory);
 
   useEffect(() => {
     dispatch(loadInventory() as any);
   }, [dispatch]);
   
-  const longUnusedItems = inventory.filter(item => {
+  const longUnusedItems = (inventory || []).filter(item => {
     const lastUsedDate = new Date(item.lastUsed);
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);

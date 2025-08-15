@@ -1,7 +1,12 @@
 import { View, Text, ScrollView, TextInput, Image, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { InventoryItem } from '../src/types/inventory';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { InventoryItem } from '../../types/inventory';
+import { useCurrency } from '../providers/CurrencyContext';
+import { getCurrencyInfo } from '../../utils/currencyUtils';
 
 interface InventoryPageProps {
   inventory: InventoryItem[];
@@ -15,7 +20,16 @@ export const InventoryPage = ({ inventory, searchText, setSearchText, onUpdateIt
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [editForm, setEditForm] = useState<InventoryItem | null>(null);
   
-  const filteredInventory = inventory.filter(item =>
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const tintColor = useThemeColor({}, 'tint');
+  const cardBg = useThemeColor({ light: 'white', dark: '#1f1f1f' }, 'background');
+  const borderColor = useThemeColor({ light: '#e5e7eb', dark: '#333' }, 'text');
+  const placeholderColor = useThemeColor({ light: '#999', dark: '#666' }, 'text');
+  const { currency, formatPrice } = useCurrency();
+  const currentCurrency = getCurrencyInfo(currency);
+  
+  const filteredInventory = (inventory || []).filter(item =>
     item.name.toLowerCase().includes(searchText.toLowerCase()) ||
     item.category.toLowerCase().includes(searchText.toLowerCase()) ||
     item.location.toLowerCase().includes(searchText.toLowerCase())
@@ -40,154 +54,206 @@ export const InventoryPage = ({ inventory, searchText, setSearchText, onUpdateIt
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.pageTitle}>My Inventory</Text>
-        <TouchableOpacity style={styles.addButton} onPress={onAddItem}>
+    <ThemedView style={styles.container}>
+      <ThemedView style={styles.header}>
+        <ThemedText style={styles.pageTitle}>My Inventory</ThemedText>
+        <TouchableOpacity style={[styles.addButton, { backgroundColor: tintColor }]} onPress={onAddItem}>
           <Icon name="add" size={24} color="white" />
         </TouchableOpacity>
-      </View>
+      </ThemedView>
       
-      <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
+      <ThemedView style={[styles.searchContainer, { backgroundColor: cardBg, borderColor }]}>
+        <ThemedText style={styles.searchIcon}>🔍</ThemedText>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: textColor }]}
           placeholder="Search items..."
           value={searchText}
           onChangeText={setSearchText}
-          placeholderTextColor="#999"
+          placeholderTextColor={placeholderColor}
         />
-      </View>
+      </ThemedView>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.inventoryGrid}>
           {filteredInventory.map(item => (
-            <InventoryCard key={item.id} item={item} onEdit={() => handleEdit(item)} />
+            <InventoryCard 
+              key={item.id} 
+              item={item} 
+              onEdit={() => handleEdit(item)}
+              cardBg={cardBg}
+              textColor={textColor}
+              borderColor={borderColor}
+              tintColor={tintColor}
+              formatPrice={formatPrice}
+            />
           ))}
         </View>
       </ScrollView>
 
       <Modal visible={!!editingItem} animationType="slide" presentationStyle="pageSheet">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Edit Item</Text>
+        <ThemedView style={styles.modalContainer}>
+          <ThemedView style={[styles.modalHeader, { borderBottomColor: borderColor }]}>
+            <ThemedText style={styles.modalTitle}>Edit Item</ThemedText>
             <TouchableOpacity onPress={handleCancel}>
-              <Icon name="close" size={24} color="#666" />
+              <Icon name="close" size={24} color={textColor} />
             </TouchableOpacity>
-          </View>
+          </ThemedView>
           
           {editForm && (
             <ScrollView style={styles.editForm}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Name</Text>
+              <ThemedView style={styles.inputGroup}>
+                <ThemedText style={styles.inputLabel}>Name</ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor, backgroundColor: cardBg, color: textColor }]}
                   value={editForm.name}
                   onChangeText={(text) => setEditForm({...editForm, name: text})}
                 />
-              </View>
+              </ThemedView>
               
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Category</Text>
+              <ThemedView style={styles.inputGroup}>
+                <ThemedText style={styles.inputLabel}>Category</ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor, backgroundColor: cardBg, color: textColor }]}
                   value={editForm.category}
                   onChangeText={(text) => setEditForm({...editForm, category: text})}
                 />
-              </View>
+              </ThemedView>
               
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Location</Text>
+              <ThemedView style={styles.inputGroup}>
+                <ThemedText style={styles.inputLabel}>Location</ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor, backgroundColor: cardBg, color: textColor }]}
                   value={editForm.location}
                   onChangeText={(text) => setEditForm({...editForm, location: text})}
                 />
-              </View>
+              </ThemedView>
               
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Last Used Date</Text>
+              <ThemedView style={styles.inputGroup}>
+                <ThemedText style={styles.inputLabel}>Last Used Date</ThemedText>
                 <TouchableOpacity 
-                  style={styles.input}
+                  style={[styles.input, { borderColor, backgroundColor: cardBg }]}
                   onPress={() => {}}
                 >
-                  <Text>{editForm.lastUsed}</Text>
+                  <ThemedText>{editForm.lastUsed}</ThemedText>
                 </TouchableOpacity>
-              </View>
+              </ThemedView>
               
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Image URL</Text>
+              <ThemedView style={styles.inputGroup}>
+                <ThemedText style={styles.inputLabel}>Image URL</ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { borderColor, backgroundColor: cardBg, color: textColor }]}
                   value={editForm.imageUrl || ''}
                   onChangeText={(text) => setEditForm({...editForm, imageUrl: text})}
                 />
-              </View>
+              </ThemedView>
               
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Price Paid ($)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editForm.pricePaid?.toString() || ''}
-                  onChangeText={(text) => setEditForm({...editForm, pricePaid: text})}
-                  keyboardType="default"
-                  placeholder="$0.00, €0.00, ¥0, etc."
-                />
-              </View>
+              <CurrencyInputField
+                label="Price Paid"
+                value={editForm.pricePaid?.toString() || ''}
+                onChangeText={(text) => setEditForm({...editForm, pricePaid: parseFloat(text) || undefined})}
+                currency={currentCurrency}
+                cardBg={cardBg}
+                borderColor={borderColor}
+                textColor={textColor}
+                placeholderColor={placeholderColor}
+              />
               
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Expected Price ($)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editForm.priceExpected?.toString() || ''}
-                  onChangeText={(text) => setEditForm({...editForm, priceExpected: text})}
-                  keyboardType="default"
-                  placeholder="$0.00, €0.00, ¥0, etc."
-                />
-              </View>
+              <CurrencyInputField
+                label="Expected Price"
+                value={editForm.priceExpected?.toString() || ''}
+                onChangeText={(text) => setEditForm({...editForm, priceExpected: parseFloat(text) || undefined})}
+                currency={currentCurrency}
+                cardBg={cardBg}
+                borderColor={borderColor}
+                textColor={textColor}
+                placeholderColor={placeholderColor}
+              />
               
-              <View style={styles.modalButtons}>
-                <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
+              <ThemedView style={styles.modalButtons}>
+                <TouchableOpacity style={[styles.cancelButton, { borderColor }]} onPress={handleCancel}>
+                  <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                  <Text style={styles.saveButtonText}>Save</Text>
+                <TouchableOpacity style={[styles.saveButton, { backgroundColor: tintColor }]} onPress={handleSave}>
+                  <ThemedText style={styles.saveButtonText}>Save</ThemedText>
                 </TouchableOpacity>
-              </View>
+              </ThemedView>
             </ScrollView>
           )}
-        </View>
+        </ThemedView>
       </Modal>
-    </View>
+    </ThemedView>
   );
 };
 
-const InventoryCard = ({ item, onEdit }) => (
-  <View style={styles.inventoryCard}>
+interface CurrencyInputFieldProps {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  currency: { flag: string; symbol: string };
+  cardBg: string;
+  borderColor: string;
+  textColor: string;
+  placeholderColor: string;
+}
+
+function CurrencyInputField({ label, value, onChangeText, currency, cardBg, borderColor, textColor, placeholderColor }: CurrencyInputFieldProps) {
+  const handleTextChange = (text: string) => {
+    const numericText = text.replace(/[^0-9.]/g, '');
+    const parts = numericText.split('.');
+    const validText = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : numericText;
+    onChangeText(validText);
+  };
+  
+  return (
+    <ThemedView style={styles.inputGroup}>
+      <ThemedText style={styles.inputLabel}>{label}</ThemedText>
+      <View style={[styles.currencyInputContainer, { borderColor, backgroundColor: cardBg }]}>
+        <View style={styles.currencyPrefix}>
+          <ThemedText style={styles.currencyFlag}>{currency.flag}</ThemedText>
+          <ThemedText style={[styles.currencySymbol, { color: textColor }]}>{currency.symbol}</ThemedText>
+        </View>
+        <TextInput
+          style={[styles.currencyInput, { color: textColor }]}
+          value={value}
+          onChangeText={handleTextChange}
+          placeholder="0.00"
+          keyboardType="decimal-pad"
+          returnKeyType="done"
+          placeholderTextColor={placeholderColor}
+        />
+      </View>
+    </ThemedView>
+  );
+}
+
+const InventoryCard = ({ item, onEdit, cardBg, textColor, borderColor, tintColor, formatPrice }) => (
+  <View style={[styles.inventoryCard, { backgroundColor: cardBg }]}>
     <Image
       source={{ uri: item.imageUrl || 'https://placehold.co/400x300/94A3B8/ffffff?text=No+Image' }}
       style={styles.cardImage}
     />
     <View style={styles.cardContent}>
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
+        <Text style={[styles.cardTitle, { color: textColor }]}>{item.name}</Text>
         <TouchableOpacity onPress={onEdit} style={styles.editButton}>
-          <Icon name="edit" size={16} color="#6366F1" />
+          <Icon name="edit" size={16} color={tintColor} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.cardCategory}>{item.category}</Text>
-      <Text style={styles.cardLocation}>📍 {item.location}</Text>
+      <Text style={[styles.cardCategory, { color: textColor }]}>{item.category}</Text>
+      <Text style={[styles.cardLocation, { color: textColor }]}>📍 {item.location}</Text>
       
       {(item.pricePaid || item.priceExpected) && (
-        <View style={styles.priceSection}>
+        <View style={[styles.priceSection, { borderTopColor: borderColor }]}>
           {item.pricePaid && (
-            <Text style={styles.pricePaid}>💰 Paid: ${item.pricePaid.toFixed(2)}</Text>
+            <Text style={styles.pricePaid}>💰 Paid: {formatPrice(item.pricePaid)}</Text>
           )}
           {item.priceExpected && (
-            <Text style={styles.priceExpected}>💸 Expected: ${item.priceExpected.toFixed(2)}</Text>
+            <Text style={styles.priceExpected}>🎯 Expected: {formatPrice(item.priceExpected)}</Text>
           )}
         </View>
       )}
+      
+      <Text style={[styles.cardDate, { color: textColor }]}>📅 Last used: {item.lastUsed}</Text>
     </View>
   </View>
 );
@@ -205,36 +271,35 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#111827',
   },
   addButton: {
-    backgroundColor: '#6366F1',
     borderRadius: 50,
-    width: 48,
-    height: 48,
+    width: 56,
+    height: 56,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   searchIcon: {
     fontSize: 16,
     marginRight: 8,
-    color: '#6b7280',
   },
   searchInput: {
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#111827',
   },
   inventoryGrid: {
     flexDirection: 'row',
@@ -243,7 +308,6 @@ const styles = StyleSheet.create({
   },
   inventoryCard: {
     width: '48%',
-    backgroundColor: 'white',
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -252,6 +316,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     overflow: 'hidden',
     marginBottom: 16,
+    minHeight: 200,
   },
   cardImage: {
     width: '100%',
@@ -263,22 +328,20 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
     marginBottom: 4,
   },
   cardCategory: {
     fontSize: 14,
-    color: '#6b7280',
     marginBottom: 8,
+    opacity: 0.7,
   },
   cardLocation: {
     fontSize: 12,
-    color: '#6b7280',
     marginBottom: 8,
+    opacity: 0.7,
   },
   priceSection: {
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
     paddingTop: 8,
   },
   pricePaid: {
@@ -297,11 +360,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   editButton: {
-    padding: 4,
+    padding: 8,
+    minWidth: 32,
+    minHeight: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'white',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -309,12 +375,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827',
   },
   editForm: {
     flex: 1,
@@ -326,16 +390,14 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
     marginBottom: 8,
+    opacity: 0.8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: 'white',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -347,24 +409,55 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#d1d5db',
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#374151',
     fontSize: 16,
     fontWeight: '500',
+    opacity: 0.8,
   },
   saveButton: {
     flex: 1,
     padding: 12,
     borderRadius: 8,
-    backgroundColor: '#6366F1',
     alignItems: 'center',
   },
   saveButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '500',
+  },
+  currencyInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  currencyPrefix: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 6,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(0,0,0,0.1)',
+  },
+  currencyFlag: {
+    fontSize: 16,
+  },
+  currencySymbol: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  currencyInput: {
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
+  },
+  cardDate: {
+    fontSize: 12,
+    opacity: 0.7,
+    marginTop: 4,
   },
 });
