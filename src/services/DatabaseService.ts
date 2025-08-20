@@ -1,45 +1,156 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { InventoryItem } from '../types/inventory';
 import { AppSettings } from '../types/user';
+import { webDBService } from './WebDBService';
 
 class DatabaseService {
-  constructor() {
-    // Using AsyncStorage for all platforms
+  private initialized = false;
+  private isWeb = Platform.OS === 'web';
+  private sqliteService: any = null;
+
+  private async getSQLiteService() {
+    if (!this.sqliteService) {
+      try {
+        const { sqliteService } = await import('./SQLiteService');
+        this.sqliteService = sqliteService;
+      } catch (error) {
+        console.error('Failed to load SQLiteService:', error);
+        throw error;
+      }
+    }
+    return this.sqliteService;
   }
 
-
-
-  // Inventory operations
-  async saveInventoryItem(item: InventoryItem): Promise<void> {
-    const items = await this.getInventoryItems();
-    const index = items.findIndex(i => i.id === item.id);
-    if (index >= 0) {
-      items[index] = item;
-    } else {
-      items.push(item);
+  async init(): Promise<void> {
+    if (!this.initialized) {
+      try {
+        if (this.isWeb) {
+          await webDBService.init();
+        } else {
+          const sqlite = await this.getSQLiteService();
+          await sqlite.init();
+        }
+        this.initialized = true;
+      } catch (error) {
+        console.error('DatabaseService: init failed', error);
+        this.initialized = false;
+      }
     }
-    await AsyncStorage.setItem('inventory', JSON.stringify(items));
+  }
+
+  async saveInventoryItem(item: InventoryItem): Promise<void> {
+    await this.init();
+    if (!this.initialized) return;
+    
+    try {
+      if (this.isWeb) {
+        await webDBService.saveInventoryItem(item);
+      } else {
+        const sqlite = await this.getSQLiteService();
+        await sqlite.saveInventoryItem(item);
+      }
+    } catch (error) {
+      console.error('DatabaseService: saveInventoryItem failed', error);
+    }
   }
 
   async getInventoryItems(): Promise<InventoryItem[]> {
-    const data = await AsyncStorage.getItem('inventory');
-    return data ? JSON.parse(data) : [];
+    await this.init();
+    if (!this.initialized) return [];
+    
+    try {
+      if (this.isWeb) {
+        return await webDBService.getInventoryItems();
+      } else {
+        const sqlite = await this.getSQLiteService();
+        return await sqlite.getInventoryItems();
+      }
+    } catch (error) {
+      console.error('DatabaseService: getInventoryItems failed', error);
+      return [];
+    }
   }
 
   async deleteInventoryItem(id: string): Promise<void> {
-    const items = await this.getInventoryItems();
-    const filtered = items.filter(item => item.id !== id);
-    await AsyncStorage.setItem('inventory', JSON.stringify(filtered));
+    await this.init();
+    if (!this.initialized) return;
+    
+    try {
+      if (this.isWeb) {
+        await webDBService.deleteInventoryItem(id);
+      } else {
+        const sqlite = await this.getSQLiteService();
+        await sqlite.deleteInventoryItem(id);
+      }
+    } catch (error) {
+      console.error('DatabaseService: deleteInventoryItem failed', error);
+    }
   }
 
-  // Settings operations
   async saveSettings(settings: AppSettings): Promise<void> {
-    await AsyncStorage.setItem('settings', JSON.stringify(settings));
+    await this.init();
+    if (!this.initialized) return;
+    
+    try {
+      if (this.isWeb) {
+        await webDBService.saveSettings(settings);
+      } else {
+        const sqlite = await this.getSQLiteService();
+        await sqlite.saveSettings(settings);
+      }
+    } catch (error) {
+      console.error('DatabaseService: saveSettings failed', error);
+    }
   }
 
   async getSettings(): Promise<AppSettings | null> {
-    const data = await AsyncStorage.getItem('settings');
-    return data ? JSON.parse(data) : null;
+    await this.init();
+    if (!this.initialized) return null;
+    
+    try {
+      if (this.isWeb) {
+        return await webDBService.getSettings();
+      } else {
+        const sqlite = await this.getSQLiteService();
+        return await sqlite.getSettings();
+      }
+    } catch (error) {
+      console.error('DatabaseService: getSettings failed', error);
+      return null;
+    }
+  }
+
+  async saveProfile(profile: { name?: string; email?: string; avatar?: string }): Promise<void> {
+    await this.init();
+    if (!this.initialized) return;
+    
+    try {
+      if (this.isWeb) {
+        await webDBService.saveProfile(profile);
+      } else {
+        const sqlite = await this.getSQLiteService();
+        await sqlite.saveProfile(profile);
+      }
+    } catch (error) {
+      console.error('DatabaseService: saveProfile failed', error);
+    }
+  }
+
+  async getProfile(): Promise<{ name?: string; email?: string; avatar?: string } | null> {
+    await this.init();
+    if (!this.initialized) return null;
+    
+    try {
+      if (this.isWeb) {
+        return await webDBService.getProfile();
+      } else {
+        const sqlite = await this.getSQLiteService();
+        return await sqlite.getProfile();
+      }
+    } catch (error) {
+      console.error('DatabaseService: getProfile failed', error);
+      return null;
+    }
   }
 }
 

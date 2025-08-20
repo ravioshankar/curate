@@ -226,7 +226,15 @@ function CurrencyInputField({ label, value, onChangeText, currency, cardBg, bord
   );
 }
 
-const InventoryCard = ({ item, onEdit, cardBg, textColor, borderColor, tintColor, formatPrice }) => (
+const InventoryCard = ({ item, onEdit, cardBg, textColor, borderColor, tintColor, formatPrice }: {
+  item: InventoryItem;
+  onEdit: () => void;
+  cardBg: string;
+  textColor: string;
+  borderColor: string;
+  tintColor: string;
+  formatPrice: (amount: number) => string;
+}) => (
   <View style={[styles.inventoryCard, { backgroundColor: cardBg }]}>
     <Image
       source={{ uri: item.imageUrl || 'https://placehold.co/400x300/94A3B8/ffffff?text=No+Image' }}

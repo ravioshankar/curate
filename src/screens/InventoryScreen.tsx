@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ThemedView } from '../../components/ThemedView';
 import { InventoryPage } from '../components/common/InventoryPage';
 import { AddItemPage } from '../components/common/AddItemPage';
-import { RootState } from '../store/store';
+import { RootState, AppDispatch } from '../store/store';
 import { addInventoryItem, updateInventoryItem } from '../store/inventoryStore';
 import { InventoryItem } from '../types/inventory';
 
@@ -25,7 +25,7 @@ export function InventoryScreen() {
   const [searchText, setSearchText] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const inventory = useSelector((state: RootState) => state.inventory.items);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleUpdateItem = (item: any) => {
     dispatch(updateInventoryItem(item));

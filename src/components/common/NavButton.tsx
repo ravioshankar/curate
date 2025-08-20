@@ -1,6 +1,6 @@
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
+import { ThemedText } from '../../../components/ThemedText';
+import { ThemedView } from '../../../components/ThemedView';
 
 interface NavButtonProps {
   icon: React.ReactNode;

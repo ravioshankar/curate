@@ -1,26 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Alert, View, TouchableOpacity, Switch } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { CurrencySelector } from '@/src/components/common/CurrencySelector';
 import { ProfileOption } from '@/src/components/common/ProfileOption';
 import { ThemeToggle } from '@/src/components/common/ThemeToggle';
-import { CurrencySelector } from '@/src/components/common/CurrencySelector';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { RootState } from '@/src/store/store';
-import { updateSettings, loadSettings, saveSettings } from '@/src/store/userStore';
+import { RootState, AppDispatch } from '@/src/store/store';
+import { loadSettings, saveSettings, updateProfile, updateSettings, loadProfile, saveProfile } from '@/src/store/userStore';
+import { populateRandomItems } from '@/src/utils/devPopulate';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useDispatch, useSelector } from 'react-redux';
 
 export function ProfileScreen() {
   const { profile, settings } = useSelector((state: RootState) => state.user);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor({ light: '#eee', dark: '#333' }, 'text');
   const tintColor = useThemeColor({}, 'tint');
   const [isThemeExpanded, setIsThemeExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(profile.name);
+  const [editAvatar, setEditAvatar] = useState(profile.avatar || '');
 
   useEffect(() => {
     dispatch(loadSettings());
+    dispatch(loadProfile());
   }, [dispatch]);
 
   const handleCurrencyChange = (currency: string) => {
@@ -35,12 +40,53 @@ export function ProfileScreen() {
     dispatch(saveSettings(newSettings));
   };
 
+  const startEdit = () => {
+    setEditName(profile.name);
+    setEditAvatar(profile.avatar || '');
+    setIsEditing(true);
+  };
+
+  const saveProfileChanges = () => {
+    const newProfile = { name: editName, avatar: editAvatar };
+    dispatch(updateProfile(newProfile));
+    dispatch(saveProfile(newProfile));
+    setIsEditing(false);
+  };
+
   return (
     <ScrollView style={styles.container}>
       <ThemedView style={[styles.header, { borderBottomColor: borderColor }]}>
-        <Icon name="account-circle" size={80} color={iconColor} />
-        <ThemedText style={styles.name}>{profile.name}</ThemedText>
+        <TouchableOpacity onPress={startEdit}>
+          {profile.avatar ? (
+            <Image source={{ uri: profile.avatar }} style={{ width: 80, height: 80, borderRadius: 40 }} />
+          ) : (
+            <Icon name="account-circle" size={80} color={iconColor} />
+          )}
+        </TouchableOpacity>
+        {isEditing ? (
+          <TextInput value={editName} onChangeText={setEditName} style={styles.nameInput} />
+        ) : (
+          <ThemedText style={styles.name}>{profile.name}</ThemedText>
+        )}
         <ThemedText style={styles.email} lightColor="#666" darkColor="#999">{profile.email}</ThemedText>
+        {isEditing && (
+          <TextInput
+            value={editAvatar}
+            onChangeText={setEditAvatar}
+            placeholder="Avatar image URL"
+            style={styles.avatarInput}
+          />
+        )}
+        {isEditing && (
+          <View style={{ flexDirection: 'row', marginTop: 8 }}>
+            <TouchableOpacity onPress={saveProfileChanges} style={[styles.saveButton, { backgroundColor: tintColor }]}> 
+              <ThemedText style={{ color: '#fff' }}>Save</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setIsEditing(false)} style={[styles.cancelButton, { marginLeft: 8 }]}> 
+              <ThemedText>Cancel</ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
       </ThemedView>
 
       <ThemedView style={styles.section}>
@@ -93,6 +139,24 @@ export function ProfileScreen() {
           </ThemedView>
         </ThemedView>
       </ThemedView>
+      {__DEV__ && (
+        <ThemedView style={{ padding: 16 }}>
+          <TouchableOpacity
+            onPress={async () => {
+              try {
+                await populateRandomItems(50);
+                Alert.alert('Dev', 'Inserted 50 random items into local DB');
+              } catch (err) {
+                Alert.alert('Dev', 'Failed to populate items, check console');
+                console.error(err);
+              }
+            }}
+            style={{ backgroundColor: tintColor, padding: 12, borderRadius: 8, alignItems: 'center' }}
+          >
+            <ThemedText style={{ color: '#fff', fontWeight: '600' }}>Insert 50 Random Items (Dev)</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      )}
     </ScrollView>
   );
 }
@@ -161,5 +225,31 @@ const styles = StyleSheet.create({
   currencyTitle: {
     fontSize: 16,
     marginLeft: 16,
+  },
+  nameInput: {
+    fontSize: 24,
+    fontWeight: '600',
+    marginTop: 8,
+    textAlign: 'center',
+    width: 220,
+  },
+  avatarInput: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 8,
+    borderRadius: 6,
+  },
+  saveButton: {
+    padding: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    padding: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

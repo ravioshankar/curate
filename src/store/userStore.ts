@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { UserProfile, AppSettings } from '../types/user';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { databaseService } from '../services/DatabaseService';
+import { AppSettings, UserProfile } from '../types/user';
 
 interface UserState {
   profile: UserProfile;
@@ -27,11 +27,27 @@ export const loadSettings = createAsyncThunk(
   }
 );
 
+export const loadProfile = createAsyncThunk(
+  'user/loadProfile',
+  async () => {
+    const profile = await databaseService.getProfile();
+    return profile;
+  }
+);
+
 export const saveSettings = createAsyncThunk(
   'user/saveSettings',
   async (settings: AppSettings) => {
     await databaseService.saveSettings(settings);
     return settings;
+  }
+);
+
+export const saveProfile = createAsyncThunk(
+  'user/saveProfile',
+  async (profile: Partial<UserProfile>) => {
+    await databaseService.saveProfile(profile);
+    return profile;
   }
 );
 
@@ -53,9 +69,18 @@ const userSlice = createSlice({
           state.settings = { ...state.settings, ...action.payload };
         }
       })
+      .addCase(loadProfile.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.profile = { ...state.profile, ...action.payload };
+        }
+      })
       .addCase(saveSettings.fulfilled, (state, action) => {
         state.settings = action.payload;
       });
+      
+    builder.addCase(saveProfile.fulfilled, (state, action) => {
+      state.profile = { ...state.profile, ...action.payload } as UserProfile;
+    });
   },
 });
 
