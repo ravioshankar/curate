@@ -72,7 +72,7 @@ export function InventoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     paddingHorizontal: 16,
+    paddingTop: 20,
   },
 });

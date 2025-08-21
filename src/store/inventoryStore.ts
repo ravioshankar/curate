@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { InventoryItem } from '../types/inventory';
 import { databaseService } from '../services/DatabaseService';
+import { loadCategories } from './categoriesStore';
 
 interface InventoryState {
   items: InventoryItem[];
@@ -24,16 +25,24 @@ export const loadInventory = createAsyncThunk(
 
 export const addInventoryItem = createAsyncThunk(
   'inventory/addItem',
-  async (item: InventoryItem) => {
+  async (item: InventoryItem, { dispatch }) => {
     await databaseService.saveInventoryItem(item);
+    if (item.category) {
+      await databaseService.addCategory(item.category);
+      dispatch(loadCategories());
+    }
     return item;
   }
 );
 
 export const updateInventoryItem = createAsyncThunk(
   'inventory/updateItem',
-  async (item: InventoryItem) => {
+  async (item: InventoryItem, { dispatch }) => {
     await databaseService.saveInventoryItem(item);
+    if (item.category) {
+      await databaseService.addCategory(item.category);
+      dispatch(loadCategories());
+    }
     return item;
   }
 );

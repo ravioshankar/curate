@@ -1,168 +1,169 @@
-import * as SQLite from 'expo-sqlite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { InventoryItem } from '../types/inventory';
 import { AppSettings } from '../types/user';
 
 class SQLiteService {
-  private db: SQLite.SQLiteDatabase | null = null;
-
   async init(): Promise<void> {
-    try {
-      // Use a different database name to avoid conflicts
-      this.db = await SQLite.openDatabaseAsync('curate_inventory.db');
-      await this.createTables();
-    } catch (error) {
-      console.error('SQLiteService: init failed', error);
-      // Try fallback with in-memory database
-      try {
-        this.db = await SQLite.openDatabaseAsync(':memory:');
-        await this.createTables();
-        console.log('SQLiteService: Using in-memory database as fallback');
-      } catch (fallbackError) {
-        console.error('SQLiteService: Fallback init failed', fallbackError);
-        throw fallbackError;
-      }
-    }
+    // AsyncStorage doesn't need initialization
   }
 
-  private async createTables(): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    await this.db.execAsync(`
-      CREATE TABLE IF NOT EXISTS inventory (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        category TEXT NOT NULL,
-        location TEXT NOT NULL,
-        lastUsed TEXT NOT NULL,
-        imageUrl TEXT,
-        pricePaid REAL,
-        priceExpected REAL
-      );
-    `);
-
-    await this.db.execAsync(`
-      CREATE TABLE IF NOT EXISTS settings (
-        id INTEGER PRIMARY KEY,
-        currency TEXT NOT NULL,
-        theme TEXT NOT NULL,
-        notifications INTEGER NOT NULL,
-        name TEXT,
-        email TEXT,
-        avatar TEXT
-      );
-    `);
-  }
-
-  // Profile persistence
   async saveProfile(profile: { name?: string; email?: string; avatar?: string }): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-    try {
-      // Read existing settings to preserve other fields
-      const existing = await this.db.getFirstAsync('SELECT * FROM settings WHERE id = 1') as any;
-      const currency = existing ? existing.currency : 'USD';
-      const theme = existing ? existing.theme : 'auto';
-      const notifications = existing ? existing.notifications : 1;
-
-      await this.db.runAsync(
-        `INSERT OR REPLACE INTO settings (id, currency, theme, notifications, name, email, avatar) 
-         VALUES (1, ?, ?, ?, ?, ?, ?)`,
-        [currency, theme, notifications, profile.name || null, profile.email || null, profile.avatar || null]
-      );
-      console.log('SQLiteService: profile saved', profile);
-    } catch (error) {
-      console.error('SQLiteService: saveProfile failed', error);
-      throw error;
-    }
+    await AsyncStorage.setItem('profile', JSON.stringify(profile));
   }
 
   async getProfile(): Promise<{ name?: string; email?: string; avatar?: string } | null> {
-    if (!this.db) throw new Error('Database not initialized');
-    try {
-      const result = await this.db.getFirstAsync('SELECT * FROM settings WHERE id = 1');
-      if (!result) return null;
-      const profile = {
-        name: (result as any).name,
-        email: (result as any).email,
-        avatar: (result as any).avatar
-      };
-      console.log('SQLiteService: profile loaded', profile);
-      return profile;
-    } catch (error) {
-      console.error('SQLiteService: getProfile failed', error);
-      throw error;
-    }
+    const data = await AsyncStorage.getItem('profile');
+    return data ? JSON.parse(data) : null;
   }
 
   async saveInventoryItem(item: InventoryItem): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    await this.db.runAsync(
-      `INSERT OR REPLACE INTO inventory 
-       (id, name, category, location, lastUsed, imageUrl, pricePaid, priceExpected) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [item.id, item.name, item.category, item.location, item.lastUsed, 
-       item.imageUrl || null, item.pricePaid || null, item.priceExpected || null]
-    );
+    const items = await this.getInventoryItems();
+    const index = items.findIndex(i => i.id === item.id);
+    if (index >= 0) {
+      items[index] = item;
+    } else {
+      items.push(item);
+    }
+    await AsyncStorage.setItem('inventory', JSON.stringify(items));
   }
 
   async getInventoryItems(): Promise<InventoryItem[]> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    const result = await this.db.getAllAsync('SELECT * FROM inventory');
-    return result.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      category: row.category,
-      location: row.location,
-      lastUsed: row.lastUsed,
-      imageUrl: row.imageUrl,
-      pricePaid: row.pricePaid,
-      priceExpected: row.priceExpected
-    }));
+    const data = await AsyncStorage.getItem('inventory');
+    return data ? JSON.parse(data) : [];
   }
 
   async deleteInventoryItem(id: string): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-    await this.db.runAsync('DELETE FROM inventory WHERE id = ?', [id]);
+    const items = await this.getInventoryItems();
+    const filtered = items.filter(item => item.id !== id);
+    await AsyncStorage.setItem('inventory', JSON.stringify(filtered));
   }
 
   async saveSettings(settings: AppSettings): Promise<void> {
-    if (!this.db) {
-      await this.init();
-    }
-    if (!this.db) throw new Error('Database not initialized');
-
-    try {
-      await this.db.runAsync(
-        `INSERT OR REPLACE INTO settings (id, currency, theme, notifications) 
-         VALUES (1, ?, ?, ?)`,
-        [settings.currency, settings.theme, settings.notifications ? 1 : 0]
-      );
-    } catch (error) {
-      console.error('SQLiteService: saveSettings failed', error);
-    }
+    await AsyncStorage.setItem('settings', JSON.stringify(settings));
   }
 
   async getSettings(): Promise<AppSettings | null> {
-    if (!this.db) throw new Error('Database not initialized');
+    const data = await AsyncStorage.getItem('settings');
+    return data ? JSON.parse(data) : null;
+  }
 
-    try {
-      const result = await this.db.getFirstAsync('SELECT * FROM settings WHERE id = 1');
-      if (!result) {
-        console.log('SQLiteService: no settings found');
-        return null;
+  private getDefaultCategories(): string[] {
+    return [
+      'Electronics', 'Kitchen', 'Sports', 'Furniture', 'Music', 'Books', 
+      'Clothes', 'Accessories', 'Garden', 'Tools', 'Art', 'Toys', 'Health', 
+      'Beauty', 'Office', 'Home', 'Automotive', 'Pet', 'Travel', 'Food',
+      'Antiques', 'Jewelry', 'Appliances', 'Cleaning', 'Bathroom', 'Bedroom',
+      'Living Room', 'Dining', 'Laundry', 'Storage', 'Lighting', 'Decor',
+      'Crafts', 'Games', 'Collectibles', 'Documents', 'Media', 'Baby',
+      'Seasonal', 'Outdoor', 'Pool', 'Other'
+    ];
+  }
+
+  async getCategories(): Promise<string[]> {
+    const data = await AsyncStorage.getItem('categories');
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        // Legacy format - migrate to new format
+        const defaultCategories = this.getDefaultCategories();
+        const userCategories = parsed.filter(cat => !defaultCategories.includes(cat));
+        await this.saveCategoryData({ defaultCategories, userCategories });
+        return [...defaultCategories, ...userCategories];
+      } else {
+        // New format
+        return [...parsed.defaultCategories, ...parsed.userCategories];
       }
-      const settings = {
-        currency: (result as any).currency,
-        theme: (result as any).theme,
-        notifications: (result as any).notifications === 1
-      };
-      console.log('SQLiteService: settings loaded', settings);
-      return settings;
-    } catch (error) {
-      console.error('SQLiteService: getSettings failed', error);
-      throw error;
     }
+    
+    // Return default categories if none exist
+    const defaultCategories = this.getDefaultCategories();
+    await this.saveCategoryData({ defaultCategories, userCategories: [] });
+    return defaultCategories;
+  }
+
+  private async saveCategoryData(data: { defaultCategories: string[], userCategories: string[] }): Promise<void> {
+    await AsyncStorage.setItem('categories', JSON.stringify(data));
+  }
+
+  async saveCategories(categories: string[]): Promise<void> {
+    const defaultCategories = this.getDefaultCategories();
+    const userCategories = categories.filter(cat => !defaultCategories.includes(cat));
+    await this.saveCategoryData({ defaultCategories, userCategories });
+  }
+
+  async addCategory(categoryName: string): Promise<void> {
+    const data = await AsyncStorage.getItem('categories');
+    let categoryData;
+    
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        // Legacy format
+        const defaultCategories = this.getDefaultCategories();
+        categoryData = { defaultCategories, userCategories: parsed.filter(cat => !defaultCategories.includes(cat)) };
+      } else {
+        categoryData = parsed;
+      }
+    } else {
+      categoryData = { defaultCategories: this.getDefaultCategories(), userCategories: [] };
+    }
+    
+    if (!categoryData.defaultCategories.includes(categoryName) && !categoryData.userCategories.includes(categoryName)) {
+      categoryData.userCategories.push(categoryName);
+      await this.saveCategoryData(categoryData);
+    }
+  }
+
+  async deleteCategory(categoryName: string): Promise<void> {
+    const defaultCategories = this.getDefaultCategories();
+    if (defaultCategories.includes(categoryName)) {
+      throw new Error('Cannot delete default category');
+    }
+    
+    // Move items from deleted category to "Other"
+    const items = await this.getInventoryItems();
+    const itemsToUpdate = items.filter(item => item.category === categoryName);
+    
+    for (const item of itemsToUpdate) {
+      await this.saveInventoryItem({ ...item, category: 'Other' });
+    }
+    
+    // Remove category from user categories
+    const data = await AsyncStorage.getItem('categories');
+    if (data) {
+      const parsed = JSON.parse(data);
+      let categoryData;
+      
+      if (Array.isArray(parsed)) {
+        // Legacy format
+        categoryData = { defaultCategories, userCategories: parsed.filter(cat => !defaultCategories.includes(cat)) };
+      } else {
+        categoryData = parsed;
+      }
+      
+      categoryData.userCategories = categoryData.userCategories.filter((cat: string) => cat !== categoryName);
+      await this.saveCategoryData(categoryData);
+    }
+  }
+
+  async getUserCategories(): Promise<string[]> {
+    const data = await AsyncStorage.getItem('categories');
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        // Legacy format
+        const defaultCategories = this.getDefaultCategories();
+        return parsed.filter(cat => !defaultCategories.includes(cat));
+      } else {
+        return parsed.userCategories || [];
+      }
+    }
+    return [];
+  }
+
+  async isCategoryDeletable(categoryName: string): Promise<boolean> {
+    const defaultCategories = this.getDefaultCategories();
+    return !defaultCategories.includes(categoryName);
   }
 }
 

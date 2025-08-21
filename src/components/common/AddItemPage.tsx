@@ -1,12 +1,17 @@
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { InventoryItem } from '../../types/inventory';
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useCurrency } from '../providers/CurrencyContext';
+import { useCurrency } from '../providers/SimpleCurrencyProvider';
 import { getCurrencyInfo } from '../../utils/currencyUtils';
+import { CategoryDropdown } from './CategoryDropdown';
+import { loadCategories } from '../../store/categoriesStore';
+import { RootState, AppDispatch } from '../../store/store';
+import { databaseService } from '../../services/DatabaseService';
 
 interface AddItemPageProps {
   onAddItem: (item: InventoryItem) => void;
@@ -18,6 +23,8 @@ interface FormErrors {
 }
 
 export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { categories, userCategories } = useSelector((state: RootState) => state.categories);
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
@@ -29,18 +36,22 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
   const currentCurrency = getCurrencyInfo(currency);
   
   const [formData, setFormData] = useState({
-    name: 'Vintage Lamp',
-    category: 'Home Decor',
-    location: 'Living Room Shelf',
+    name: '',
+    category: '',
+    location: '',
     lastUsed: new Date().toISOString().split('T')[0],
-    imageUrl: 'https://placehold.co/400x300/A78BFA/ffffff?text=Vintage+Lamp',
-    pricePaid: '75',
-    priceExpected: '100'
+    imageUrl: '',
+    pricePaid: '',
+    priceExpected: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  useEffect(() => {
+    dispatch(loadCategories());
+  }, [dispatch]);
 
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -77,6 +88,15 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleDeleteCategory = async (categoryName: string) => {
+    try {
+      await databaseService.deleteCategory(categoryName);
+      dispatch(loadCategories());
+    } catch (error) {
+      Alert.alert('Error', 'Cannot delete default category');
+    }
   };
 
   const handleSubmit = async () => {
@@ -127,14 +147,17 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
           textColor={textColor}
           placeholderColor={placeholderColor}
         />
-        <InputField
+        <CategoryDropdown
           label="Category"
           value={formData.category}
-          onChangeText={(value) => handleChange('category', value)}
+          onSelect={(value) => handleChange('category', value)}
+          categories={categories}
+          userCategories={userCategories}
           cardBg={cardBg}
           borderColor={borderColor}
           textColor={textColor}
-          placeholderColor={placeholderColor}
+          backgroundColor={backgroundColor}
+          onDeleteCategory={handleDeleteCategory}
         />
         <InputField
           label="Location"

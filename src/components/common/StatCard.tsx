@@ -1,11 +1,14 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
 
+const { width } = Dimensions.get('window');
+const cardWidth = (width - 48) / 2; // 2 cards per row with padding
+
 interface StatCardProps {
   title: string;
-  value: number;
+  value: number | string;
   iconName: string;
   color: string;
 }
@@ -26,16 +29,18 @@ export function StatCard({ title, value, iconName, color }: StatCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: cardWidth,
     flexDirection: 'column',
     alignItems: 'center',
     padding: 16,
     borderRadius: 12,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    minHeight: 100,
   },
   iconContainer: {
     padding: 8,
@@ -57,5 +62,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
+    textAlign: 'center',
   },
 });

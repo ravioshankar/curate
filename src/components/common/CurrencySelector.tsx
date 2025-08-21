@@ -23,12 +23,12 @@ export function CurrencySelector({ selectedCurrency, onCurrencyChange }: Currenc
   const placeholderColor = useThemeColor({ light: '#999', dark: '#666' }, 'text');
 
   const selectedCurrencyData = currencies.find(c => c.code === selectedCurrency) || currencies[0];
-  const popularCurrencies = currencies.slice(0, 12);
+  const popularCurrencies = [...currencies].slice(0, 12).sort((a, b) => a.name.localeCompare(b.name));
   
   const filteredCurrencies = currencies.filter(currency =>
     currency.name.toLowerCase().includes(searchText.toLowerCase()) ||
     currency.code.toLowerCase().includes(searchText.toLowerCase())
-  );
+  ).sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSelect = (currencyCode: string) => {
     onCurrencyChange(currencyCode);

@@ -4,11 +4,12 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { CurrencySelector } from '@/src/components/common/CurrencySelector';
 import { ProfileOption } from '@/src/components/common/ProfileOption';
 import { ThemeToggle } from '@/src/components/common/ThemeToggle';
+import { CategoryManager } from '@/src/components/common/CategoryManager';
 import { RootState, AppDispatch } from '@/src/store/store';
 import { loadSettings, saveSettings, updateProfile, updateSettings, loadProfile, saveProfile } from '@/src/store/userStore';
 import { populateRandomItems } from '@/src/utils/devPopulate';
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -22,6 +23,7 @@ export function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(profile.name);
   const [editAvatar, setEditAvatar] = useState(profile.avatar || '');
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
 
   useEffect(() => {
     dispatch(loadSettings());
@@ -91,9 +93,9 @@ export function ProfileScreen() {
 
       <ThemedView style={styles.section}>
         <ProfileOption
-          title="Settings"
-          icon="settings"
-          onPress={() => Alert.alert('Settings', 'Settings screen coming soon')}
+          title="Manage Categories"
+          icon="category"
+          onPress={() => setShowCategoryManager(true)}
         />
         
         <ThemedView style={[styles.currencySection, { borderBottomColor: borderColor }]}>
@@ -157,6 +159,10 @@ export function ProfileScreen() {
           </TouchableOpacity>
         </ThemedView>
       )}
+      
+      <Modal visible={showCategoryManager} animationType="slide" presentationStyle="pageSheet">
+        <CategoryManager onBack={() => setShowCategoryManager(false)} />
+      </Modal>
     </ScrollView>
   );
 }

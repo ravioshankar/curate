@@ -63,7 +63,7 @@ export const InventoryPage = ({ inventory, searchText, setSearchText, onUpdateIt
       </ThemedView>
       
       <ThemedView style={[styles.searchContainer, { backgroundColor: cardBg, borderColor }]}>
-        <ThemedText style={styles.searchIcon}>🔍</ThemedText>
+        <ThemedText style={styles.searchIcon}><ThemedText>🔍</ThemedText></ThemedText>
         <TextInput
           style={[styles.searchInput, { color: textColor }]}
           placeholder="Search items..."
@@ -73,7 +73,11 @@ export const InventoryPage = ({ inventory, searchText, setSearchText, onUpdateIt
         />
       </ThemedView>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.inventoryGrid}>
           {filteredInventory.map(item => (
             <InventoryCard 
@@ -242,26 +246,26 @@ const InventoryCard = ({ item, onEdit, cardBg, textColor, borderColor, tintColor
     />
     <View style={styles.cardContent}>
       <View style={styles.cardHeader}>
-        <Text style={[styles.cardTitle, { color: textColor }]}>{item.name}</Text>
+        <ThemedText style={[styles.cardTitle, { color: textColor }]}>{item.name}</ThemedText>
         <TouchableOpacity onPress={onEdit} style={styles.editButton}>
           <Icon name="edit" size={16} color={tintColor} />
         </TouchableOpacity>
       </View>
-      <Text style={[styles.cardCategory, { color: textColor }]}>{item.category}</Text>
-      <Text style={[styles.cardLocation, { color: textColor }]}>📍 {item.location}</Text>
+      <ThemedText style={[styles.cardCategory, { color: textColor }]}>{item.category}</ThemedText>
+      <ThemedText style={[styles.cardLocation, { color: textColor }]}><ThemedText>📍</ThemedText> {item.location}</ThemedText>
       
       {(item.pricePaid || item.priceExpected) && (
         <View style={[styles.priceSection, { borderTopColor: borderColor }]}>
           {item.pricePaid && (
-            <Text style={styles.pricePaid}>💰 Paid: {formatPrice(item.pricePaid)}</Text>
+            <ThemedText style={styles.pricePaid}><ThemedText>💰</ThemedText> Paid: {formatPrice(item.pricePaid)}</ThemedText>
           )}
           {item.priceExpected && (
-            <Text style={styles.priceExpected}>🎯 Expected: {formatPrice(item.priceExpected)}</Text>
+            <ThemedText style={styles.priceExpected}><ThemedText>🎯</ThemedText> Expected: {formatPrice(item.priceExpected)}</ThemedText>
           )}
         </View>
       )}
       
-      <Text style={[styles.cardDate, { color: textColor }]}>📅 Last used: {item.lastUsed}</Text>
+      <ThemedText style={[styles.cardDate, { color: textColor }]}><ThemedText>📅</ThemedText> Last used: {item.lastUsed}</ThemedText>
     </View>
   </View>
 );
@@ -308,6 +312,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   inventoryGrid: {
     flexDirection: 'row',

@@ -152,6 +152,90 @@ class DatabaseService {
       return null;
     }
   }
+
+  async getCategories(): Promise<string[]> {
+    await this.init();
+    if (!this.initialized) return [];
+    
+    try {
+      if (this.isWeb) {
+        return await webDBService.getCategories();
+      } else {
+        const sqlite = await this.getSQLiteService();
+        return await sqlite.getCategories();
+      }
+    } catch (error) {
+      console.error('DatabaseService: getCategories failed', error);
+      return [];
+    }
+  }
+
+  async addCategory(categoryName: string): Promise<void> {
+    await this.init();
+    if (!this.initialized) return;
+    
+    try {
+      if (this.isWeb) {
+        await webDBService.addCategory(categoryName);
+      } else {
+        const sqlite = await this.getSQLiteService();
+        await sqlite.addCategory(categoryName);
+      }
+    } catch (error) {
+      console.error('DatabaseService: addCategory failed', error);
+    }
+  }
+
+  async deleteCategory(categoryName: string): Promise<void> {
+    await this.init();
+    if (!this.initialized) return;
+    
+    try {
+      if (this.isWeb) {
+        await webDBService.deleteCategory(categoryName);
+      } else {
+        const sqlite = await this.getSQLiteService();
+        await sqlite.deleteCategory(categoryName);
+      }
+    } catch (error) {
+      console.error('DatabaseService: deleteCategory failed', error);
+      throw error;
+    }
+  }
+
+  async getUserCategories(): Promise<string[]> {
+    await this.init();
+    if (!this.initialized) return [];
+    
+    try {
+      if (this.isWeb) {
+        return await webDBService.getUserCategories();
+      } else {
+        const sqlite = await this.getSQLiteService();
+        return await sqlite.getUserCategories();
+      }
+    } catch (error) {
+      console.error('DatabaseService: getUserCategories failed', error);
+      return [];
+    }
+  }
+
+  async isCategoryDeletable(categoryName: string): Promise<boolean> {
+    await this.init();
+    if (!this.initialized) return false;
+    
+    try {
+      if (this.isWeb) {
+        return await webDBService.isCategoryDeletable(categoryName);
+      } else {
+        const sqlite = await this.getSQLiteService();
+        return await sqlite.isCategoryDeletable(categoryName);
+      }
+    } catch (error) {
+      console.error('DatabaseService: isCategoryDeletable failed', error);
+      return false;
+    }
+  }
 }
 
 export const databaseService = new DatabaseService();
