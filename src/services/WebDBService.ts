@@ -264,17 +264,17 @@ class WebDBService {
       throw new Error('Cannot delete default category');
     }
     
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Move items from deleted category to "Other"
-        const items = await this.getInventoryItems();
-        const itemsToUpdate = items.filter(item => item.category === categoryName);
-        
-        for (const item of itemsToUpdate) {
-          await this.saveInventoryItem({ ...item, category: 'Other' });
-        }
-        
-        // Remove category from user categories
+    try {
+      // Move items from deleted category to "Other"
+      const items = await this.getInventoryItems();
+      const itemsToUpdate = items.filter(item => item.category === categoryName);
+      
+      for (const item of itemsToUpdate) {
+        await this.saveInventoryItem({ ...item, category: 'Other' });
+      }
+      
+      // Remove category from user categories
+      return new Promise((resolve, reject) => {
         const transaction = this.db!.transaction(['categories'], 'readwrite');
         const store = transaction.objectStore('categories');
         const request = store.get('categories');
@@ -288,10 +288,10 @@ class WebDBService {
           putReq.onerror = () => reject(putReq.error);
           putReq.onsuccess = () => resolve();
         };
-      } catch (error) {
-        reject(error);
-      }
-    });
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getUserCategories(): Promise<string[]> {

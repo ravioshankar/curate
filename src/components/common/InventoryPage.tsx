@@ -7,6 +7,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { InventoryItem } from '../../types/inventory';
 import { useCurrency } from '../providers/CurrencyContext';
 import { getCurrencyInfo } from '../../utils/currencyUtils';
+import { getCategoryIcon } from '../../utils/categoryIcons';
 
 interface InventoryPageProps {
   inventory: InventoryItem[];
@@ -56,7 +57,10 @@ export const InventoryPage = ({ inventory, searchText, setSearchText, onUpdateIt
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText style={styles.pageTitle}>My Inventory</ThemedText>
+        <ThemedView>
+          <ThemedText style={styles.pageTitle}>My Inventory</ThemedText>
+          <ThemedText style={styles.itemCount}>{filteredInventory.length} {filteredInventory.length === 1 ? 'item' : 'items'}</ThemedText>
+        </ThemedView>
         <TouchableOpacity style={[styles.addButton, { backgroundColor: tintColor }]} onPress={onAddItem}>
           <Icon name="add" size={24} color="white" />
         </TouchableOpacity>
@@ -71,7 +75,26 @@ export const InventoryPage = ({ inventory, searchText, setSearchText, onUpdateIt
           onChangeText={setSearchText}
           placeholderTextColor={placeholderColor}
         />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchText('')} style={styles.clearButton}>
+            <Icon name="clear" size={20} color={placeholderColor} />
+          </TouchableOpacity>
+        )}
       </ThemedView>
+
+      {filteredInventory.length === 0 && searchText.length > 0 && (
+        <ThemedView style={styles.emptyState}>
+          <ThemedText style={styles.emptyStateText}>No items found matching "{searchText}"</ThemedText>
+        </ThemedView>
+      )}
+      
+      {inventory.length === 0 && (
+        <ThemedView style={styles.emptyState}>
+          <ThemedText style={styles.emptyStateIcon}>📦</ThemedText>
+          <ThemedText style={styles.emptyStateTitle}>No Items Yet</ThemedText>
+          <ThemedText style={styles.emptyStateText}>Start building your inventory by adding your first item</ThemedText>
+        </ThemedView>
+      )}
 
       <ScrollView 
         showsVerticalScrollIndicator={false}
@@ -251,7 +274,10 @@ const InventoryCard = ({ item, onEdit, cardBg, textColor, borderColor, tintColor
           <Icon name="edit" size={16} color={tintColor} />
         </TouchableOpacity>
       </View>
-      <ThemedText style={[styles.cardCategory, { color: textColor }]}>{item.category}</ThemedText>
+      <View style={styles.categoryContainer}>
+        <ThemedText style={styles.categoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
+        <ThemedText style={[styles.cardCategory, { color: textColor }]}>{item.category}</ThemedText>
+      </View>
       <ThemedText style={[styles.cardLocation, { color: textColor }]}><ThemedText>📍</ThemedText> {item.location}</ThemedText>
       
       {(item.pricePaid || item.priceExpected) && (
@@ -313,6 +339,35 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
+  clearButton: {
+    padding: 8,
+  },
+  itemCount: {
+    fontSize: 14,
+    opacity: 0.7,
+    marginTop: 2,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    opacity: 0.7,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
   scrollContent: {
     paddingBottom: 100,
   },
@@ -345,9 +400,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 4,
   },
+  categoryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  categoryIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
   cardCategory: {
     fontSize: 14,
-    marginBottom: 8,
     opacity: 0.7,
   },
   cardLocation: {

@@ -14,6 +14,8 @@ import { databaseService } from '../services/DatabaseService';
 import { AddItemPage } from '../components/common/AddItemPage';
 import { CurrencyProvider } from '../components/providers/SimpleCurrencyProvider';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import AnalyticsScreen from './AnalyticsScreen';
+import { getCategoryIcon } from '../utils/categoryIcons';
 
 export function DashboardScreen() {
   const dispatch = useDispatch();
@@ -24,7 +26,7 @@ export function DashboardScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [showReportsModal, setShowReportsModal] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
   const stats = calculateInventoryStats(inventory);
@@ -172,10 +174,10 @@ export function DashboardScreen() {
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.actionCard, { backgroundColor: '#F59E0B' }]}
-            onPress={() => setShowReportsModal(true)}
+            onPress={() => setShowAnalytics(true)}
           >
             <Icon name="analytics" size={24} color="white" />
-            <ThemedText style={styles.actionText}>Reports</ThemedText>
+            <ThemedText style={styles.actionText}>Analytics</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
@@ -183,13 +185,7 @@ export function DashboardScreen() {
       {/* Category Filter */}
       <ThemedView style={[styles.section, { borderColor }]}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Categories</ThemedText>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          style={styles.categoryScroll}
-          nestedScrollEnabled={true}
-          contentContainerStyle={styles.categoryScrollContent}
-        >
+        <ThemedView style={styles.categoryGrid}>
           <TouchableOpacity 
             style={[styles.categoryChip, selectedCategory === 'all' && { backgroundColor: tintColor }]}
             onPress={() => setSelectedCategory('all')}
@@ -202,6 +198,7 @@ export function DashboardScreen() {
               style={[styles.categoryChip, selectedCategory === category && { backgroundColor: tintColor }]}
               onPress={() => setSelectedCategory(category)}
             >
+              <ThemedText style={styles.categoryIcon}>{getCategoryIcon(category)}</ThemedText>
               <ThemedText style={[styles.categoryText, selectedCategory === category && { color: 'white' }]}>
                 {category}
               </ThemedText>
@@ -210,7 +207,7 @@ export function DashboardScreen() {
               </ThemedText>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </ThemedView>
         <ThemedText style={styles.categoryCount}>{filteredItems.length} items</ThemedText>
       </ThemedView>
 
@@ -241,6 +238,7 @@ export function DashboardScreen() {
         </ThemedText>
         {recentItems.map(item => (
           <ThemedView key={item.id} style={styles.recentItem}>
+            <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
             <ThemedView style={styles.itemInfo}>
               <ThemedText style={styles.itemName}>{item.name}</ThemedText>
               <ThemedText style={styles.itemCategory}>{item.category}</ThemedText>
@@ -258,6 +256,7 @@ export function DashboardScreen() {
           </ThemedText>
           {topValueItems.map(item => (
             <ThemedView key={item.id} style={styles.valueItem}>
+              <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
               <ThemedView style={styles.itemInfo}>
                 <ThemedText style={styles.itemName}>{item.name}</ThemedText>
                 <ThemedText style={styles.itemCategory}>{item.category}</ThemedText>
@@ -296,6 +295,7 @@ export function DashboardScreen() {
           <ScrollView style={styles.searchResults}>
             {searchResults.map(item => (
               <ThemedView key={item.id} style={styles.searchItem}>
+                <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
                 <ThemedView style={styles.itemInfo}>
                   <ThemedText style={styles.itemName}>{item.name}</ThemedText>
                   <ThemedText style={styles.itemCategory}>{item.category}</ThemedText>
@@ -307,187 +307,9 @@ export function DashboardScreen() {
         </ThemedView>
       </Modal>
       
-      {/* Reports Modal */}
-      <Modal visible={showReportsModal} animationType="slide">
-        <ThemedView style={styles.modalContainer}>
-          <ThemedView style={styles.modalHeader}>
-            <ThemedText type="title">📊 Analytics Report</ThemedText>
-            <TouchableOpacity onPress={() => setShowReportsModal(false)}>
-              <Icon name="close" size={24} color={tintColor} />
-            </TouchableOpacity>
-          </ThemedView>
-          <ScrollView 
-            style={styles.reportContent}
-            contentContainerStyle={styles.reportScrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Financial Overview */}
-            <ThemedView style={styles.reportSection}>
-              <ThemedText type="subtitle" style={styles.reportTitle}>💰 Financial Overview</ThemedText>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Total Investment:</ThemedText>
-                <ThemedText style={[styles.statValue, { color: '#059669' }]}>{formatPrice(totalValue)}</ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Expected Value:</ThemedText>
-                <ThemedText style={[styles.statValue, { color: '#d97706' }]}>{formatPrice(expectedValue)}</ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Net Change:</ThemedText>
-                <ThemedText style={[styles.statValue, { color: expectedValue >= totalValue ? '#059669' : '#dc2626' }]}>
-                  {expectedValue >= totalValue ? '+' : ''}{formatPrice(expectedValue - totalValue)}
-                </ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Average Item Value:</ThemedText>
-                <ThemedText style={styles.statValue}>{formatPrice(totalValue / (inventory.length || 1))}</ThemedText>
-              </ThemedView>
-            </ThemedView>
-
-            {/* Inventory Insights */}
-            <ThemedView style={styles.reportSection}>
-              <ThemedText type="subtitle" style={styles.reportTitle}>📦 Inventory Insights</ThemedText>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Total Items:</ThemedText>
-                <ThemedText style={styles.statValue}>{inventory.length}</ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Categories:</ThemedText>
-                <ThemedText style={styles.statValue}>{categories.length}</ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Unused Items (>1yr):</ThemedText>
-                <ThemedText style={[styles.statValue, { color: longUnusedItems.length > 0 ? '#dc2626' : '#059669' }]}>
-                  {longUnusedItems.length}
-                </ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Items Used Recently:</ThemedText>
-                <ThemedText style={[styles.statValue, { color: '#059669' }]}>
-                  {inventory.length - longUnusedItems.length}
-                </ThemedText>
-              </ThemedView>
-            </ThemedView>
-
-            {/* Category Breakdown */}
-            <ThemedView style={styles.reportSection}>
-              <ThemedText type="subtitle" style={styles.reportTitle}>📊 Category Analysis</ThemedText>
-              {Object.entries(
-                categories.reduce((acc, cat) => {
-                  const categoryItems = inventory.filter(item => item.category === cat);
-                  const categoryValue = categoryItems.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
-                  acc[cat] = { count: categoryItems.length, value: categoryValue };
-                  return acc;
-                }, {} as Record<string, { count: number; value: number }>)
-              )
-              .sort(([,a], [,b]) => b.value - a.value)
-              .map(([category, data]) => (
-                <ThemedView key={category} style={styles.categoryRow}>
-                  <ThemedView style={styles.categoryInfo}>
-                    <ThemedText style={styles.categoryName}>{category}</ThemedText>
-                    <ThemedText style={styles.categoryCount}>{data.count} items</ThemedText>
-                  </ThemedView>
-                  <ThemedText style={styles.categoryValue}>{formatPrice(data.value)}</ThemedText>
-                </ThemedView>
-              ))}
-            </ThemedView>
-
-            {/* Usage Patterns */}
-            <ThemedView style={styles.reportSection}>
-              <ThemedText type="subtitle" style={styles.reportTitle}>📈 Usage Patterns</ThemedText>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Most Active Category:</ThemedText>
-                <ThemedText style={styles.statValue}>
-                  {categories.reduce((max, cat) => {
-                    const catItems = inventory.filter(item => item.category === cat);
-                    const recentItems = catItems.filter(item => {
-                      const daysSinceUsed = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
-                      return daysSinceUsed < 30;
-                    });
-                    return recentItems.length > (inventory.filter(item => item.category === max).filter(item => {
-                      const daysSinceUsed = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
-                      return daysSinceUsed < 30;
-                    }).length || 0) ? cat : max;
-                  }, categories[0] || 'None')}
-                </ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Items Used This Month:</ThemedText>
-                <ThemedText style={[styles.statValue, { color: '#059669' }]}>
-                  {inventory.filter(item => {
-                    const daysSinceUsed = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
-                    return daysSinceUsed < 30;
-                  }).length}
-                </ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.statRow}>
-                <ThemedText style={styles.statLabel}>Avg. Days Since Last Use:</ThemedText>
-                <ThemedText style={styles.statValue}>
-                  {Math.round(inventory.reduce((sum, item) => {
-                    const daysSinceUsed = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
-                    return sum + daysSinceUsed;
-                  }, 0) / (inventory.length || 1))}
-                </ThemedText>
-              </ThemedView>
-            </ThemedView>
-
-            {/* Top Performers */}
-            <ThemedView style={styles.reportSection}>
-              <ThemedText type="subtitle" style={styles.reportTitle}>🏆 Top Performers</ThemedText>
-              <ThemedText style={styles.sectionSubtitle}>Most Valuable Items</ThemedText>
-              {topValueItems.slice(0, 3).map(item => (
-                <ThemedView key={item.id} style={styles.topItemRow}>
-                  <ThemedView style={styles.itemInfo}>
-                    <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-                    <ThemedText style={styles.itemCategory}>{item.category}</ThemedText>
-                  </ThemedView>
-                  <ThemedText style={[styles.itemValue, { color: '#059669' }]}>
-                    {formatPrice(item.pricePaid || 0)}
-                  </ThemedText>
-                </ThemedView>
-              ))}
-            </ThemedView>
-
-            {/* Recommendations */}
-            <ThemedView style={styles.reportSection}>
-              <ThemedText type="subtitle" style={styles.reportTitle}>💡 Smart Recommendations</ThemedText>
-              {longUnusedItems.length > 0 && (
-                <ThemedView style={styles.recommendationItem}>
-                  <ThemedText style={styles.recommendationIcon}>⚠️</ThemedText>
-                  <ThemedText style={styles.recommendationText}>
-                    Consider selling or donating {longUnusedItems.length} unused items to free up space and recover value.
-                  </ThemedText>
-                </ThemedView>
-              )}
-              {expectedValue > totalValue && (
-                <ThemedView style={styles.recommendationItem}>
-                  <ThemedText style={styles.recommendationIcon}>📈</ThemedText>
-                  <ThemedText style={styles.recommendationText}>
-                    Your inventory has appreciated by {formatPrice(expectedValue - totalValue)}. Consider insurance coverage.
-                  </ThemedText>
-                </ThemedView>
-              )}
-              {categories.length > 5 && (
-                <ThemedView style={styles.recommendationItem}>
-                  <ThemedText style={styles.recommendationIcon}>🗂️</ThemedText>
-                  <ThemedText style={styles.recommendationText}>
-                    You have {categories.length} categories. Consider consolidating similar items for better organization.
-                  </ThemedText>
-                </ThemedView>
-              )}
-              <ThemedView style={styles.recommendationItem}>
-                <ThemedText style={styles.recommendationIcon}>🎯</ThemedText>
-                <ThemedText style={styles.recommendationText}>
-                  Focus on using items in the '{categories.reduce((max, cat) => {
-                    const catUnused = inventory.filter(item => item.category === cat && longUnusedItems.includes(item));
-                    const maxUnused = inventory.filter(item => item.category === max && longUnusedItems.includes(item));
-                    return catUnused.length > maxUnused.length ? cat : max;
-                  }, categories[0] || 'General')}' category - they have the most unused items.
-                </ThemedText>
-              </ThemedView>
-            </ThemedView>
-          </ScrollView>
-        </ThemedView>
+      {/* Analytics Screen */}
+      <Modal visible={showAnalytics} animationType="slide" presentationStyle="fullScreen">
+        <AnalyticsScreen onBack={() => setShowAnalytics(false)} />
       </Modal>
     </ScrollView>
   );
@@ -535,21 +357,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  categoryScroll: {
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     marginBottom: 8,
-  },
-  categoryScrollContent: {
-    paddingRight: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   categoryChip: {
     flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    marginRight: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  categoryIcon: {
+    fontSize: 14,
+    marginRight: 6,
   },
   categoryText: {
     fontSize: 14,
@@ -619,6 +446,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#10B981',
   },
+  itemCategoryIcon: {
+    fontSize: 16,
+    marginRight: 12,
+  },
   modalContainer: {
     flex: 1,
     paddingHorizontal: 16,
@@ -643,108 +474,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
     marginBottom: 8,
   },
-  reportContent: {
-    flex: 1,
-  },
-  reportScrollContent: {
-    paddingBottom: 100,
-  },
-  reportSection: {
-    marginBottom: 16,
-    marginHorizontal: 4,
-    padding: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    borderRadius: 12,
-  },
-  reportTitle: {
-    marginBottom: 12,
-    fontSize: 16,
-    fontWeight: '600',
-    paddingHorizontal: 4,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-    paddingVertical: 4,
-    paddingHorizontal: 4,
-  },
-  statLabel: {
-    fontSize: 13,
-    opacity: 0.8,
-    flex: 1,
-    marginRight: 8,
-  },
-  statValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    textAlign: 'right',
-    flexShrink: 0,
-    marginRight: 8,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  categoryInfo: {
-    flex: 1,
-  },
-  categoryName: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  categoryCount: {
-    fontSize: 11,
-    opacity: 0.6,
-  },
-  categoryValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#059669',
-    textAlign: 'right',
-    minWidth: 60,
-    marginRight: 8,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
-    opacity: 0.8,
-  },
-  topItemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
-    marginBottom: 4,
-  },
-  recommendationItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-    padding: 10,
-    marginHorizontal: 4,
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    borderRadius: 8,
-  },
-  recommendationIcon: {
-    fontSize: 16,
-    marginRight: 8,
-    marginTop: 2,
-  },
-  recommendationText: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 16,
-    opacity: 0.9,
-  },
+
   addButton: {
     padding: 16,
     borderRadius: 8,

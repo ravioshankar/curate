@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Animated, Easing } from 'react-native';
-
+import { Magnetometer } from 'expo-sensors';
 
 import { Colors } from '@/constants/Colors';
 import { useAppTheme } from '@/hooks/useAppTheme';
@@ -12,42 +12,91 @@ function AppHeader() {
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const colorScheme = useAppTheme();
   const colors = Colors[colorScheme];
+  const [magnetometerData, setMagnetometerData] = useState({ x: 0, y: 0, z: 0 });
 
   useEffect(() => {
-    const animate = () => {
-      Animated.sequence([
-        Animated.timing(rotateAnim, {
-          toValue: 0.8,
-          duration: 4000,
-          easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
-          useNativeDriver: true,
-        }),
-        Animated.timing(rotateAnim, {
-          toValue: 1,
-          duration: 600,
-          easing: Easing.elastic(1.2),
-          useNativeDriver: true,
-        }),
-        Animated.delay(500),
-      ]).start(() => {
-        rotateAnim.setValue(0);
-        animate();
-      });
+    let subscription: any;
+    
+    const startMagnetometer = async () => {
+      try {
+        const isAvailable = await Magnetometer.isAvailableAsync();
+        if (isAvailable) {
+          Magnetometer.setUpdateInterval(200);
+          subscription = Magnetometer.addListener(setMagnetometerData);
+        } else {
+          // Fallback to simulated movement if magnetometer not available
+          const animate = () => {
+            const randomAngle = (Math.random() - 0.5) * 30;
+            Animated.timing(rotateAnim, {
+              toValue: randomAngle,
+              duration: 2000 + Math.random() * 2000,
+              easing: Easing.inOut(Easing.quad),
+              useNativeDriver: true,
+            }).start(() => {
+              setTimeout(animate, 1000 + Math.random() * 2000);
+            });
+          };
+          animate();
+        }
+      } catch (error) {
+        console.log('Magnetometer error:', error);
+      }
     };
-    animate();
+
+    startMagnetometer();
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
   }, []);
 
+  // Calculate compass rotation based on magnetometer data
+  useEffect(() => {
+    if (magnetometerData.x !== 0 || magnetometerData.y !== 0) {
+      const angle = Math.atan2(magnetometerData.y, magnetometerData.x) * (180 / Math.PI);
+      Animated.timing(rotateAnim, {
+        toValue: angle,
+        duration: 300,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [magnetometerData]);
+
   const spin = rotateAnim.interpolate({
-    inputRange: [0, 0.8, 1],
-    outputRange: ['0deg', '160deg', '180deg'],
+    inputRange: [-180, 180],
+    outputRange: ['-180deg', '180deg'],
   });
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View style={{ transform: [{ rotate: spin }] }}>
-        <ThemedText style={{ fontSize: 20, marginRight: 8 }}>⏳</ThemedText>
-      </Animated.View>
-      <ThemedText style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Curate</ThemedText>
+    <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+        <Animated.View style={{ transform: [{ rotate: spin }] }}>
+          <ThemedText style={{ fontSize: 22, marginRight: 10, textShadowColor: 'rgba(0,0,0,0.1)', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>🧭</ThemedText>
+        </Animated.View>
+        <ThemedText style={{ 
+          fontSize: 24, 
+          fontWeight: '800', 
+          color: '#6366F1',
+          letterSpacing: 1,
+          textShadowColor: 'rgba(99, 102, 241, 0.3)',
+          textShadowOffset: {width: 0, height: 1},
+          textShadowRadius: 3
+        }}>Curate</ThemedText>
+      </View>
+      <ThemedText style={{ 
+        fontSize: 13, 
+        fontWeight: '500',
+        color: '#64748B',
+        fontStyle: 'italic',
+        letterSpacing: 0.5,
+        marginTop: 3,
+        textShadowColor: 'rgba(100, 116, 139, 0.2)',
+        textShadowOffset: {width: 0, height: 1},
+        textShadowRadius: 1
+      }}>The smarter way to own.</ThemedText>
     </View>
   );
 }
