@@ -1,7 +1,9 @@
 import { Tabs } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Animated, Easing } from 'react-native';
+import { View, Animated, Easing, Image } from 'react-native';
 import { Magnetometer } from 'expo-sensors';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/src/store/store';
 
 import { Colors } from '@/constants/Colors';
 import { useAppTheme } from '@/hooks/useAppTheme';
@@ -104,6 +106,7 @@ function AppHeader() {
 export default function TabLayout() {
   const colorScheme = useAppTheme();
   const colors = Colors[colorScheme];
+  const { profile } = useSelector((state: RootState) => state.user);
 
   return (
     <Tabs
@@ -141,7 +144,15 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <Icon name="account-circle" size={32} color={color} />,
+          tabBarIcon: ({ color }) => 
+            profile.avatar ? (
+              <Image 
+                source={{ uri: profile.avatar }} 
+                style={{ width: 32, height: 32, borderRadius: 16 }} 
+              />
+            ) : (
+              <Icon name="account-circle" size={32} color={color} />
+            ),
         }}
       />
     </Tabs>

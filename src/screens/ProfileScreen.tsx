@@ -12,6 +12,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
+import * as ImagePicker from 'expo-image-picker';
 
 export function ProfileScreen() {
   const { profile, settings } = useSelector((state: RootState) => state.user);
@@ -22,7 +23,9 @@ export function ProfileScreen() {
   const [isThemeExpanded, setIsThemeExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(profile.name);
+  const [editEmail, setEditEmail] = useState(profile.email || '');
   const [editAvatar, setEditAvatar] = useState(profile.avatar || '');
+  const [emailError, setEmailError] = useState('');
   const [showCategoryManager, setShowCategoryManager] = useState(false);
 
   useEffect(() => {
@@ -44,40 +47,127 @@ export function ProfileScreen() {
 
   const startEdit = () => {
     setEditName(profile.name);
+    setEditEmail(profile.email || '');
     setEditAvatar(profile.avatar || '');
     setIsEditing(true);
   };
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const saveProfileChanges = () => {
-    const newProfile = { name: editName, avatar: editAvatar };
+    if (editEmail && !validateEmail(editEmail)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+    
+    setEmailError('');
+    const newProfile = { name: editName, email: editEmail, avatar: editAvatar };
     dispatch(updateProfile(newProfile));
     dispatch(saveProfile(newProfile));
     setIsEditing(false);
   };
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please grant photo library access to select a profile picture.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setEditAvatar(result.assets[0].uri);
+    }
+  };
+
+  const removeAvatar = () => {
+    setEditAvatar('');
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please grant camera access to take a profile picture.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setEditAvatar(result.assets[0].uri);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <ThemedView style={[styles.header, { borderBottomColor: borderColor }]}>
-        <TouchableOpacity onPress={startEdit}>
-          {profile.avatar ? (
-            <Image source={{ uri: profile.avatar }} style={{ width: 80, height: 80, borderRadius: 40 }} />
+        <TouchableOpacity onPress={isEditing ? pickImage : startEdit}>
+          {(isEditing ? editAvatar : profile.avatar) ? (
+            <Image source={{ uri: isEditing ? editAvatar : profile.avatar }} style={{ width: 80, height: 80, borderRadius: 40 }} />
           ) : (
             <Icon name="account-circle" size={80} color={iconColor} />
           )}
+          {isEditing && (
+            <View style={styles.cameraOverlay}>
+              <Icon name="camera-alt" size={24} color="white" />
+            </View>
+          )}
         </TouchableOpacity>
         {isEditing ? (
-          <TextInput value={editName} onChangeText={setEditName} style={styles.nameInput} />
+          <TextInput value={editName} onChangeText={setEditName} style={styles.nameInput} placeholder="Name" />
         ) : (
           <ThemedText style={styles.name}>{profile.name}</ThemedText>
         )}
-        <ThemedText style={styles.email} lightColor="#666" darkColor="#999">{profile.email}</ThemedText>
+        {isEditing ? (
+          <View>
+            <TextInput 
+              value={editEmail} 
+              onChangeText={(text) => {
+                setEditEmail(text);
+                if (emailError) setEmailError('');
+              }} 
+              style={[styles.emailInput, emailError ? styles.emailInputError : null]} 
+              placeholder="Email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            {emailError ? (
+              <ThemedText style={styles.errorText}>{emailError}</ThemedText>
+            ) : null}
+          </View>
+        ) : (
+          <ThemedText style={styles.email} lightColor="#666" darkColor="#999">{profile.email}</ThemedText>
+        )}
         {isEditing && (
-          <TextInput
-            value={editAvatar}
-            onChangeText={setEditAvatar}
-            placeholder="Avatar image URL"
-            style={styles.avatarInput}
-          />
+          <View style={styles.avatarOptions}>
+            <TouchableOpacity onPress={pickImage} style={[styles.imageButton, { backgroundColor: tintColor }]}>
+              <Icon name="photo-library" size={20} color="white" />
+              <ThemedText style={styles.buttonText}>Choose Photo</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={takePhoto} style={[styles.imageButton, { backgroundColor: '#10B981' }]}>
+              <Icon name="camera-alt" size={20} color="white" />
+              <ThemedText style={styles.buttonText}>Take Photo</ThemedText>
+            </TouchableOpacity>
+            {editAvatar && (
+              <TouchableOpacity onPress={removeAvatar} style={[styles.imageButton, { backgroundColor: '#EF4444' }]}>
+                <Icon name="delete" size={20} color="white" />
+                <ThemedText style={styles.buttonText}>Remove</ThemedText>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
         {isEditing && (
           <View style={{ flexDirection: 'row', marginTop: 8 }}>
@@ -238,13 +328,53 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
     width: 220,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingBottom: 4,
   },
-  avatarInput: {
+  emailInput: {
+    fontSize: 16,
     marginTop: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    textAlign: 'center',
+    width: 220,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingBottom: 4,
+    color: '#666',
+  },
+  emailInputError: {
+    borderBottomColor: '#EF4444',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  cameraOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 12,
+    padding: 4,
+  },
+  avatarOptions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  imageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 8,
     borderRadius: 6,
+    gap: 6,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
   },
   saveButton: {
     padding: 8,
