@@ -1,6 +1,6 @@
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState, useEffect } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { InventoryItem } from '../../types/inventory';
 import { ThemedText } from '../../../components/ThemedText';
@@ -12,6 +12,8 @@ import { CategoryDropdown } from './CategoryDropdown';
 import { loadCategories } from '../../store/categoriesStore';
 import { RootState, AppDispatch } from '../../store/store';
 import { databaseService } from '../../services/DatabaseService';
+import { ImageService } from '../../services/ImageService';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 interface AddItemPageProps {
   onAddItem: (item: InventoryItem) => void;
@@ -44,6 +46,7 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
     pricePaid: '',
     priceExpected: ''
   });
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -99,19 +102,54 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
     }
   };
 
+  const handleImagePick = async () => {
+    try {
+      const uri = await ImageService.pickImage();
+      if (uri) setSelectedImage(uri);
+    } catch (error) {
+      Alert.alert('Photo Library Access', error.message || 'Failed to access photo library');
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      const uri = await ImageService.takePhoto();
+      if (uri) setSelectedImage(uri);
+    } catch (error) {
+      Alert.alert('Camera Access', error.message || 'Failed to access camera');
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validateForm()) return;
     
     setIsSubmitting(true);
     
     try {
+      const itemId = Math.random().toString(36).substr(2, 9);
+      let imageUrl = '';
+      
+      if (selectedImage) {
+        try {
+          imageUrl = await ImageService.saveImage(selectedImage, itemId);
+        } catch (imageError) {
+          console.warn('Failed to save image:', imageError);
+          imageUrl = selectedImage; // Use original URI as fallback
+        }
+      }
+      
       const newItem: InventoryItem = {
-        ...formData,
-        id: Math.random().toString(36).substr(2, 9),
+        id: itemId,
+        name: formData.name.trim(),
+        category: formData.category || 'Other',
+        location: formData.location || '',
+        lastUsed: formData.lastUsed,
+        imageUrl,
         pricePaid: parseFloat(formData.pricePaid) || undefined,
         priceExpected: parseFloat(formData.priceExpected) || undefined,
       };
       
+      console.log('Attempting to add item:', newItem);
       onAddItem(newItem);
       
       Alert.alert(
@@ -120,7 +158,8 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
         [{ text: 'OK', onPress: onBack }]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to add item. Please try again.');
+      console.error('Add item error:', error);
+      Alert.alert('Error', `Failed to add item: ${error?.message || 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -186,15 +225,37 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
             />
           )}
         </ThemedView>
-        <InputField
-          label="Image URL"
-          value={formData.imageUrl}
-          onChangeText={(value) => handleChange('imageUrl', value)}
-          cardBg={cardBg}
-          borderColor={borderColor}
-          textColor={textColor}
-          placeholderColor={placeholderColor}
-        />
+        <ThemedView style={styles.inputContainer}>
+          <ThemedText style={styles.label}>Item Photo</ThemedText>
+          {selectedImage ? (
+            <View style={[styles.imageContainer, { borderColor }]}>
+              <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+              <TouchableOpacity 
+                style={styles.removeImageButton}
+                onPress={() => setSelectedImage(null)}
+              >
+                <Icon name="close" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.photoButtons}>
+              <TouchableOpacity 
+                style={[styles.photoButton, { backgroundColor: tintColor }]}
+                onPress={handleTakePhoto}
+              >
+                <Icon name="camera-alt" size={24} color="white" />
+                <ThemedText style={styles.photoButtonText}>Take Photo</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.photoButton, { backgroundColor: '#10B981' }]}
+                onPress={handleImagePick}
+              >
+                <Icon name="photo-library" size={24} color="white" />
+                <ThemedText style={styles.photoButtonText}>Choose Photo</ThemedText>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ThemedView>
         <CurrencyInputField
           label="Price Paid"
           value={formData.pricePaid}
@@ -401,5 +462,42 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     fontSize: 16,
+  },
+  photoButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  photoButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  photoButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  imageContainer: {
+    position: 'relative',
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  selectedImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 12,
+    padding: 4,
   },
 });

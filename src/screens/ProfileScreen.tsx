@@ -71,22 +71,7 @@ export function ProfileScreen() {
   };
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please grant photo library access to select a profile picture.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setEditAvatar(result.assets[0].uri);
-    }
+    Alert.alert('Coming Soon', 'Photo selection will be available in a future update.');
   };
 
   const removeAvatar = () => {
@@ -94,21 +79,7 @@ export function ProfileScreen() {
   };
 
   const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please grant camera access to take a profile picture.');
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setEditAvatar(result.assets[0].uri);
-    }
+    Alert.alert('Coming Soon', 'Camera functionality will be available in a future update.');
   };
 
   return (
@@ -186,6 +157,12 @@ export function ProfileScreen() {
           title="Manage Categories"
           icon="category"
           onPress={() => setShowCategoryManager(true)}
+        />
+        
+        <ProfileOption
+          title="Backup & Sync"
+          icon="cloud-upload"
+          onPress={() => Alert.alert('Coming Soon', 'Google Drive backup will be available in a future update.')}
         />
         
         <ThemedView style={[styles.currencySection, { borderBottomColor: borderColor }]}>

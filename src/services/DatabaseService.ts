@@ -40,7 +40,9 @@ class DatabaseService {
 
   async saveInventoryItem(item: InventoryItem): Promise<void> {
     await this.init();
-    if (!this.initialized) return;
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
     
     try {
       if (this.isWeb) {
@@ -51,6 +53,7 @@ class DatabaseService {
       }
     } catch (error) {
       console.error('DatabaseService: saveInventoryItem failed', error);
+      throw error;
     }
   }
 

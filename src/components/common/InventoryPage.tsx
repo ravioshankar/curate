@@ -263,10 +263,17 @@ const InventoryCard = ({ item, onEdit, cardBg, textColor, borderColor, tintColor
   formatPrice: (amount: number) => string;
 }) => (
   <View style={[styles.inventoryCard, { backgroundColor: cardBg }]}>
-    <Image
-      source={{ uri: item.imageUrl || 'https://placehold.co/400x300/94A3B8/ffffff?text=No+Image' }}
-      style={styles.cardImage}
-    />
+    {item.imageUrl ? (
+      <Image
+        source={{ uri: item.imageUrl }}
+        style={styles.cardImage}
+        defaultSource={{ uri: 'https://placehold.co/400x300/94A3B8/ffffff?text=No+Image' }}
+      />
+    ) : (
+      <View style={[styles.cardImage, styles.placeholderImage, { backgroundColor: '#f3f4f6' }]}>
+        <Icon name="image" size={32} color="#9ca3af" />
+      </View>
+    )}
     <View style={styles.cardContent}>
       <View style={styles.cardHeader}>
         <ThemedText style={[styles.cardTitle, { color: textColor }]}>{item.name}</ThemedText>
@@ -391,6 +398,10 @@ const styles = StyleSheet.create({
   cardImage: {
     width: '100%',
     height: 120,
+  },
+  placeholderImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardContent: {
     padding: 12,

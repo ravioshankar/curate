@@ -107,13 +107,16 @@ export function DashboardScreen() {
     );
   };
 
-  const handleAddItem = (item: any) => {
-    dispatch(addInventoryItem(item));
-    setShowAddModal(false);
-    // Refresh inventory to show new item
-    setTimeout(() => {
+  const handleAddItem = async (item: any) => {
+    try {
+      await dispatch(addInventoryItem(item));
+      setShowAddModal(false);
+      // Refresh inventory to show new item
       dispatch(loadInventory());
-    }, 100);
+    } catch (error) {
+      console.error('Failed to add item:', error);
+      Alert.alert('Error', 'Failed to add item to inventory');
+    }
   };
 
   const handleSearch = (query: string) => {
@@ -215,10 +218,12 @@ export function DashboardScreen() {
       {longUnusedItems.length > 0 && (
         <ThemedView style={[styles.section, { borderColor }]}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            ⚠️ Items to Review{selectedCategory !== 'all' ? ` (${selectedCategory})` : ''}
+            <Icon name="warning" size={18} color="#F59E0B" /> Items to Review{selectedCategory !== 'all' ? ` (${selectedCategory})` : ''}
           </ThemedText>
           {longUnusedItems.slice(0, 3).map(item => (
             <ThemedView key={item.id} style={styles.reviewItem}>
+              <Icon name="schedule" size={20} color="#F59E0B" />
+              <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
               <ThemedView style={styles.itemInfo}>
                 <ThemedText style={styles.itemName}>{item.name}</ThemedText>
                 <ThemedText style={styles.itemDate}>Last used: {item.lastUsed}</ThemedText>
@@ -399,12 +404,12 @@ const styles = StyleSheet.create({
   },
   reviewItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
+    gap: 12,
   },
   recentItem: {
     flexDirection: 'row',
