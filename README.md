@@ -1,6 +1,6 @@
-# Curate - Smart Inventory Management App
+# Curate Ruby - Premium Personal Asset Curator
 
-A cross-platform inventory management app built with Expo, React Native, and Redux Toolkit.
+A sophisticated cross-platform app that helps you curate, organize, and cherish your personal belongings with elegance and intelligence. Built with Expo, React Native, and Redux Toolkit.
 
 ## Project Structure
 
@@ -77,14 +77,14 @@ curate/
 
 ## Features
 
-- **Dashboard**: Overview of inventory statistics
-- **Inventory Management**: Add, view, and search items
-- **Data Persistence**: Local database storage
-- **Cross-Platform**: Works on iOS, Android, and Web
-- **Type Safety**: Full TypeScript support
-- **State Management**: Redux Toolkit for scalable state management
-- **Currency Support**: Multi-currency with flag display
-- **Mobile Optimized**: Touch-friendly interface
+- **Personal Collection Dashboard**: Beautiful overview of your curated belongings
+- **Smart Asset Organization**: Categorize and track your valuable possessions
+- **Visual Memory Keeping**: Capture and store photos of your cherished items
+- **Multi-Currency Valuation**: Track worth across different currencies
+- **Cross-Platform Sync**: Access your collection on iOS, Android, and Web
+- **Secure Local Storage**: Your personal data stays private and secure
+- **Elegant Ruby Red Design**: Premium interface with sophisticated styling
+- **Intelligent Search**: Quickly find any item in your collection
 
 ## Database
 

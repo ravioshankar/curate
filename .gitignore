@@ -42,3 +42,5 @@ app-example
 .idea/modules.xml
 .idea/vcs.xml
 .idea/caches/deviceStreaming.xml
+android/*
+ios/*

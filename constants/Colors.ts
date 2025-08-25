@@ -1,26 +1,47 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Ruby Red Theme - Sophisticated and elegant color palette
+ * Inspired by precious ruby gemstones with warm undertones
  */
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#0a7ea4';
+// Primary Ruby Red Palette
+const rubyPrimary = '#B91C1C';      // Deep Ruby Red
+const rubyLight = '#DC2626';        // Bright Ruby
+const rubyDark = '#991B1B';         // Dark Ruby
+const rubyAccent = '#F87171';       // Light Ruby Accent
+
+// Supporting Colors
+const warmGray = '#78716C';         // Warm gray for text
+const lightWarm = '#FEF7F0';        // Warm cream background
+const darkWarm = '#1C1917';         // Dark warm background
+const goldAccent = '#D97706';       // Gold accent for highlights
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#1C1917',              // Dark warm brown
+    background: lightWarm,         // Warm cream
+    tint: rubyPrimary,            // Deep Ruby Red
+    icon: warmGray,               // Warm gray
+    tabIconDefault: warmGray,     // Warm gray
+    tabIconSelected: rubyPrimary, // Deep Ruby Red
+    accent: goldAccent,           // Gold accent
+    surface: '#FFFFFF',           // Pure white for cards
+    border: '#E7E5E4',           // Light warm border
+    success: '#059669',           // Emerald green
+    warning: goldAccent,          // Gold warning
+    error: rubyLight,             // Bright ruby for errors
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#F5F5F4',              // Warm white
+    background: darkWarm,          // Dark warm background
+    tint: rubyAccent,             // Light Ruby Accent
+    icon: '#A8A29E',             // Light warm gray
+    tabIconDefault: '#A8A29E',   // Light warm gray
+    tabIconSelected: rubyAccent,  // Light Ruby Accent
+    accent: goldAccent,           // Gold accent
+    surface: '#292524',           // Dark warm surface
+    border: '#44403C',           // Dark warm border
+    success: '#10B981',           // Bright emerald
+    warning: '#F59E0B',          // Bright amber
+    error: rubyAccent,            // Light ruby for errors
   },
 };

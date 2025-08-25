@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.curate.inventory",
+      "backgroundColor": "#B91C1C",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to take photos of inventory items.",
         "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select photos of inventory items."
@@ -19,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#B91C1C"
       },
       "package": "com.curate.inventory",
       "permissions": [
@@ -31,7 +32,8 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "themeColor": "#B91C1C"
     },
     "plugins": [
       "expo-router",

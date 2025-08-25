@@ -81,9 +81,9 @@ function AppHeader() {
         <ThemedText style={{ 
           fontSize: 24, 
           fontWeight: '800', 
-          color: '#6366F1',
+          color: colorScheme === 'dark' ? '#FFFFFF' : '#B91C1C',
           letterSpacing: 1,
-          textShadowColor: 'rgba(99, 102, 241, 0.3)',
+          textShadowColor: colorScheme === 'dark' ? 'rgba(185, 28, 28, 0.5)' : 'rgba(185, 28, 28, 0.3)',
           textShadowOffset: {width: 0, height: 1},
           textShadowRadius: 3
         }}>Curate</ThemedText>

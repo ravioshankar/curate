@@ -9,6 +9,7 @@ import { BackupManager } from '@/src/components/common/BackupManager';
 import { RootState, AppDispatch } from '@/src/store/store';
 import { loadSettings, saveSettings, updateProfile, updateSettings, loadProfile, saveProfile } from '@/src/store/userStore';
 import { populateRandomItems } from '@/src/utils/devPopulate';
+
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
