@@ -5,6 +5,7 @@ import { CurrencySelector } from '@/src/components/common/CurrencySelector';
 import { ProfileOption } from '@/src/components/common/ProfileOption';
 import { ThemeToggle } from '@/src/components/common/ThemeToggle';
 import { CategoryManager } from '@/src/components/common/CategoryManager';
+import { BackupManager } from '@/src/components/common/BackupManager';
 import { RootState, AppDispatch } from '@/src/store/store';
 import { loadSettings, saveSettings, updateProfile, updateSettings, loadProfile, saveProfile } from '@/src/store/userStore';
 import { populateRandomItems } from '@/src/utils/devPopulate';
@@ -27,6 +28,7 @@ export function ProfileScreen() {
   const [editAvatar, setEditAvatar] = useState(profile.avatar || '');
   const [emailError, setEmailError] = useState('');
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [showBackupManager, setShowBackupManager] = useState(false);
 
   useEffect(() => {
     dispatch(loadSettings());
@@ -162,7 +164,7 @@ export function ProfileScreen() {
         <ProfileOption
           title="Backup & Sync"
           icon="cloud-upload"
-          onPress={() => Alert.alert('Coming Soon', 'Google Drive backup will be available in a future update.')}
+          onPress={() => setShowBackupManager(true)}
         />
         
         <ThemedView style={[styles.currencySection, { borderBottomColor: borderColor }]}>
@@ -229,6 +231,10 @@ export function ProfileScreen() {
       
       <Modal visible={showCategoryManager} animationType="slide" presentationStyle="pageSheet">
         <CategoryManager onBack={() => setShowCategoryManager(false)} />
+      </Modal>
+      
+      <Modal visible={showBackupManager} animationType="slide" presentationStyle="pageSheet">
+        <BackupManager onBack={() => setShowBackupManager(false)} />
       </Modal>
     </ScrollView>
   );

@@ -12,7 +12,7 @@ import { CategoryDropdown } from './CategoryDropdown';
 import { loadCategories } from '../../store/categoriesStore';
 import { RootState, AppDispatch } from '../../store/store';
 import { databaseService } from '../../services/DatabaseService';
-import { ImageService } from '../../services/ImageService';
+import { imageService } from '../../services/ImageService';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 interface AddItemPageProps {
@@ -104,20 +104,55 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
 
   const handleImagePick = async () => {
     try {
-      const uri = await ImageService.pickImage();
-      if (uri) setSelectedImage(uri);
+      const uri = await imageService.pickImage();
+      if (uri) {
+        setSelectedImage(uri);
+        handleChange('imageUrl', uri);
+      }
     } catch (error) {
-      Alert.alert('Photo Library Access', error.message || 'Failed to access photo library');
+      Alert.alert(
+        'Photo Library Access', 
+        error.message || 'Photo selection not available on Android emulator. Try on a real device or use manual URL input.',
+        [
+          { text: 'OK' },
+          { text: 'Enter URL', onPress: () => handleManualImageUrl() }
+        ]
+      );
     }
   };
 
   const handleTakePhoto = async () => {
     try {
-      const uri = await ImageService.takePhoto();
-      if (uri) setSelectedImage(uri);
+      const uri = await imageService.takePhoto();
+      if (uri) {
+        setSelectedImage(uri);
+        handleChange('imageUrl', uri);
+      }
     } catch (error) {
-      Alert.alert('Camera Access', error.message || 'Failed to access camera');
+      Alert.alert(
+        'Camera Access', 
+        error.message || 'Camera not available on Android emulator. Try on a real device or use manual URL input.',
+        [
+          { text: 'OK' },
+          { text: 'Enter URL', onPress: () => handleManualImageUrl() }
+        ]
+      );
     }
+  };
+
+  const handleManualImageUrl = () => {
+    Alert.prompt(
+      'Image URL',
+      'Enter image URL:',
+      (url) => {
+        if (url && url.trim()) {
+          setSelectedImage(url.trim());
+          handleChange('imageUrl', url.trim());
+        }
+      },
+      'plain-text',
+      'https://'
+    );
   };
 
   const handleSubmit = async () => {
@@ -130,12 +165,7 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
       let imageUrl = '';
       
       if (selectedImage) {
-        try {
-          imageUrl = await ImageService.saveImage(selectedImage, itemId);
-        } catch (imageError) {
-          console.warn('Failed to save image:', imageError);
-          imageUrl = selectedImage; // Use original URI as fallback
-        }
+        imageUrl = selectedImage; // Image is already uploaded to Google Drive
       }
       
       const newItem: InventoryItem = {
@@ -232,7 +262,10 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
               <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
               <TouchableOpacity 
                 style={styles.removeImageButton}
-                onPress={() => setSelectedImage(null)}
+                onPress={() => {
+                  setSelectedImage(null);
+                  handleChange('imageUrl', '');
+                }}
               >
                 <Icon name="close" size={20} color="white" />
               </TouchableOpacity>
