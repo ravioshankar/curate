@@ -1,7 +1,6 @@
 import { Tabs } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Animated, Easing, Image } from 'react-native';
-import { Magnetometer } from 'expo-sensors';
+import React from 'react';
+import { View, Image } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store/store';
 
@@ -9,75 +8,21 @@ import { Colors } from '@/constants/Colors';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { ThemedText } from '@/components/ThemedText';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { CurateLogo } from '@/src/components/common/CurateLogo';
 
 function AppHeader() {
-  const rotateAnim = useRef(new Animated.Value(0)).current;
   const colorScheme = useAppTheme();
   const colors = Colors[colorScheme];
-  const [magnetometerData, setMagnetometerData] = useState({ x: 0, y: 0, z: 0 });
-
-  useEffect(() => {
-    let subscription: any;
-    
-    const startMagnetometer = async () => {
-      try {
-        const isAvailable = await Magnetometer.isAvailableAsync();
-        if (isAvailable) {
-          Magnetometer.setUpdateInterval(200);
-          subscription = Magnetometer.addListener(setMagnetometerData);
-        } else {
-          // Fallback to simulated movement if magnetometer not available
-          const animate = () => {
-            const randomAngle = (Math.random() - 0.5) * 30;
-            Animated.timing(rotateAnim, {
-              toValue: randomAngle,
-              duration: 2000 + Math.random() * 2000,
-              easing: Easing.inOut(Easing.quad),
-              useNativeDriver: true,
-            }).start(() => {
-              setTimeout(animate, 1000 + Math.random() * 2000);
-            });
-          };
-          animate();
-        }
-      } catch (error) {
-        console.log('Magnetometer error:', error);
-      }
-    };
-
-    startMagnetometer();
-
-    return () => {
-      if (subscription) {
-        subscription.remove();
-      }
-    };
-  }, []);
-
-  // Calculate compass rotation based on magnetometer data
-  useEffect(() => {
-    if (magnetometerData.x !== 0 || magnetometerData.y !== 0) {
-      const angle = Math.atan2(magnetometerData.y, magnetometerData.x) * (180 / Math.PI);
-      Animated.timing(rotateAnim, {
-        toValue: angle,
-        duration: 300,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [magnetometerData]);
-
-  const spin = rotateAnim.interpolate({
-    inputRange: [-180, 180],
-    outputRange: ['-180deg', '180deg'],
-  });
 
   return (
     <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-        <Animated.View style={{ transform: [{ rotate: spin }] }}>
-          <ThemedText style={{ fontSize: 22, marginRight: 10, textShadowColor: 'rgba(0,0,0,0.1)', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>🧭</ThemedText>
-        </Animated.View>
+        <CurateLogo 
+          size={28} 
+          backgroundColor="transparent"
+          orbColor={colors.tint}
+          elementColor={colors.tint}
+        />
         <ThemedText style={{ 
           fontSize: 24, 
           fontWeight: '800', 
@@ -85,7 +30,8 @@ function AppHeader() {
           letterSpacing: 1,
           textShadowColor: colorScheme === 'dark' ? 'rgba(185, 28, 28, 0.5)' : 'rgba(185, 28, 28, 0.3)',
           textShadowOffset: {width: 0, height: 1},
-          textShadowRadius: 3
+          textShadowRadius: 3,
+          marginLeft: 8
         }}>Curate</ThemedText>
       </View>
       <ThemedText style={{ 

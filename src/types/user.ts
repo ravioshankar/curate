@@ -8,4 +8,5 @@ export interface AppSettings {
   currency: string;
   theme: 'light' | 'dark' | 'auto';
   notifications: boolean;
+  isOnboarded?: boolean;
 }

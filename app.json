@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Curate",
-    "slug": "curate-inventory",
+    "slug": "curate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.curate.inventory",
+      "bundleIdentifier": "com.curate.lifestyle",
       "backgroundColor": "#B91C1C",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to take photos of inventory items.",
@@ -35,8 +35,22 @@
       "favicon": "./assets/images/favicon.png",
       "themeColor": "#B91C1C"
     },
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#B91C1C"
+    },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#B91C1C"
+        }
+      ],
       [
         "expo-image-picker",
         {

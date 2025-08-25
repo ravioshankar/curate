@@ -9,6 +9,7 @@ import { BackupManager } from '@/src/components/common/BackupManager';
 import { RootState, AppDispatch } from '@/src/store/store';
 import { loadSettings, saveSettings, updateProfile, updateSettings, loadProfile, saveProfile } from '@/src/store/userStore';
 import { populateRandomItems } from '@/src/utils/devPopulate';
+import { imageService } from '@/src/services/ImageService';
 
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View, Modal } from 'react-native';
@@ -74,7 +75,14 @@ export function ProfileScreen() {
   };
 
   const pickImage = async () => {
-    Alert.alert('Coming Soon', 'Photo selection will be available in a future update.');
+    try {
+      const imageUri = await imageService.pickImage();
+      if (imageUri) {
+        setEditAvatar(imageUri);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to select photo');
+    }
   };
 
   const removeAvatar = () => {
@@ -82,7 +90,14 @@ export function ProfileScreen() {
   };
 
   const takePhoto = async () => {
-    Alert.alert('Coming Soon', 'Camera functionality will be available in a future update.');
+    try {
+      const imageUri = await imageService.takePhoto();
+      if (imageUri) {
+        setEditAvatar(imageUri);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to capture photo');
+    }
   };
 
   return (

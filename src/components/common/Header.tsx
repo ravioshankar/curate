@@ -1,16 +1,9 @@
 import { StyleSheet } from 'react-native';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
-  withRepeat, 
-  withTiming,
-  interpolate,
-  Easing
-} from 'react-native-reanimated';
-import { useEffect } from 'react';
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
 import { NavButton } from './NavButton';
+import { CurateLogo } from './CurateLogo';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface HeaderProps {
   currentPage: string;
@@ -18,32 +11,18 @@ interface HeaderProps {
 }
 
 export function Header({ currentPage, setCurrentPage }: HeaderProps) {
-  const rotation = useSharedValue(0);
-
-  useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(360, {
-        duration: 5000,
-        easing: Easing.linear,
-      }),
-      -1,
-      false
-    );
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotation.value}deg` }],
-    };
-  });
+  const tintColor = useThemeColor({}, 'tint');
 
   return (
     <ThemedView style={styles.header}>
       <ThemedView style={styles.brandSection}>
         <ThemedView style={styles.titleRow}>
-          <Animated.View style={animatedStyle}>
-            <ThemedText style={styles.hourglassIcon}>⏳</ThemedText>
-          </Animated.View>
+          <CurateLogo 
+            size={32} 
+            backgroundColor="transparent"
+            orbColor={tintColor}
+            elementColor={tintColor}
+          />
           <ThemedText type="title" style={styles.title}>Curate</ThemedText>
         </ThemedView>
         <ThemedText style={styles.subtitle}>The smarter way to own.</ThemedText>
@@ -91,10 +70,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginBottom: 4,
   },
-  hourglassIcon: {
-    fontSize: 24,
-    marginRight: 8,
-  },
+
   title: {
     fontSize: 28,
     fontWeight: 'bold',

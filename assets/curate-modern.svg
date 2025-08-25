@@ -1,0 +1,128 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Modern gradient -->
+    <linearGradient id="modernBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DC2626"/>
+      <stop offset="50%" stop-color="#B91C1C"/>
+      <stop offset="100%" stop-color="#7F1D1D"/>
+    </linearGradient>
+    
+    <!-- Holographic effect -->
+    <linearGradient id="holographic" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.9)"/>
+      <stop offset="25%" stop-color="rgba(248,113,113,0.3)"/>
+      <stop offset="50%" stop-color="rgba(255,255,255,0.8)"/>
+      <stop offset="75%" stop-color="rgba(248,113,113,0.2)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.7)"/>
+    </linearGradient>
+    
+    <!-- Neon glow -->
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Motion blur effect -->
+    <filter id="motionBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1,0"/>
+    </filter>
+  </defs>
+  
+  <!-- Modern background -->
+  <rect width="200" height="200" rx="45" fill="url(#modernBg)"/>
+  
+  <!-- Dynamic flowing particles -->
+  <g opacity="0.6">
+    <circle cx="30" cy="60" r="3" fill="white">
+      <animate attributeName="cy" values="60;40;60" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="170" cy="80" r="2" fill="rgba(255,255,255,0.8)">
+      <animate attributeName="cy" values="80;60;80" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="140" r="2.5" fill="rgba(255,255,255,0.7)">
+      <animate attributeName="cy" values="140;120;140" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="160" cy="160" r="1.5" fill="white">
+      <animate attributeName="cy" values="160;140;160" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Futuristic container with holographic effect -->
+  <rect x="40" y="55" width="120" height="90" rx="20" fill="url(#holographic)" filter="url(#neonGlow)"/>
+  
+  <!-- Inner tech grid -->
+  <rect x="45" y="60" width="110" height="80" rx="15" fill="none" stroke="rgba(185,28,28,0.3)" stroke-width="1"/>
+  
+  <!-- Advanced geometric organization system -->
+  <g transform="translate(100,100)">
+    <!-- Central node -->
+    <circle r="18" fill="none" stroke="#B91C1C" stroke-width="3" filter="url(#neonGlow)"/>
+    <circle r="12" fill="#B91C1C" opacity="0.8"/>
+    
+    <!-- Orbital elements -->
+    <g>
+      <circle cx="30" cy="0" r="8" fill="#F87171" opacity="0.9">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="-30" cy="0" r="6" fill="#DC2626" opacity="0.8">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="10s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="30" r="7" fill="#F87171" opacity="0.7">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="12s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="-30" r="5" fill="#DC2626" opacity="0.9">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="6s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    
+    <!-- Connecting energy beams -->
+    <line x1="-18" y1="0" x2="-22" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+    <line x1="18" y1="0" x2="22" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+    <line x1="0" y1="-18" x2="0" y2="-22" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+    <line x1="0" y1="18" x2="0" y2="22" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  </g>
+  
+  <!-- Scanning lines effect -->
+  <g opacity="0.4">
+    <rect x="40" y="70" width="120" height="2" fill="rgba(255,255,255,0.8)">
+      <animate attributeName="y" values="70;130;70" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="40" y="90" width="120" height="1" fill="rgba(248,113,113,0.6)">
+      <animate attributeName="y" values="90;120;90" dur="3s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Modern "C" with tech styling -->
+  <path d="M100 20 C80 20, 65 35, 65 55 C65 75, 80 90, 100 90" 
+        stroke="rgba(255,255,255,0.9)" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#neonGlow)"/>
+  <path d="M100 25 C85 25, 72 38, 72 55 C72 72, 85 85, 100 85" 
+        stroke="#F87171" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Tech corner elements -->
+  <g stroke="rgba(255,255,255,0.5)" stroke-width="2" fill="none">
+    <path d="M20 20 L35 20 L35 35"/>
+    <path d="M180 20 L165 20 L165 35"/>
+    <path d="M20 180 L35 180 L35 165"/>
+    <path d="M180 180 L165 180 L165 165"/>
+  </g>
+  
+  <!-- Data stream visualization -->
+  <g opacity="0.3">
+    <rect x="20" y="95" width="15" height="3" rx="1.5" fill="white">
+      <animate attributeName="width" values="15;25;15" dur="1.5s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="165" y="105" width="15" height="2" rx="1" fill="rgba(248,113,113,0.8)">
+      <animate attributeName="width" values="15;20;15" dur="2s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Bottom status bar -->
+  <rect x="50" y="170" width="100" height="6" rx="3" fill="rgba(255,255,255,0.8)"/>
+  <rect x="55" y="172" width="40" height="2" rx="1" fill="#B91C1C">
+    <animate attributeName="width" values="40;80;40" dur="4s" repeatCount="indefinite"/>
+  </rect>
+</svg>

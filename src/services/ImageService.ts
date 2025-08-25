@@ -15,13 +15,13 @@ class ImageService {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
+        aspect: [1, 1],
+        quality: 0.7,
         allowsMultipleSelection: false,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        return await this.uploadToGoogleDrive(result.assets[0].uri);
+        return result.assets[0].uri;
       }
       return null;
     } catch (error) {
@@ -39,12 +39,12 @@ class ImageService {
 
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
+        aspect: [1, 1],
+        quality: 0.7,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        return await this.uploadToGoogleDrive(result.assets[0].uri);
+        return result.assets[0].uri;
       }
       return null;
     } catch (error) {

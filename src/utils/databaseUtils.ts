@@ -17,22 +17,22 @@ export const useDatabase = () => {
         // Load settings
         dispatch(loadSettings());
         
-        // Load inventory, add mock data if empty
-        const items = await databaseService.getInventoryItems();
-        if (items.length === 0) {
-          // Add mock data to database
-          for (const item of mockInventory) {
-            await databaseService.saveInventoryItem(item);
-          }
-        }
-
-        // Dev: populate 50 random items once per device to make development easier
+        // Dev: populate mock data only in development mode
         if (__DEV__) {
           try {
-            const flag = await AsyncStorage.getItem('dev_populated');
-            if (!flag) {
-              await populateRandomItems(50);
-              await AsyncStorage.setItem('dev_populated', '1');
+            const items = await databaseService.getInventoryItems();
+            if (items.length === 0) {
+              // Add mock data to database for development
+              for (const item of mockInventory) {
+                await databaseService.saveInventoryItem(item);
+              }
+              
+              // Also populate 50 random items for development
+              const flag = await AsyncStorage.getItem('dev_populated');
+              if (!flag) {
+                await populateRandomItems(50);
+                await AsyncStorage.setItem('dev_populated', '1');
+              }
             }
           } catch (err) {
             console.error('Dev populate failed:', err);
