@@ -24,6 +24,7 @@ export function CategoryManager({ onBack }: CategoryManagerProps) {
   const tintColor = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({ light: '#e5e7eb', dark: '#333' }, 'text');
   const cardBg = useThemeColor({ light: 'white', dark: '#1f1f1f' }, 'background');
+  const placeholderColor = useThemeColor({ light: '#999', dark: '#666' }, 'text');
 
   useEffect(() => {
     loadCategories();
@@ -115,8 +116,14 @@ export function CategoryManager({ onBack }: CategoryManagerProps) {
             <ThemedText style={styles.selectedIcon}>{selectedIcon}</ThemedText>
           </TouchableOpacity>
           <TextInput
-            style={[styles.input, { borderColor, backgroundColor: cardBg, color: textColor }]}
+            style={[styles.input, { 
+              borderColor, 
+              backgroundColor: cardBg, 
+              color: textColor,
+              textAlign: 'left'
+            }]}
             placeholder="Enter category name"
+            placeholderTextColor={placeholderColor}
             value={newCategory}
             onChangeText={setNewCategory}
             maxLength={30}

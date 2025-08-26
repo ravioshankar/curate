@@ -95,7 +95,12 @@ export function CategoryDropdown({
             </ThemedView>
             <ThemedView style={[styles.addNewSection, { borderBottomColor: borderColor }]}>
               <TextInput
-                style={[styles.textInput, { borderColor, backgroundColor: cardBg, color: textColor }]}
+                style={[styles.textInput, { 
+                  borderColor, 
+                  backgroundColor: cardBg, 
+                  color: textColor,
+                  textAlign: 'left'
+                }]}
                 placeholder="Type new category name..."
                 placeholderTextColor={placeholderColor}
                 value={newCategory}

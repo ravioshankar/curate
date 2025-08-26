@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Modal } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, View, Modal, Alert } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { ThemedView } from '../../components/ThemedView';
 import { CollectionPage } from '../components/common/CollectionPage';
 import { AddItemPage } from '../components/common/AddItemPage';
+import { ItemDetailsPage } from '../components/common/ItemDetailsPage';
 import { RootState, AppDispatch } from '../store/store';
-import { addCollectionItem, updateCollectionItem } from '../store/collectionStore';
+import { addCollectionItem, updateCollectionItem, deleteCollectionItem } from '../store/collectionStore';
 import { CollectionItem } from '../types/collection';
 
 const sampleItems: CollectionItem[] = [
@@ -23,18 +24,62 @@ const sampleItems: CollectionItem[] = [
 
 export function CollectionScreen() {
   const [searchText, setSearchText] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<CollectionItem | null>(null);
+  const [viewingItem, setViewingItem] = useState<CollectionItem | null>(null);
   const collection = useSelector((state: RootState) => state.collection.items);
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleUpdateItem = (item: any) => {
+  const handleUpdateItem = (item: CollectionItem) => {
     dispatch(updateCollectionItem(item));
+    setShowModal(false);
+    setEditingItem(null);
   };
 
-  const handleAddItem = (item: any) => {
+  const handleAddItem = (item: CollectionItem) => {
     dispatch(addCollectionItem(item));
-    setShowAddModal(false);
+    setShowModal(false);
   };
+
+  const handleEditItem = (item: CollectionItem) => {
+    setEditingItem(item);
+    setShowModal(true);
+  };
+
+  const handleViewItem = (item: CollectionItem) => {
+    setViewingItem(item);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingItem(null);
+  };
+
+  const handleDeleteItem = useCallback((id: string) => {
+    Alert.alert(
+      'Delete Item',
+      'Are you sure you want to delete this item?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => dispatch(deleteCollectionItem(id))
+        }
+      ]
+    );
+  }, [dispatch]);
+
+  const handleSubmit = useCallback((item: CollectionItem) => {
+    if (editingItem) {
+      dispatch(updateCollectionItem(item));
+      setShowModal(false);
+      setEditingItem(null);
+    } else {
+      dispatch(addCollectionItem(item));
+      setShowModal(false);
+    }
+  }, [editingItem, dispatch]);
 
   const addSampleItems = () => {
     sampleItems.forEach(item => {
@@ -51,18 +96,39 @@ export function CollectionScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <CollectionPage 
-        collection={collection}
-        searchText={searchText}
-        setSearchText={setSearchText}
-        onUpdateItem={handleUpdateItem}
-        onAddItem={() => setShowAddModal(true)}
-      />
+      {viewingItem ? (
+        <ItemDetailsPage 
+          item={viewingItem}
+          collection={collection}
+          onBack={() => setViewingItem(null)}
+          onEdit={() => {
+            setEditingItem(viewingItem);
+            setViewingItem(null);
+            setShowModal(true);
+          }}
+          onDelete={() => {
+            handleDeleteItem(viewingItem.id);
+            setViewingItem(null);
+          }}
+        />
+      ) : (
+        <CollectionPage 
+          collection={collection}
+          searchText={searchText}
+          setSearchText={setSearchText}
+          onUpdateItem={handleEditItem}
+          onDeleteItem={handleDeleteItem}
+          onViewItem={handleViewItem}
+          onAddItem={() => setShowModal(true)}
+        />
+      )}
       
-      <Modal visible={showAddModal} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={showModal} animationType="slide" presentationStyle="pageSheet">
         <AddItemPage 
-          onAddItem={handleAddItem}
-          onBack={() => setShowAddModal(false)}
+          item={editingItem || undefined}
+          onSubmit={handleSubmit}
+          onBack={handleCloseModal}
+          isEdit={!!editingItem}
         />
       </Modal>
     </ThemedView>

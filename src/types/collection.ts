@@ -7,6 +7,7 @@ export interface CollectionItem {
   imageUrl?: string;
   pricePaid?: number;
   priceExpected?: number;
+  notes?: string;
 }
 
 export interface CollectionStats {
