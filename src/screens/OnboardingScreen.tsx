@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableOpacity, Alert, Image, Platform } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -19,6 +19,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const dispatch = useDispatch<AppDispatch>();
   const tintColor = useThemeColor({}, 'tint');
   const iconColor = useThemeColor({}, 'icon');
+  const textColor = useThemeColor({}, 'text');
   const insets = useSafeAreaInsets();
   
   const [name, setName] = useState('');
@@ -38,7 +39,8 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
         setAvatar(imageUri);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to select photo');
+      console.error('Pick image error:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to select photo');
     }
   };
 
@@ -49,20 +51,26 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
         setAvatar(imageUri);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to capture photo');
+      console.error('Take photo error:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to capture photo');
     }
   };
 
   const showPhotoOptions = () => {
-    Alert.alert(
-      'Add Photo',
-      'Choose how you want to add your photo',
-      [
-        { text: 'Camera', onPress: takePhoto },
-        { text: 'Photo Library', onPress: pickImage },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      // On web, directly open photo library since camera is more complex
+      pickImage();
+    } else {
+      Alert.alert(
+        'Add Photo',
+        'Choose how you want to add your photo',
+        [
+          { text: 'Camera', onPress: takePhoto },
+          { text: 'Photo Library', onPress: pickImage },
+          { text: 'Cancel', style: 'cancel' }
+        ]
+      );
+    }
   };
 
   const handleComplete = () => {
@@ -126,7 +134,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
           <TextInput
             value={name}
             onChangeText={setName}
-            style={[styles.input, { borderColor: tintColor }]}
+            style={[styles.input, { borderColor: tintColor, color: textColor }]}
             placeholder="Enter your name"
             placeholderTextColor="#999"
           />
@@ -140,7 +148,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
               setEmail(text);
               if (emailError) setEmailError('');
             }}
-            style={[styles.input, { borderColor: emailError ? '#EF4444' : tintColor }]}
+            style={[styles.input, { borderColor: emailError ? '#EF4444' : tintColor, color: textColor }]}
             placeholder="Enter your email"
             placeholderTextColor="#999"
             keyboardType="email-address"

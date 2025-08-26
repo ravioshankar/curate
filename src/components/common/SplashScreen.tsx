@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -9,8 +9,8 @@ interface SplashScreenProps {
 }
 
 export function SplashScreen({ onFinish }: SplashScreenProps) {
-  const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.8);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -52,10 +52,10 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
         ]}
       >
         <CurateLogo 
-          size={120} 
-          backgroundColor="rgba(255,255,255,0.1)"
+          size={140} 
+          backgroundColor="rgba(255,255,255,0.15)"
           orbColor="#FFFFFF"
-          elementColor="rgba(255,255,255,0.8)"
+          elementColor="#FFFFFF"
         />
         <ThemedText style={styles.title}>Curate</ThemedText>
         <ThemedText style={styles.subtitle}>Premium Asset Curator</ThemedText>
@@ -73,17 +73,18 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    gap: 16,
+    gap: 32,
   },
 
   title: {
-    fontSize: 48,
+    fontSize: 42,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    letterSpacing: 2,
+    letterSpacing: 1,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,

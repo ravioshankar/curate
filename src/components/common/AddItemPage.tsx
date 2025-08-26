@@ -9,6 +9,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useCurrency } from '../providers/SimpleCurrencyProvider';
 import { getCurrencyInfo } from '../../utils/currencyUtils';
 import { CategoryDropdown } from './CategoryDropdown';
+import { LocationDropdown } from './LocationDropdown';
 import { loadCategories } from '../../store/categoriesStore';
 import { RootState, AppDispatch } from '../../store/store';
 import { databaseService } from '../../services/DatabaseService';
@@ -228,14 +229,14 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
           backgroundColor={backgroundColor}
           onDeleteCategory={handleDeleteCategory}
         />
-        <InputField
+        <LocationDropdown
           label="Location"
           value={formData.location}
-          onChangeText={(value) => handleChange('location', value)}
+          onSelect={(value) => handleChange('location', value)}
           cardBg={cardBg}
           borderColor={borderColor}
           textColor={textColor}
-          placeholderColor={placeholderColor}
+          backgroundColor={backgroundColor}
         />
         <ThemedView style={styles.inputContainer}>
           <ThemedText style={styles.label}>Last Used Date</ThemedText>

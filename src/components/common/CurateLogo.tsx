@@ -15,12 +15,11 @@ export function CurateLogo({
   elementColor = '#B91C1C'
 }: CurateLogoProps) {
   const logoSize = size;
-  const orbSize = size * 0.33;
+  const orbSize = size * 0.4;
   const elementSizes = {
-    orbit1: size * 0.13,
-    orbit2: size * 0.1,
-    orbit3: size * 0.12,
-    orbit4: size * 0.08,
+    orbit1: size * 0.16,
+    orbit2: size * 0.14,
+    orbit3: size * 0.18,
   };
 
   return (
@@ -29,7 +28,7 @@ export function CurateLogo({
       { 
         width: logoSize, 
         height: logoSize, 
-        borderRadius: logoSize * 0.25,
+        borderRadius: logoSize * 0.15,
         backgroundColor 
       }
     ]}>
@@ -44,35 +43,32 @@ export function CurateLogo({
       ]} />
       <View style={[
         styles.orbitElement, 
-        styles.orbit1, 
         { 
           width: elementSizes.orbit1, 
           height: elementSizes.orbit1,
           backgroundColor: elementColor,
-          top: size * 0.13,
-          right: size * 0.25
+          top: size * 0.15,
+          right: size * 0.2
         }
       ]} />
       <View style={[
         styles.orbitElement, 
-        styles.orbit2, 
         { 
           width: elementSizes.orbit2, 
           height: elementSizes.orbit2,
           backgroundColor: elementColor,
-          bottom: size * 0.13,
-          left: size * 0.2
+          bottom: size * 0.18,
+          left: size * 0.18
         }
       ]} />
       <View style={[
         styles.orbitElement, 
-        styles.orbit3, 
         { 
           width: elementSizes.orbit3, 
           height: elementSizes.orbit3,
           backgroundColor: elementColor,
-          top: size * 0.25,
-          left: size * 0.13
+          top: size * 0.12,
+          left: size * 0.15
         }
       ]} />
     </View>
@@ -83,14 +79,15 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
   centralOrb: {
     position: 'absolute',
+    zIndex: 1,
   },
   orbitElement: {
     position: 'absolute',
     borderRadius: 50,
+    zIndex: 2,
   },
   orbit1: {},
   orbit2: {},

@@ -7,9 +7,12 @@ class ImageService {
 
   async pickImage(): Promise<string | null> {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        throw new Error('Permission to access media library is required');
+      // On web, permissions are handled differently
+      if (Platform.OS !== 'web') {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          throw new Error('Permission to access media library is required');
+        }
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -26,15 +29,18 @@ class ImageService {
       return null;
     } catch (error) {
       console.error('Image picker error:', error);
-      throw new Error('Photo selection not available on this device');
+      throw error;
     }
   }
 
   async takePhoto(): Promise<string | null> {
     try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        throw new Error('Permission to access camera is required');
+      // On web, camera permissions work differently
+      if (Platform.OS !== 'web') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          throw new Error('Permission to access camera is required');
+        }
       }
 
       const result = await ImagePicker.launchCameraAsync({
@@ -49,7 +55,7 @@ class ImageService {
       return null;
     } catch (error) {
       console.error('Camera error:', error);
-      throw new Error('Camera not available on this device');
+      throw error;
     }
   }
 

@@ -28,6 +28,10 @@ class WebDBService {
           db.createObjectStore('settings', { keyPath: 'id' });
         }
         
+        if (!db.objectStoreNames.contains('profile')) {
+          db.createObjectStore('profile', { keyPath: 'id' });
+        }
+        
         if (!db.objectStoreNames.contains('categories')) {
           db.createObjectStore('categories', { keyPath: 'id' });
         }
@@ -139,19 +143,13 @@ class WebDBService {
     if (!this.db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['settings'], 'readwrite');
-      const store = transaction.objectStore('settings');
-      const request = store.get(1);
+      const transaction = this.db!.transaction(['profile'], 'readwrite');
+      const store = transaction.objectStore('profile');
+      const request = store.put({ id: 1, ...profile });
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
-        const existing = request.result || { id: 1 };
-        const toSave = { ...existing, id: 1, ...profile };
-        const putReq = store.put(toSave);
-        putReq.onerror = () => reject(putReq.error);
-        putReq.onsuccess = () => {
-          console.log('WebDBService: profile saved', profile);
-          resolve();
-        };
+        console.log('WebDBService: profile saved', profile);
+        resolve();
       };
     });
   }
@@ -160,14 +158,14 @@ class WebDBService {
     if (!this.db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['settings'], 'readonly');
-      const store = transaction.objectStore('settings');
+      const transaction = this.db!.transaction(['profile'], 'readonly');
+      const store = transaction.objectStore('profile');
       const request = store.get(1);
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const result = request.result;
         if (result) {
-          const { id, currency, theme, notifications, ...profile } = result;
+          const { id, ...profile } = result;
           console.log('WebDBService: profile loaded', profile);
           resolve(profile);
         } else {

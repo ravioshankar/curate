@@ -1,0 +1,9 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Central Orb -->
+  <circle cx="100" cy="100" r="33" fill="#FFFFFF"/>
+  
+  <!-- Orbit Elements -->
+  <circle cx="125" cy="75" r="13" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="75" cy="125" r="10" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="75" cy="75" r="12" fill="#FFFFFF" opacity="0.85"/>
+</svg>
