@@ -1,6 +1,19 @@
-# Curate Ruby - Premium Personal Asset Curator
+<div align="center">
+  <img src="./assets/logo.svg" alt="Curate Logo" width="120" height="120" />
+  
+  # Curate - Premium Personal Asset Curator
+  
+  *A sophisticated cross-platform app that helps you curate, organize, and cherish your personal belongings with elegance and intelligence.*
+  
+  **Built with Expo, React Native, and Redux Toolkit**
+  
+  [![React Native](https://img.shields.io/badge/React%20Native-0.74-blue.svg)](https://reactnative.dev/)
+  [![Expo](https://img.shields.io/badge/Expo-51-black.svg)](https://expo.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+  [![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.0-purple.svg)](https://redux-toolkit.js.org/)
+</div>
 
-A sophisticated cross-platform app that helps you curate, organize, and cherish your personal belongings with elegance and intelligence. Built with Expo, React Native, and Redux Toolkit.
+---
 
 ## Project Structure
 
@@ -10,7 +23,7 @@ curate/
 │   ├── (tabs)/             # Tab-based navigation
 │   │   ├── _layout.tsx     # Tab layout configuration
 │   │   ├── index.tsx       # Dashboard tab
-│   │   ├── inventory.tsx   # Inventory tab
+│   │   ├── collection.tsx  # Collection tab
 │   │   └── profile.tsx     # Profile tab
 │   ├── _layout.tsx         # Root layout
 │   └── +not-found.tsx      # 404 page
@@ -91,15 +104,15 @@ curate/
 ### Storage Solution
 - **AsyncStorage**: Cross-platform local storage
 - **Persistent Data**: Survives app restarts and updates
-- **Structured Storage**: Separate inventory and settings data
+- **Structured Storage**: Separate collection and settings data
 - **Type-Safe Operations**: Full TypeScript integration
 
 ### Database Service (`DatabaseService.ts`)
 ```typescript
-// Inventory operations
-await databaseService.saveInventoryItem(item);
-const items = await databaseService.getInventoryItems();
-await databaseService.deleteInventoryItem(id);
+// Collection operations
+await databaseService.saveCollectionItem(item);
+const items = await databaseService.getCollectionItems();
+await databaseService.deleteCollectionItem(id);
 
 // Settings operations
 await databaseService.saveSettings(settings);
@@ -107,7 +120,7 @@ const settings = await databaseService.getSettings();
 ```
 
 ### Data Structure
-- **Inventory Items**: JSON objects with id, name, category, location, prices, etc.
+- **Collection Items**: JSON objects with id, name, category, location, prices, etc.
 - **User Settings**: Currency preferences, theme, notifications
 - **Auto-Initialization**: Database setup on first app launch
-- **Mock Data**: Sample inventory items for new users
+- **Mock Data**: Sample collection items for new users

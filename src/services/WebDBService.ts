@@ -1,4 +1,4 @@
-import { InventoryItem } from '../types/inventory';
+import { CollectionItem } from '../types/collection';
 import { AppSettings } from '../types/user';
 
 class WebDBService {
@@ -55,7 +55,7 @@ class WebDBService {
     });
   }
 
-  async saveInventoryItem(item: InventoryItem): Promise<void> {
+  async saveCollectionItem(item: CollectionItem): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
     
     return new Promise((resolve, reject) => {
@@ -68,7 +68,7 @@ class WebDBService {
     });
   }
 
-  async getInventoryItems(): Promise<InventoryItem[]> {
+  async getCollectionItems(): Promise<CollectionItem[]> {
     if (!this.db) throw new Error('Database not initialized');
     
     return new Promise((resolve, reject) => {
@@ -81,7 +81,7 @@ class WebDBService {
     });
   }
 
-  async deleteInventoryItem(id: string): Promise<void> {
+  async deleteCollectionItem(id: string): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
     
     return new Promise((resolve, reject) => {
@@ -264,11 +264,11 @@ class WebDBService {
     
     try {
       // Move items from deleted category to "Other"
-      const items = await this.getInventoryItems();
+      const items = await this.getCollectionItems();
       const itemsToUpdate = items.filter(item => item.category === categoryName);
       
       for (const item of itemsToUpdate) {
-        await this.saveInventoryItem({ ...item, category: 'Other' });
+        await this.saveCollectionItem({ ...item, category: 'Other' });
       }
       
       // Remove category from user categories

@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { mockInventory } from '../data/mockInventory';
+import { mockCollection } from '../data/mockCollection';
 import { databaseService } from '../services/DatabaseService';
-import { loadInventory } from '../store/inventoryStore';
+import { loadCollection } from '../store/collectionStore';
 import { AppDispatch } from '../store/store';
 import { loadSettings } from '../store/userStore';
 import { populateRandomItems } from './devPopulate';
@@ -20,11 +20,11 @@ export const useDatabase = () => {
         // Dev: populate mock data only in development mode
         if (__DEV__) {
           try {
-            const items = await databaseService.getInventoryItems();
+            const items = await databaseService.getCollectionItems();
             if (items.length === 0) {
               // Add mock data to database for development
-              for (const item of mockInventory) {
-                await databaseService.saveInventoryItem(item);
+              for (const item of mockCollection) {
+                await databaseService.saveCollectionItem(item);
               }
               
               // Also populate 50 random items for development
@@ -38,7 +38,7 @@ export const useDatabase = () => {
             console.error('Dev populate failed:', err);
           }
         }
-        dispatch(loadInventory());
+        dispatch(loadCollection());
       } catch (error) {
         console.error('Database initialization failed:', error);
       }

@@ -1,6 +1,6 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import userReducer from './userStore';
-import inventoryReducer from './inventoryStore';
+import collectionReducer from './collectionStore';
 import categoriesReducer from './categoriesStore';
 
 interface AppState {
@@ -26,7 +26,7 @@ export const { setCurrentPage } = appSlice.actions;
 export const store = configureStore({
   reducer: {
     app: appSlice.reducer,
-    inventory: inventoryReducer,
+    collection: collectionReducer,
     user: userReducer,
     categories: categoriesReducer,
   },

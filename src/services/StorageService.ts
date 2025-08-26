@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { InventoryItem } from '../types/inventory';
+import { CollectionItem } from '../types/collection';
 import { AppSettings } from '../types/user';
 
-const STORAGE_KEY = 'curateInventory';
+const STORAGE_KEY = 'curateCollection';
 const SETTINGS_KEY = 'curateSettings';
 
 export class StorageService {
-  static async getInventory(): Promise<InventoryItem[]> {
+  static async getInventory(): Promise<CollectionItem[]> {
     try {
       const data = await AsyncStorage.getItem(STORAGE_KEY);
       return data ? JSON.parse(data) : [];
@@ -16,7 +16,7 @@ export class StorageService {
     }
   }
 
-  static async saveInventory(inventory: InventoryItem[]): Promise<void> {
+  static async saveInventory(inventory: CollectionItem[]): Promise<void> {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
     } catch (error) {
@@ -24,16 +24,16 @@ export class StorageService {
     }
   }
 
-  static async addItem(item: InventoryItem): Promise<InventoryItem[]> {
+  static async addItem(item: CollectionItem): Promise<CollectionItem[]> {
     const inventory = await this.getInventory();
     const newInventory = [...inventory, item];
     await this.saveInventory(newInventory);
     return newInventory;
   }
 
-  static async updateItem(updatedItem: InventoryItem): Promise<InventoryItem[]> {
+  static async updateItem(updatedItem: CollectionItem): Promise<CollectionItem[]> {
     const inventory = await this.getInventory();
-    const newInventory = inventory.map(item => 
+    const newInventory = collection.map(item => 
       item.id === updatedItem.id ? updatedItem : item
     );
     await this.saveInventory(newInventory);

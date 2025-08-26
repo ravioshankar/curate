@@ -1,8 +1,8 @@
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState, useEffect } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View, Image, Appearance } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { InventoryItem } from '../../types/inventory';
+import { CollectionItem } from '../../types/collection';
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -17,7 +17,7 @@ import { imageService } from '../../services/ImageService';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 interface AddItemPageProps {
-  onAddItem: (item: InventoryItem) => void;
+  onAddItem: (item: CollectionItem) => void;
   onBack: () => void;
 }
 
@@ -35,6 +35,7 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
   const borderColor = useThemeColor({ light: 'rgba(0, 0, 0, 0.2)', dark: '#333' }, 'text');
   const formBg = useThemeColor({ light: 'rgba(0, 0, 0, 0.05)', dark: 'rgba(255, 255, 255, 0.05)' }, 'background');
   const placeholderColor = useThemeColor({ light: '#999', dark: '#666' }, 'text');
+  const isDarkMode = backgroundColor === '#1C1917' || Appearance.getColorScheme() === 'dark';
   const { currency } = useCurrency();
   const currentCurrency = getCurrencyInfo(currency);
   
@@ -169,7 +170,7 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
         imageUrl = selectedImage; // Image is already uploaded to Google Drive
       }
       
-      const newItem: InventoryItem = {
+      const newItem: CollectionItem = {
         id: itemId,
         name: formData.name.trim(),
         category: formData.category || 'Other',
@@ -185,7 +186,7 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
       
       Alert.alert(
         'Success!',
-        'Item added to your inventory',
+        'Item added to your collection',
         [{ text: 'OK', onPress: onBack }]
       );
     } catch (error) {
@@ -252,6 +253,9 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               maximumDate={new Date()}
+              themeVariant={isDarkMode ? 'dark' : 'light'}
+              accentColor={tintColor}
+              style={{ backgroundColor: cardBg }}
               onChange={handleDateChange}
             />
           )}
@@ -260,7 +264,11 @@ export function AddItemPage({ onAddItem, onBack }: AddItemPageProps) {
           <ThemedText style={styles.label}>Item Photo</ThemedText>
           {selectedImage ? (
             <View style={[styles.imageContainer, { borderColor }]}>
-              <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+              <ImageWithFallback 
+                imageUrl={selectedImage} 
+                style={styles.selectedImage}
+                placeholderStyle={[styles.selectedImage, { backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }]}
+              />
               <TouchableOpacity 
                 style={styles.removeImageButton}
                 onPress={() => {
@@ -535,3 +543,27 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 });
+
+const ImageWithFallback = ({ imageUrl, style, placeholderStyle }: {
+  imageUrl?: string;
+  style: any;
+  placeholderStyle: any;
+}) => {
+  const [imageError, setImageError] = useState(false);
+  
+  if (!imageUrl || imageError) {
+    return (
+      <View style={placeholderStyle}>
+        <Icon name="image" size={32} color="#9ca3af" />
+      </View>
+    );
+  }
+  
+  return (
+    <Image
+      source={{ uri: imageUrl }}
+      style={style}
+      onError={() => setImageError(true)}
+    />
+  );
+};

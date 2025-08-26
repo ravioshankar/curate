@@ -137,6 +137,8 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
             style={[styles.input, { borderColor: tintColor, color: textColor }]}
             placeholder="Enter your name"
             placeholderTextColor="#999"
+            selectionColor={tintColor}
+            autoCapitalize="words"
           />
         </View>
 
@@ -153,6 +155,8 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
+            selectionColor={tintColor}
+            autoCorrect={false}
           />
           {emailError ? (
             <ThemedText style={styles.errorText}>{emailError}</ThemedText>

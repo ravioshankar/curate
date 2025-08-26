@@ -1,5 +1,5 @@
 import { databaseService } from '../services/DatabaseService';
-import { InventoryItem } from '../types/inventory';
+import { CollectionItem } from '../types/collection';
 
 const categories = ['Clothes','Electronics','Kitchen','Books','Tools','Games','Outdoor','Sports','Home Decor','Collectibles','Art','Photography','Accessories'];
 const locations = ['Living Room','Bedroom Closet','Garage','Attic','Basement','Office','Kitchen','Storage Unit'];
@@ -26,9 +26,9 @@ function simpleId() {
 
 export async function populateRandomItems(count = 50) {
   await databaseService.init();
-  const items: InventoryItem[] = [];
+  const items: CollectionItem[] = [];
   for (let i = 0; i < count; i++) {
-    const item: InventoryItem = {
+    const item: CollectionItem = {
       id: simpleId(),
       name: `${randomFrom(names)} ${Math.floor(Math.random()*9000)+1000}`,
       category: randomFrom(categories),
@@ -43,7 +43,7 @@ export async function populateRandomItems(count = 50) {
 
   for (const it of items) {
     try {
-      await databaseService.saveInventoryItem(it);
+      await databaseService.saveCollectionItem(it);
     } catch (err) {
       console.error('Failed to save item', it, err);
     }

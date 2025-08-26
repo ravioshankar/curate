@@ -15,7 +15,7 @@ function AppHeader() {
   const colors = Colors[colorScheme];
 
   return (
-    <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
         <CurateLogo 
           size={28} 
@@ -63,13 +63,14 @@ export default function TabLayout() {
         headerTitle: () => <AppHeader />,
         headerStyle: {
           backgroundColor: colors.background,
+          height: 90,
         },
         headerTintColor: colors.text,
 
         tabBarStyle: {
           backgroundColor: colors.background,
-          paddingBottom: 20,
-          height: 80,
+          paddingBottom: 8,
+          height: 70,
         },
       }}>
       <Tabs.Screen
@@ -80,10 +81,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="inventory"
+        name="collection"
         options={{
-          title: 'Inventory',
-          tabBarIcon: ({ color }) => <Icon name="inventory" size={32} color={color} />,
+          title: 'Collection',
+          tabBarIcon: ({ color }) => <Icon name="collections" size={32} color={color} />,
         }}
       />
       <Tabs.Screen

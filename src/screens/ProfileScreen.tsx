@@ -22,6 +22,7 @@ export function ProfileScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor({ light: '#eee', dark: '#333' }, 'text');
+  const textColor = useThemeColor({ light: '#1C1917', dark: '#F5F5F4' }, 'text');
   const tintColor = useThemeColor({}, 'tint');
   const [isThemeExpanded, setIsThemeExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -116,7 +117,14 @@ export function ProfileScreen() {
           )}
         </TouchableOpacity>
         {isEditing ? (
-          <TextInput value={editName} onChangeText={setEditName} style={styles.nameInput} placeholder="Name" />
+          <TextInput 
+            value={editName} 
+            onChangeText={setEditName} 
+            style={[styles.nameInput, { color: textColor, borderBottomColor: textColor }]}
+            selectionColor={textColor} 
+            placeholder="Name"
+            placeholderTextColor="#999"
+          />
         ) : (
           <ThemedText style={styles.name}>{profile.name}</ThemedText>
         )}
@@ -128,8 +136,10 @@ export function ProfileScreen() {
                 setEditEmail(text);
                 if (emailError) setEmailError('');
               }} 
-              style={[styles.emailInput, emailError ? styles.emailInputError : null]} 
+              style={[styles.emailInput, { color: textColor, borderBottomColor: emailError ? '#EF4444' : textColor }]}
+              selectionColor={textColor} 
               placeholder="Email"
+              placeholderTextColor="#999"
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -328,7 +338,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     width: 220,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
     paddingBottom: 4,
   },
   emailInput: {
@@ -337,9 +346,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     width: 220,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
     paddingBottom: 4,
-    color: '#666',
   },
   emailInputError: {
     borderBottomColor: '#EF4444',

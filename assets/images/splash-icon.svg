@@ -1,9 +1,54 @@
-<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Central Orb -->
-  <circle cx="100" cy="100" r="33" fill="#FFFFFF"/>
+<svg width="200" height="200" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="goldShine" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.6"/>
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:0.2"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
   
-  <!-- Orbit Elements -->
-  <circle cx="125" cy="75" r="13" fill="#FFFFFF" opacity="0.9"/>
-  <circle cx="75" cy="125" r="10" fill="#FFFFFF" opacity="0.8"/>
-  <circle cx="75" cy="75" r="12" fill="#FFFFFF" opacity="0.85"/>
+  <!-- Background -->
+  <rect width="120" height="120" rx="14" fill="rgba(255,215,0,0.15)"/>
+  
+  <!-- Gold shine background -->
+  <rect x="6" y="6" width="108" height="108" rx="12" fill="url(#goldShine)" opacity="0.3"/>
+  
+  <!-- Outer frame -->
+  <rect x="9" y="9" width="102" height="102" rx="10" fill="none" stroke="#B8860B" stroke-width="2" filter="url(#glow)"/>
+  
+  <!-- Inner decorative frame -->
+  <rect x="17" y="17" width="86" height="86" rx="7" fill="none" stroke="#DAA520" stroke-width="1"/>
+  
+  <!-- Central gem - Diamond -->
+  <rect x="38" y="38" width="44" height="44" fill="#FF1493" transform="rotate(45 60 60)" rx="2" filter="url(#glow)"/>
+  
+  <!-- Gem highlight -->
+  <circle cx="55" cy="55" r="8" fill="#FFFFFF" opacity="0.6"/>
+  
+  <!-- Gem facet line -->
+  <rect x="59" y="42" width="2" height="36" fill="#FFFFFF" opacity="0.9" filter="url(#glow)"/>
+  
+  <!-- Corner ornaments -->
+  <!-- Top Left - Green -->
+  <rect x="14" y="14" width="10" height="10" rx="3" fill="#32CD32" filter="url(#glow)"/>
+  <rect x="16" y="16" width="5" height="5" rx="1" fill="#98FB98"/>
+  
+  <!-- Top Right - Blue -->
+  <rect x="96" y="14" width="10" height="10" rx="3" fill="#1E90FF" filter="url(#glow)"/>
+  <rect x="99" y="16" width="5" height="5" rx="1" fill="#87CEEB"/>
+  
+  <!-- Bottom Left - Purple -->
+  <rect x="14" y="96" width="10" height="10" rx="3" fill="#9370DB" filter="url(#glow)"/>
+  <rect x="16" y="99" width="5" height="5" rx="1" fill="#DDA0DD"/>
+  
+  <!-- Bottom Right - Orange -->
+  <rect x="96" y="96" width="10" height="10" rx="3" fill="#FF4500" filter="url(#glow)"/>
+  <rect x="99" y="99" width="5" height="5" rx="1" fill="#FFA07A"/>
 </svg>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate All Curate PNG Icons</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .preview { display: flex; align-items: center; justify-content: center; margin: 15px 0; min-height: 100px; background: #f9f9f9; border-radius: 8px; }
+        canvas { border: 1px solid #ddd; }
+        button { 
+            width: 100%; padding: 12px; background: #007bff; color: white; border: none; 
+            border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px;
+        }
+        button:hover { background: #0056b3; }
+        .size-info { color: #666; font-size: 14px; margin-bottom: 10px; }
+        .download-all { 
+            background: #28a745; padding: 15px 30px; font-size: 16px; 
+            margin: 20px auto; display: block; border-radius: 8px;
+        }
+        .download-all:hover { background: #1e7e34; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Curate Logo PNG Generator</h1>
+        <p style="text-align: center; color: #666;">Generate all required PNG icons from your logo SVG</p>
+        
+        <button class="download-all" onclick="downloadAll()">📦 Download All PNGs</button>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>📱 App Icon</h3>
+                <div class="size-info">1024×1024 - App Store & Play Store</div>
+                <div class="preview">
+                    <canvas id="icon1024" width="100" height="100"></canvas>
+                </div>
+                <button onclick="downloadPNG('icon1024', 'icon-1024.png', 1024)">Download App Icon</button>
+            </div>
+            
+            <div class="card">
+                <h3>📲 Standard Icon</h3>
+                <div class="size-info">512×512 - Main app icon</div>
+                <div class="preview">
+                    <canvas id="icon512" width="80" height="80"></canvas>
+                </div>
+                <button onclick="downloadPNG('icon512', 'icon.png', 512)">Download Standard Icon</button>
+            </div>
+            
+            <div class="card">
+                <h3>🤖 Adaptive Icon</h3>
+                <div class="size-info">512×512 - Android adaptive icon</div>
+                <div class="preview">
+                    <canvas id="adaptive512" width="80" height="80"></canvas>
+                </div>
+                <button onclick="downloadPNG('adaptive512', 'adaptive-icon.png', 512)">Download Adaptive Icon</button>
+            </div>
+            
+            <div class="card">
+                <h3>🚀 Splash Icon</h3>
+                <div class="size-info">200×200 - Splash screen</div>
+                <div class="preview">
+                    <canvas id="splash200" width="80" height="80"></canvas>
+                </div>
+                <button onclick="downloadPNG('splash200', 'splash-icon.png', 200)">Download Splash Icon</button>
+            </div>
+            
+            <div class="card">
+                <h3>🌐 Favicon</h3>
+                <div class="size-info">48×48 - Web favicon</div>
+                <div class="preview">
+                    <canvas id="favicon48" width="48" height="48"></canvas>
+                </div>
+                <button onclick="downloadPNG('favicon48', 'favicon.png', 48)">Download Favicon</button>
+            </div>
+            
+            <div class="card">
+                <h3>📋 Medium Icon</h3>
+                <div class="size-info">256×256 - General purpose</div>
+                <div class="preview">
+                    <canvas id="icon256" width="64" height="64"></canvas>
+                </div>
+                <button onclick="downloadPNG('icon256', 'icon-256.png', 256)">Download Medium Icon</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const logoSVG = `<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="goldShine" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.6"/>
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:0.2"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <rect width="120" height="120" rx="14" fill="rgba(255,215,0,0.15)"/>
+  <rect x="6" y="6" width="108" height="108" rx="12" fill="url(#goldShine)" opacity="0.3"/>
+  <rect x="9" y="9" width="102" height="102" rx="10" fill="none" stroke="#B8860B" stroke-width="2" filter="url(#glow)"/>
+  <rect x="17" y="17" width="86" height="86" rx="7" fill="none" stroke="#DAA520" stroke-width="1"/>
+  <rect x="38" y="38" width="44" height="44" fill="#FF1493" transform="rotate(45 60 60)" rx="2" filter="url(#glow)"/>
+  <circle cx="55" cy="55" r="8" fill="#FFFFFF" opacity="0.6"/>
+  <rect x="59" y="42" width="2" height="36" fill="#FFFFFF" opacity="0.9" filter="url(#glow)"/>
+  <rect x="14" y="14" width="10" height="10" rx="3" fill="#32CD32" filter="url(#glow)"/>
+  <rect x="16" y="16" width="5" height="5" rx="1" fill="#98FB98"/>
+  <rect x="96" y="14" width="10" height="10" rx="3" fill="#1E90FF" filter="url(#glow)"/>
+  <rect x="99" y="16" width="5" height="5" rx="1" fill="#87CEEB"/>
+  <rect x="14" y="96" width="10" height="10" rx="3" fill="#9370DB" filter="url(#glow)"/>
+  <rect x="16" y="99" width="5" height="5" rx="1" fill="#DDA0DD"/>
+  <rect x="96" y="96" width="10" height="10" rx="3" fill="#FF4500" filter="url(#glow)"/>
+  <rect x="99" y="99" width="5" height="5" rx="1" fill="#FFA07A"/>
+</svg>`;
+
+        const canvasConfigs = [
+            { id: 'icon1024', size: 1024, filename: 'icon-1024.png', preview: 100 },
+            { id: 'icon512', size: 512, filename: 'icon.png', preview: 80 },
+            { id: 'adaptive512', size: 512, filename: 'adaptive-icon.png', preview: 80 },
+            { id: 'splash200', size: 200, filename: 'splash-icon.png', preview: 80 },
+            { id: 'favicon48', size: 48, filename: 'favicon.png', preview: 48 },
+            { id: 'icon256', size: 256, filename: 'icon-256.png', preview: 64 }
+        ];
+
+        function renderCanvas(canvasId, targetSize, previewSize) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas actual size for high-res rendering
+            canvas.width = previewSize;
+            canvas.height = previewSize;
+            
+            const img = new Image();
+            const svgBlob = new Blob([logoSVG], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.clearRect(0, 0, previewSize, previewSize);
+                ctx.drawImage(img, 0, 0, previewSize, previewSize);
+                URL.revokeObjectURL(url);
+            };
+            
+            img.src = url;
+        }
+
+        function downloadPNG(canvasId, filename, targetSize) {
+            // Create a high-resolution canvas for download
+            const downloadCanvas = document.createElement('canvas');
+            downloadCanvas.width = targetSize;
+            downloadCanvas.height = targetSize;
+            const ctx = downloadCanvas.getContext('2d');
+            
+            const img = new Image();
+            const svgBlob = new Blob([logoSVG], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, targetSize, targetSize);
+                URL.revokeObjectURL(url);
+                
+                downloadCanvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                });
+            };
+            
+            img.src = url;
+        }
+
+        function downloadAll() {
+            canvasConfigs.forEach((config, index) => {
+                setTimeout(() => {
+                    downloadPNG(config.id, config.filename, config.size);
+                }, index * 500); // Stagger downloads
+            });
+        }
+
+        // Render all previews on page load
+        window.onload = function() {
+            canvasConfigs.forEach(config => {
+                renderCanvas(config.id, config.size, config.preview);
+            });
+        };
+    </script>
+</body>
+</html>

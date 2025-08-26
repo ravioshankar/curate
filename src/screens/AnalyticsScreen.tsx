@@ -12,28 +12,28 @@ interface AnalyticsScreenProps {
 }
 
 export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
-  const inventory = useSelector((state: RootState) => state.inventory.items);
+  const collection = useSelector((state: RootState) => state.collection.items);
   const formatPrice = (amount: number) => `$${amount.toFixed(2)}`;
   const tintColor = useThemeColor({}, 'tint');
   
-  const totalValue = inventory.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
-  const expectedValue = inventory.reduce((sum, item) => sum + (item.priceExpected || 0), 0);
+  const totalValue = collection.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
+  const expectedValue = collection.reduce((sum, item) => sum + (item.priceExpected || 0), 0);
   
-  const categoryCounts = inventory.reduce((acc, item) => {
+  const categoryCounts = collection.reduce((acc, item) => {
     acc[item.category] = (acc[item.category] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   
   const categories = Object.keys(categoryCounts).sort((a, b) => categoryCounts[b] - categoryCounts[a]);
   
-  const longUnusedItems = inventory.filter(item => {
+  const longUnusedItems = collection.filter(item => {
     const lastUsedDate = new Date(item.lastUsed);
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     return lastUsedDate < oneYearAgo;
   });
   
-  const topValueItems = [...inventory]
+  const topValueItems = [...collection]
     .filter(item => item.pricePaid)
     .sort((a, b) => (b.pricePaid || 0) - (a.pricePaid || 0))
     .slice(0, 3);
@@ -72,16 +72,16 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
           </ThemedView>
           <ThemedView style={styles.statRow}>
             <ThemedText style={styles.statLabel}>Average Item Value:</ThemedText>
-            <ThemedText style={styles.statValue}>{formatPrice(totalValue / (inventory.length || 1))}</ThemedText>
+            <ThemedText style={styles.statValue}>{formatPrice(totalValue / (collection.length || 1))}</ThemedText>
           </ThemedView>
         </ThemedView>
 
-        {/* Inventory Insights */}
+        {/* Collection Insights */}
         <ThemedView style={styles.section}>
-          <ThemedText type="subtitle" style={styles.sectionTitle}>📦 Inventory Insights</ThemedText>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>📦 Collection Insights</ThemedText>
           <ThemedView style={styles.statRow}>
             <ThemedText style={styles.statLabel}>Total Items:</ThemedText>
-            <ThemedText style={styles.statValue}>{inventory.length}</ThemedText>
+            <ThemedText style={styles.statValue}>{collection.length}</ThemedText>
           </ThemedView>
           <ThemedView style={styles.statRow}>
             <ThemedText style={styles.statLabel}>Categories:</ThemedText>
@@ -96,7 +96,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
           <ThemedView style={styles.statRow}>
             <ThemedText style={styles.statLabel}>Items Used Recently:</ThemedText>
             <ThemedText style={[styles.statValue, { color: '#059669' }]}>
-              {inventory.length - longUnusedItems.length}
+              {collection.length - longUnusedItems.length}
             </ThemedText>
           </ThemedView>
         </ThemedView>
@@ -112,7 +112,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
               <ThemedView style={styles.donutChart}>
                 {Object.entries(
                   categories.reduce((acc, cat) => {
-                    const categoryItems = inventory.filter(item => item.category === cat);
+                    const categoryItems = collection.filter(item => item.category === cat);
                     acc[cat] = categoryItems.length;
                     return acc;
                   }, {} as Record<string, number>)
@@ -121,8 +121,8 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
                 .slice(0, 6)
                 .map(([category, count], index) => {
                   const colors = ['#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-                  const percentage = ((count / inventory.length) * 100).toFixed(1);
-                  const angle = (count / inventory.length) * 360;
+                  const percentage = ((count / collection.length) * 100).toFixed(1);
+                  const angle = (count / collection.length) * 360;
                   
                   return (
                     <ThemedView key={category} style={styles.donutSegment}>
@@ -153,7 +153,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
             <ThemedView style={styles.horizontalBarChart}>
               {Object.entries(
                 categories.reduce((acc, cat) => {
-                  const categoryItems = inventory.filter(item => item.category === cat);
+                  const categoryItems = collection.filter(item => item.category === cat);
                   const categoryValue = categoryItems.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
                   acc[cat] = { count: categoryItems.length, value: categoryValue };
                   return acc;
@@ -164,7 +164,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
               .map(([category, data], index) => {
                 const maxValue = Math.max(...Object.values(
                   categories.reduce((acc, cat) => {
-                    const categoryItems = inventory.filter(item => item.category === cat);
+                    const categoryItems = collection.filter(item => item.category === cat);
                     const categoryValue = categoryItems.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
                     acc[cat] = categoryValue;
                     return acc;
@@ -203,7 +203,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
             <ThemedView style={styles.radarChart}>
               {Object.entries(
                 categories.reduce((acc, cat) => {
-                  const categoryItems = inventory.filter(item => item.category === cat);
+                  const categoryItems = collection.filter(item => item.category === cat);
                   const categoryValue = categoryItems.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
                   const avgValue = categoryValue / (categoryItems.length || 1);
                   const recentUsage = categoryItems.filter(item => {
@@ -222,9 +222,9 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
               .sort(([,a], [,b]) => b.value - a.value)
               .slice(0, 5)
               .map(([category, data], index) => {
-                const maxCount = Math.max(...categories.map(cat => inventory.filter(item => item.category === cat).length));
-                const maxValue = Math.max(...categories.map(cat => inventory.filter(item => item.category === cat).reduce((sum, item) => sum + (item.pricePaid || 0), 0)));
-                const maxUsage = Math.max(...categories.map(cat => inventory.filter(item => item.category === cat).filter(item => {
+                const maxCount = Math.max(...categories.map(cat => collection.filter(item => item.category === cat).length));
+                const maxValue = Math.max(...categories.map(cat => collection.filter(item => item.category === cat).reduce((sum, item) => sum + (item.pricePaid || 0), 0)));
+                const maxUsage = Math.max(...categories.map(cat => collection.filter(item => item.category === cat).filter(item => {
                   const daysSince = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                   return daysSince < 30;
                 }).length));
@@ -286,7 +286,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
           
           {Object.entries(
             categories.reduce((acc, cat) => {
-              const categoryItems = inventory.filter(item => item.category === cat);
+              const categoryItems = collection.filter(item => item.category === cat);
               const categoryValue = categoryItems.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
               acc[cat] = { count: categoryItems.length, value: categoryValue };
               return acc;
@@ -320,28 +320,28 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
                 const now = Date.now();
                 
                 if (period === 'Last 7 days') {
-                  itemCount = inventory.filter(item => {
+                  itemCount = collection.filter(item => {
                     const daysSince = Math.floor((now - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                     return daysSince <= 7;
                   }).length;
                 } else if (period === 'Last 30 days') {
-                  itemCount = inventory.filter(item => {
+                  itemCount = collection.filter(item => {
                     const daysSince = Math.floor((now - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                     return daysSince > 7 && daysSince <= 30;
                   }).length;
                 } else if (period === 'Last 90 days') {
-                  itemCount = inventory.filter(item => {
+                  itemCount = collection.filter(item => {
                     const daysSince = Math.floor((now - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                     return daysSince > 30 && daysSince <= 90;
                   }).length;
                 } else {
-                  itemCount = inventory.filter(item => {
+                  itemCount = collection.filter(item => {
                     const daysSince = Math.floor((now - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                     return daysSince > 365;
                   }).length;
                 }
                 
-                const maxItems = inventory.length;
+                const maxItems = collection.length;
                 const barHeight = maxItems > 0 ? (itemCount / maxItems) * 100 : 0;
                 const colors = ['#10B981', '#F59E0B', '#EF4444', '#6B7280'];
                 
@@ -379,10 +379,10 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
                 ];
                 
                 return ranges.map((range, index) => {
-                  const itemsInRange = inventory.filter(item => 
+                  const itemsInRange = collection.filter(item => 
                     (item.pricePaid || 0) >= range.min && (item.pricePaid || 0) < range.max
                   ).length;
-                  const percentage = inventory.length > 0 ? ((itemsInRange / inventory.length) * 100).toFixed(1) : '0.0';
+                  const percentage = collection.length > 0 ? ((itemsInRange / collection.length) * 100).toFixed(1) : '0.0';
                   
                   return (
                     <ThemedView key={range.label} style={styles.valueDonutItem}>
@@ -412,12 +412,12 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
             <ThemedText style={styles.statLabel}>Most Active Category:</ThemedText>
             <ThemedText style={styles.statValue}>
               {categories.reduce((max, cat) => {
-                const catItems = inventory.filter(item => item.category === cat);
+                const catItems = collection.filter(item => item.category === cat);
                 const recentItems = catItems.filter(item => {
                   const daysSinceUsed = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                   return daysSinceUsed < 30;
                 });
-                return recentItems.length > (inventory.filter(item => item.category === max).filter(item => {
+                return recentItems.length > (collection.filter(item => item.category === max).filter(item => {
                   const daysSinceUsed = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                   return daysSinceUsed < 30;
                 }).length || 0) ? cat : max;
@@ -427,7 +427,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
           <ThemedView style={styles.statRow}>
             <ThemedText style={styles.statLabel}>Items Used This Month:</ThemedText>
             <ThemedText style={[styles.statValue, { color: '#059669' }]}>
-              {inventory.filter(item => {
+              {collection.filter(item => {
                 const daysSinceUsed = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                 return daysSinceUsed < 30;
               }).length}
@@ -436,10 +436,10 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
           <ThemedView style={styles.statRow}>
             <ThemedText style={styles.statLabel}>Avg. Days Since Last Use:</ThemedText>
             <ThemedText style={styles.statValue}>
-              {Math.round(inventory.reduce((sum, item) => {
+              {Math.round(collection.reduce((sum, item) => {
                 const daysSinceUsed = Math.floor((Date.now() - new Date(item.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
                 return sum + daysSinceUsed;
-              }, 0) / (inventory.length || 1))}
+              }, 0) / (collection.length || 1))}
             </ThemedText>
           </ThemedView>
         </ThemedView>
@@ -492,8 +492,8 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
             <ThemedText style={styles.recommendationIcon}>🎯</ThemedText>
             <ThemedText style={styles.recommendationText}>
               Focus on using items in the '{categories.reduce((max, cat) => {
-                const catUnused = inventory.filter(item => item.category === cat && longUnusedItems.includes(item));
-                const maxUnused = inventory.filter(item => item.category === max && longUnusedItems.includes(item));
+                const catUnused = collection.filter(item => item.category === cat && longUnusedItems.includes(item));
+                const maxUnused = collection.filter(item => item.category === max && longUnusedItems.includes(item));
                 return catUnused.length > maxUnused.length ? cat : max;
               }, categories[0] || 'General')}' category - they have the most unused items.
             </ThemedText>
@@ -513,8 +513,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: 50,
+    paddingVertical: 12,
+    paddingTop: 44,
   },
   backButton: {
     padding: 8,

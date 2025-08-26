@@ -91,7 +91,7 @@ export function BackupManager({ onBack }: BackupManagerProps) {
       <ThemedView style={[styles.section, { backgroundColor: cardBg, borderColor }]}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Create Backup</ThemedText>
         <ThemedText style={styles.description}>
-          Save your inventory, categories, and settings to a backup file
+          Save your collection, categories, and settings to a backup file
         </ThemedText>
         
         <TouchableOpacity
@@ -137,7 +137,7 @@ export function BackupManager({ onBack }: BackupManagerProps) {
         <ThemedView style={styles.infoContent}>
           <ThemedText style={styles.infoTitle}>How it works</ThemedText>
           <ThemedText style={styles.infoText}>
-            • Backup includes all inventory items, categories, and settings{'\n'}
+            • Backup includes all collection items, categories, and settings{'\n'}
             • Files are saved in JSON format for easy portability{'\n'}
             • Use the same backup file across different devices{'\n'}
             • Restore will replace all current data

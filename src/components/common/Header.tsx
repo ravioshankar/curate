@@ -38,8 +38,8 @@ export function Header({ currentPage, setCurrentPage }: HeaderProps) {
         <NavButton
           icon="📋"
           label="Inventory"
-          isActive={currentPage === 'inventory'}
-          onPress={() => setCurrentPage('inventory')}
+          isActive={currentPage === 'collection'}
+          onPress={() => setCurrentPage('collection')}
         />
         <NavButton
           icon="➕"
@@ -55,11 +55,11 @@ export function Header({ currentPage, setCurrentPage }: HeaderProps) {
 const styles = StyleSheet.create({
   header: {
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    padding: 20,
+    padding: 2,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
     flexDirection: 'column',
-    gap: 16,
+    gap: 12,
   },
   brandSection: {
     backgroundColor: 'transparent',

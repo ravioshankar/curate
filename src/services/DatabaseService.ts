@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { InventoryItem } from '../types/inventory';
+import { CollectionItem } from '../types/collection';
 import { AppSettings } from '../types/user';
 import { webDBService } from './WebDBService';
 
@@ -38,7 +38,7 @@ class DatabaseService {
     }
   }
 
-  async saveInventoryItem(item: InventoryItem): Promise<void> {
+  async saveCollectionItem(item: CollectionItem): Promise<void> {
     await this.init();
     if (!this.initialized) {
       throw new Error('Database not initialized');
@@ -46,47 +46,47 @@ class DatabaseService {
     
     try {
       if (this.isWeb) {
-        await webDBService.saveInventoryItem(item);
+        await webDBService.saveCollectionItem(item);
       } else {
         const sqlite = await this.getSQLiteService();
-        await sqlite.saveInventoryItem(item);
+        await sqlite.saveCollectionItem(item);
       }
     } catch (error) {
-      console.error('DatabaseService: saveInventoryItem failed', error);
+      console.error('DatabaseService: saveCollectionItem failed', error);
       throw error;
     }
   }
 
-  async getInventoryItems(): Promise<InventoryItem[]> {
+  async getCollectionItems(): Promise<CollectionItem[]> {
     await this.init();
     if (!this.initialized) return [];
     
     try {
       if (this.isWeb) {
-        return await webDBService.getInventoryItems();
+        return await webDBService.getCollectionItems();
       } else {
         const sqlite = await this.getSQLiteService();
-        return await sqlite.getInventoryItems();
+        return await sqlite.getCollectionItems();
       }
     } catch (error) {
-      console.error('DatabaseService: getInventoryItems failed', error);
+      console.error('DatabaseService: getCollectionItems failed', error);
       return [];
     }
   }
 
-  async deleteInventoryItem(id: string): Promise<void> {
+  async deleteCollectionItem(id: string): Promise<void> {
     await this.init();
     if (!this.initialized) return;
     
     try {
       if (this.isWeb) {
-        await webDBService.deleteInventoryItem(id);
+        await webDBService.deleteCollectionItem(id);
       } else {
         const sqlite = await this.getSQLiteService();
-        await sqlite.deleteInventoryItem(id);
+        await sqlite.deleteCollectionItem(id);
       }
     } catch (error) {
-      console.error('DatabaseService: deleteInventoryItem failed', error);
+      console.error('DatabaseService: deleteCollectionItem failed', error);
     }
   }
 

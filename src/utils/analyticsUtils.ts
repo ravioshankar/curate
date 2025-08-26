@@ -1,6 +1,6 @@
-import { InventoryItem } from '../types/inventory';
+import { CollectionItem } from '../types/collection';
 
-export interface InventoryAnalytics {
+export interface CollectionAnalytics {
   totalValue: number;
   expectedValue: number;
   potentialLoss: number;
@@ -9,11 +9,11 @@ export interface InventoryAnalytics {
   locationBreakdown: { [key: string]: number };
   unusedItemsCount: number;
   averageItemAge: number;
-  mostValuableItems: InventoryItem[];
-  leastUsedItems: InventoryItem[];
+  mostValuableItems: CollectionItem[];
+  leastUsedItems: CollectionItem[];
 }
 
-export const generateAnalytics = (items: InventoryItem[]): InventoryAnalytics => {
+export const generateAnalytics = (items: CollectionItem[]): CollectionAnalytics => {
   const totalValue = items.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
   const expectedValue = items.reduce((sum, item) => sum + (item.priceExpected || 0), 0);
   
@@ -63,7 +63,7 @@ export const generateAnalytics = (items: InventoryItem[]): InventoryAnalytics =>
   };
 };
 
-export const getRecommendations = (items: InventoryItem[]): string[] => {
+export const getRecommendations = (items: CollectionItem[]): string[] => {
   const analytics = generateAnalytics(items);
   const recommendations: string[] = [];
   

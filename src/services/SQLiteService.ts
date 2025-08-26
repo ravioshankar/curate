@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { InventoryItem } from '../types/inventory';
+import { CollectionItem } from '../types/collection';
 import { AppSettings } from '../types/user';
 
 class SQLiteService {
@@ -16,8 +16,8 @@ class SQLiteService {
     return data ? JSON.parse(data) : null;
   }
 
-  async saveInventoryItem(item: InventoryItem): Promise<void> {
-    const items = await this.getInventoryItems();
+  async saveCollectionItem(item: CollectionItem): Promise<void> {
+    const items = await this.getCollectionItems();
     const index = items.findIndex(i => i.id === item.id);
     if (index >= 0) {
       items[index] = item;
@@ -27,13 +27,13 @@ class SQLiteService {
     await AsyncStorage.setItem('inventory', JSON.stringify(items));
   }
 
-  async getInventoryItems(): Promise<InventoryItem[]> {
+  async getCollectionItems(): Promise<CollectionItem[]> {
     const data = await AsyncStorage.getItem('inventory');
     return data ? JSON.parse(data) : [];
   }
 
-  async deleteInventoryItem(id: string): Promise<void> {
-    const items = await this.getInventoryItems();
+  async deleteCollectionItem(id: string): Promise<void> {
+    const items = await this.getCollectionItems();
     const filtered = items.filter(item => item.id !== id);
     await AsyncStorage.setItem('inventory', JSON.stringify(filtered));
   }
@@ -121,11 +121,11 @@ class SQLiteService {
     }
     
     // Move items from deleted category to "Other"
-    const items = await this.getInventoryItems();
+    const items = await this.getCollectionItems();
     const itemsToUpdate = items.filter(item => item.category === categoryName);
     
     for (const item of itemsToUpdate) {
-      await this.saveInventoryItem({ ...item, category: 'Other' });
+      await this.saveCollectionItem({ ...item, category: 'Other' });
     }
     
     // Remove category from user categories

@@ -2,10 +2,10 @@ import { StyleSheet, ScrollView } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import { StatCard } from './StatCard';
-import { InventoryItem } from '../src/types/inventory';
+import { CollectionItem } from '../src/types/collection';
 
 interface HomePageProps {
-  inventory: InventoryItem[];
+  inventory: CollectionItem[];
 }
 
 export function HomePage({ inventory }: HomePageProps) {

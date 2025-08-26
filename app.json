@@ -13,8 +13,8 @@
       "bundleIdentifier": "com.curate.lifestyle",
       "backgroundColor": "#B91C1C",
       "infoPlist": {
-        "NSCameraUsageDescription": "This app needs access to camera to take photos of inventory items.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select photos of inventory items."
+        "NSCameraUsageDescription": "This app needs access to camera to take photos of collection items.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select photos of collection items."
       }
     },
     "android": {
@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#B91C1C"
       },
-      "package": "com.curate.inventory",
+      "package": "com.curate.collection",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -54,8 +54,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you select images for your inventory items.",
-          "cameraPermission": "The app accesses your camera to let you take photos of your inventory items."
+          "photosPermission": "The app accesses your photos to let you select images for your collection items.",
+          "cameraPermission": "The app accesses your camera to let you take photos of your collection items."
         }
       ]
     ],

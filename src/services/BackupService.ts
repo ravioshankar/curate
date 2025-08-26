@@ -14,7 +14,7 @@ class BackupService {
   async createBackup(): Promise<string> {
     try {
       const [inventory, categories, settings, profile] = await Promise.all([
-        databaseService.getInventoryItems(),
+        databaseService.getCollectionItems(),
         databaseService.getCategories(),
         databaseService.getSettings(),
         databaseService.getProfile()
@@ -59,7 +59,7 @@ class BackupService {
 
       if (backupData.inventory?.length) {
         for (const item of backupData.inventory) {
-          await databaseService.saveInventoryItem(item);
+          await databaseService.saveCollectionItem(item);
         }
       }
 

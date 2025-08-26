@@ -24,7 +24,9 @@ class ImageService {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        return result.assets[0].uri;
+        const uri = result.assets[0].uri;
+        console.log('Image picker result URI:', uri);
+        return uri;
       }
       return null;
     } catch (error) {
@@ -50,7 +52,9 @@ class ImageService {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        return result.assets[0].uri;
+        const uri = result.assets[0].uri;
+        console.log('Camera result URI:', uri);
+        return uri;
       }
       return null;
     } catch (error) {

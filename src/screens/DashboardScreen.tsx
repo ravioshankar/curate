@@ -7,8 +7,8 @@ import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { StatCard } from '../components/common/StatCard';
 import { RootState } from '../store/store';
-import { calculateInventoryStats } from '../utils/inventoryUtils';
-import { loadInventory, deleteInventoryItem, addInventoryItem } from '../store/inventoryStore';
+import { calculateCollectionStats } from '../utils/collectionUtils';
+import { loadCollection, deleteCollectionItem, addCollectionItem } from '../store/collectionStore';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { databaseService } from '../services/DatabaseService';
 import { AddItemPage } from '../components/common/AddItemPage';
@@ -19,7 +19,7 @@ import { getCategoryIcon } from '../utils/categoryIcons';
 
 export function DashboardScreen() {
   const dispatch = useDispatch();
-  const inventory = useSelector((state: RootState) => state.inventory.items);
+  const collection = useSelector((state: RootState) => state.collection.items);
   const formatPrice = (amount: number) => `$${amount.toFixed(2)}`;
   const tintColor = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({ light: '#e5e7eb', dark: '#333' }, 'text');
@@ -29,22 +29,22 @@ export function DashboardScreen() {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const stats = calculateInventoryStats(inventory);
+  const stats = calculateCollectionStats(collection);
 
   useEffect(() => {
-    dispatch(loadInventory());
+    dispatch(loadCollection());
   }, [dispatch]);
 
   // Refresh data when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      dispatch(loadInventory());
+      dispatch(loadCollection());
     }, [dispatch])
   );
   
   // Analytics
-  const totalValue = inventory.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
-  const expectedValue = inventory.reduce((sum, item) => sum + (item.priceExpected || 0), 0);
+  const totalValue = collection.reduce((sum, item) => sum + (item.pricePaid || 0), 0);
+  const expectedValue = collection.reduce((sum, item) => sum + (item.priceExpected || 0), 0);
   
   // Get categories from database and sort by item count
   const [dbCategories, setDbCategories] = useState<string[]>([]);
@@ -57,7 +57,7 @@ export function DashboardScreen() {
     loadCategories();
   }, []);
   
-  const categoryCounts = inventory.reduce((acc, item) => {
+  const categoryCounts = collection.reduce((acc, item) => {
     acc[item.category] = (acc[item.category] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -68,8 +68,8 @@ export function DashboardScreen() {
   
   // Filter items by selected category
   const filteredItems = selectedCategory === 'all' 
-    ? inventory 
-    : inventory.filter(item => item.category === selectedCategory);
+    ? collection 
+    : collection.filter(item => item.category === selectedCategory);
   
   // Items needing attention (filtered by category)
   const longUnusedItems = filteredItems.filter(item => {
@@ -101,7 +101,7 @@ export function DashboardScreen() {
         { 
           text: 'Delete', 
           style: 'destructive',
-          onPress: () => dispatch(deleteInventoryItem(itemId))
+          onPress: () => dispatch(deleteCollectionItem(itemId))
         }
       ]
     );
@@ -109,13 +109,13 @@ export function DashboardScreen() {
 
   const handleAddItem = async (item: any) => {
     try {
-      await dispatch(addInventoryItem(item));
+      await dispatch(addCollectionItem(item));
       setShowAddModal(false);
-      // Refresh inventory to show new item
-      dispatch(loadInventory());
+      // Refresh collection to show new item
+      dispatch(loadCollection());
     } catch (error) {
       console.error('Failed to add item:', error);
-      Alert.alert('Error', 'Failed to add item to inventory');
+      Alert.alert('Error', 'Failed to add item to collection');
     }
   };
 
@@ -123,7 +123,7 @@ export function DashboardScreen() {
     setSearchQuery(query);
   };
 
-  const searchResults = inventory.filter(item => 
+  const searchResults = collection.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -326,7 +326,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingBottom: 120,
+    paddingTop: 8,
+    paddingBottom: 100,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 8,
     paddingTop: 50,
     marginBottom: 8,
   },
