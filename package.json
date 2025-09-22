@@ -16,7 +16,8 @@
     "eas:production": "eas build --platform all --profile production",
     "eas:android": "eas build --platform android --profile production",
     "eas:ios": "eas build --platform ios --profile production",
-    "eas:web": "eas build --platform web --profile production"
+    "eas:web": "eas build --platform web --profile production",
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
