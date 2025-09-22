@@ -138,7 +138,10 @@ export function ItemForm({ item, onSubmit, onCancel, isEdit = false }: ItemFormP
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      console.log('Form validation failed');
+      return;
+    }
     if (!onSubmit || typeof onSubmit !== 'function') {
       console.error('onSubmit is not a function:', onSubmit);
       Alert.alert('Error', 'Submit function is not available');
@@ -160,6 +163,7 @@ export function ItemForm({ item, onSubmit, onCancel, isEdit = false }: ItemFormP
         notes: formData.notes.trim() || undefined,
       };
       
+      console.log('ItemForm submitting item:', itemData);
       onSubmit(itemData);
     } catch (error) {
       console.error('Form submit error:', error);

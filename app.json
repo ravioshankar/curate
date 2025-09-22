@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.curate.lifestyle",
+      "bundleIdentifier": "com.curate.collection",
       "backgroundColor": "#B91C1C",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to take photos of collection items.",

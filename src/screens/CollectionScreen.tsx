@@ -6,7 +6,8 @@ import { CollectionPage } from '../components/common/CollectionPage';
 import { AddItemPage } from '../components/common/AddItemPage';
 import { ItemDetailsPage } from '../components/common/ItemDetailsPage';
 import { RootState, AppDispatch } from '../store/store';
-import { addCollectionItem, updateCollectionItem, deleteCollectionItem } from '../store/collectionStore';
+import { deleteCollectionItem, loadCollection } from '../store/collectionStore';
+import { saveItemToCollection } from '../utils/collectionActions';
 import { CollectionItem } from '../types/collection';
 
 const sampleItems: CollectionItem[] = [
@@ -30,16 +31,13 @@ export function CollectionScreen() {
   const collection = useSelector((state: RootState) => state.collection.items);
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleUpdateItem = (item: CollectionItem) => {
-    dispatch(updateCollectionItem(item));
+  const saveItem = saveItemToCollection(dispatch);
+  
+  const handleSubmit = useCallback((item: CollectionItem) => {
+    saveItem(item, !!editingItem);
     setShowModal(false);
     setEditingItem(null);
-  };
-
-  const handleAddItem = (item: CollectionItem) => {
-    dispatch(addCollectionItem(item));
-    setShowModal(false);
-  };
+  }, [editingItem, saveItem]);
 
   const handleEditItem = (item: CollectionItem) => {
     setEditingItem(item);
@@ -70,29 +68,16 @@ export function CollectionScreen() {
     );
   }, [dispatch]);
 
-  const handleSubmit = useCallback((item: CollectionItem) => {
-    if (editingItem) {
-      dispatch(updateCollectionItem(item));
-      setShowModal(false);
-      setEditingItem(null);
-    } else {
-      dispatch(addCollectionItem(item));
-      setShowModal(false);
-    }
-  }, [editingItem, dispatch]);
-
   const addSampleItems = () => {
     sampleItems.forEach(item => {
       dispatch(addCollectionItem(item));
     });
   };
 
-  // Add sample items on component mount
+  // Load collection from database on mount
   React.useEffect(() => {
-    if (collection.length === 0) {
-      addSampleItems();
-    }
-  }, []);
+    dispatch(loadCollection());
+  }, [dispatch]);
 
   return (
     <ThemedView style={styles.container}>

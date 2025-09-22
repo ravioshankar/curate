@@ -39,8 +39,8 @@
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "./android-service-account.json",
-        "track": "internal"
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production"
       },
       "ios": {
         "appleId": "your-apple-id@example.com",

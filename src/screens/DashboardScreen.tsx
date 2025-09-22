@@ -8,7 +8,8 @@ import { ThemedView } from '../../components/ThemedView';
 import { StatCard } from '../components/common/StatCard';
 import { RootState } from '../store/store';
 import { calculateCollectionStats } from '../utils/collectionUtils';
-import { loadCollection, deleteCollectionItem, addCollectionItem } from '../store/collectionStore';
+import { loadCollection, deleteCollectionItem } from '../store/collectionStore';
+import { saveItemToCollection } from '../utils/collectionActions';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { databaseService } from '../services/DatabaseService';
 import { AddItemPage } from '../components/common/AddItemPage';
@@ -107,16 +108,11 @@ export function DashboardScreen() {
     );
   };
 
-  const handleAddItem = async (item: any) => {
-    try {
-      await dispatch(addCollectionItem(item));
-      setShowAddModal(false);
-      // Refresh collection to show new item
-      dispatch(loadCollection());
-    } catch (error) {
-      console.error('Failed to add item:', error);
-      Alert.alert('Error', 'Failed to add item to collection');
-    }
+  const saveItem = saveItemToCollection(dispatch);
+  
+  const handleAddItem = (item: any) => {
+    saveItem(item, false); // false = adding new item
+    setShowAddModal(false);
   };
 
   const handleSearch = (query: string) => {
@@ -276,7 +272,7 @@ export function DashboardScreen() {
       <Modal visible={showAddModal} animationType="slide" presentationStyle="pageSheet">
         <CurrencyProvider>
           <AddItemPage 
-            onAddItem={handleAddItem}
+            onSubmit={handleAddItem}
             onBack={() => setShowAddModal(false)}
           />
         </CurrencyProvider>

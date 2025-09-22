@@ -13,7 +13,9 @@ interface AddItemPageProps {
 
 export function AddItemPage({ item, onSubmit = () => {}, onBack, isEdit = false }: AddItemPageProps) {
   const handleSubmit = (itemData: CollectionItem) => {
+    console.log('AddItemPage handleSubmit called with:', itemData);
     if (typeof onSubmit === 'function') {
+      console.log('Calling onSubmit function');
       onSubmit(itemData);
       Alert.alert(
         'Success!',
@@ -21,7 +23,7 @@ export function AddItemPage({ item, onSubmit = () => {}, onBack, isEdit = false 
         [{ text: 'OK', onPress: onBack }]
       );
     } else {
-      console.error('onSubmit is not a function');
+      console.error('onSubmit is not a function:', onSubmit);
       Alert.alert('Error', 'Submit function is not available');
     }
   };
@@ -29,7 +31,7 @@ export function AddItemPage({ item, onSubmit = () => {}, onBack, isEdit = false 
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">{isEdit ? 'Edit Item' : 'Add New Item'}</ThemedText>
+        <ThemedText style={styles.headerTitle}>{isEdit ? 'Edit Item' : 'Add New Item'}</ThemedText>
         <TouchableOpacity onPress={onBack} style={styles.closeButton}>
           <ThemedText style={styles.closeText}>✕</ThemedText>
         </TouchableOpacity>
@@ -50,6 +52,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
     backgroundColor: 'transparent',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   closeButton: {
     padding: 8,
