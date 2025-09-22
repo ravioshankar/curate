@@ -26,10 +26,9 @@ export const saveItemToCollection = (dispatch: AppDispatch) => {
         console.error('Update failed:', error);
       });
     } else {
-      // Add new item - immediate UI update + background save
-      dispatch(addItem(item));
+      // Add new item - only use async thunk (it handles state update)
       dispatch(addCollectionItem(item)).catch(error => {
-        console.error('Background save failed:', error);
+        console.error('Add item failed:', error);
       });
     }
   };

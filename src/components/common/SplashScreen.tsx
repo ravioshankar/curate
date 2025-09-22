@@ -51,12 +51,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
           }
         ]}
       >
-        <CurateLogo 
-          size={140} 
-          backgroundColor="rgba(255,255,255,0.15)"
-          orbColor="#FFFFFF"
-          elementColor="#FFFFFF"
-        />
+        <CurateLogo size={140} />
         <ThemedText style={styles.title}>Curate</ThemedText>
         <ThemedText style={styles.subtitle}>Premium Asset Curator</ThemedText>
       </Animated.View>

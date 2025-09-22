@@ -1,0 +1,10 @@
+<svg width="48" height="48" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Red circle -->
+  <circle cx="45" cy="45" r="25" fill="#DC2626" opacity="0.8"/>
+  
+  <!-- Blue circle -->
+  <circle cx="75" cy="45" r="25" fill="#2563EB" opacity="0.8"/>
+  
+  <!-- Green circle -->
+  <circle cx="60" cy="75" r="25" fill="#16A34A" opacity="0.8"/>
+</svg>
