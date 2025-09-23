@@ -44,7 +44,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={tintColor} />
         </TouchableOpacity>
-        <ThemedText type="title">📊 Analytics Report</ThemedText>
+        <ThemedText type="title">📊 Collection Analytics</ThemedText>
         <ThemedView style={styles.placeholder} />
       </ThemedView>
       

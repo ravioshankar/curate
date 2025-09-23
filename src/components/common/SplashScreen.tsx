@@ -51,7 +51,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
           }
         ]}
       >
-        <CurateLogo size={140} />
+        <CurateLogo size={100} />
         <ThemedText style={styles.title}>Curate</ThemedText>
         <ThemedText style={styles.subtitle}>Premium Asset Curator</ThemedText>
       </Animated.View>
@@ -68,11 +68,11 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    gap: 32,
+    gap: 20,
   },
 
   title: {
-    fontSize: 42,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#FFFFFF',
     letterSpacing: 1,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#FEF7F0',
     fontWeight: '500',
     letterSpacing: 1,

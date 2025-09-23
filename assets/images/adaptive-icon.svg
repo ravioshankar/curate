@@ -1,10 +1,10 @@
-<svg width="1024" height="1024" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <!-- Red circle -->
-  <circle cx="45" cy="45" r="25" fill="#DC2626" opacity="0.8"/>
+  <circle cx="384" cy="384" r="170" fill="#DC2626" opacity="0.8"/>
   
   <!-- Blue circle -->
-  <circle cx="75" cy="45" r="25" fill="#2563EB" opacity="0.8"/>
+  <circle cx="640" cy="384" r="170" fill="#2563EB" opacity="0.8"/>
   
   <!-- Green circle -->
-  <circle cx="60" cy="75" r="25" fill="#16A34A" opacity="0.8"/>
+  <circle cx="512" cy="640" r="170" fill="#16A34A" opacity="0.8"/>
 </svg>

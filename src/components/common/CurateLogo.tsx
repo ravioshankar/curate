@@ -8,52 +8,57 @@ interface CurateLogoProps {
 }
 
 export function CurateLogo({ size = 120, showText = false }: CurateLogoProps) {
-  const circleRadius = size * 0.21;
-  const centerX = size / 2;
-  const centerY = size / 2;
+  const scale = size / 120;
+  const circleSize = Math.max(20, 50 * scale); // Minimum size for very small screens
+  const spacing = Math.max(8, 15 * scale); // Responsive spacing
   
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      {/* Red circle */}
+      {/* Red circle - top left */}
       <View style={[
         styles.circle,
-        styles.redCircle,
         {
-          width: circleRadius * 2,
-          height: circleRadius * 2,
-          borderRadius: circleRadius,
-          left: centerX - circleRadius - size * 0.125,
-          top: centerY - circleRadius - size * 0.125,
+          width: circleSize,
+          height: circleSize,
+          borderRadius: circleSize / 2,
+          backgroundColor: '#DC2626',
+          opacity: 0.8,
+          position: 'absolute',
+          left: spacing,
+          top: spacing,
         }
       ]} />
       
-      {/* Blue circle */}
+      {/* Blue circle - top right */}
       <View style={[
         styles.circle,
-        styles.blueCircle,
         {
-          width: circleRadius * 2,
-          height: circleRadius * 2,
-          borderRadius: circleRadius,
-          left: centerX - circleRadius + size * 0.125,
-          top: centerY - circleRadius - size * 0.125,
+          width: circleSize,
+          height: circleSize,
+          borderRadius: circleSize / 2,
+          backgroundColor: '#2563EB',
+          opacity: 0.8,
+          position: 'absolute',
+          left: size - circleSize - spacing,
+          top: spacing,
         }
       ]} />
       
-      {/* Green circle */}
+      {/* Green circle - bottom center */}
       <View style={[
         styles.circle,
-        styles.greenCircle,
         {
-          width: circleRadius * 2,
-          height: circleRadius * 2,
-          borderRadius: circleRadius,
-          left: centerX - circleRadius,
-          top: centerY - circleRadius + size * 0.125,
+          width: circleSize,
+          height: circleSize,
+          borderRadius: circleSize / 2,
+          backgroundColor: '#16A34A',
+          opacity: 0.8,
+          position: 'absolute',
+          left: (size - circleSize) / 2,
+          top: size - circleSize - spacing,
         }
       ]} />
       
-      {/* Optional text below */}
       {showText && (
         <View style={styles.textContainer}>
           <ThemedText style={styles.brandText}>Curate</ThemedText>
@@ -70,19 +75,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   circle: {
-    position: 'absolute',
-  },
-  redCircle: {
-    backgroundColor: '#DC2626',
-    opacity: 0.8,
-  },
-  blueCircle: {
-    backgroundColor: '#2563EB',
-    opacity: 0.8,
-  },
-  greenCircle: {
-    backgroundColor: '#16A34A',
-    opacity: 0.8,
+    // Base circle styles
   },
   textContainer: {
     position: 'absolute',
