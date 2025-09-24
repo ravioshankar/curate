@@ -16,6 +16,7 @@ import { Alert, Image, ScrollView, StyleSheet, Switch, TextInput, TouchableOpaci
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
 import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 
 export function ProfileScreen() {
   const { profile, settings } = useSelector((state: RootState) => state.user);
@@ -191,6 +192,12 @@ export function ProfileScreen() {
           title="Backup & Sync"
           icon="cloud-upload"
           onPress={() => setShowBackupManager(true)}
+        />
+        
+        <ProfileOption
+          title="Privacy Policy"
+          icon="privacy-tip"
+          onPress={() => router.push('/privacy-policy')}
         />
         
         <ThemedView style={[styles.currencySection, { borderBottomColor: borderColor }]}>
