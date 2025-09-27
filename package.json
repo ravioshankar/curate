@@ -1,7 +1,7 @@
 {
   "name": "curate",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -18,7 +18,11 @@
     "eas:ios": "eas build --platform ios --profile production",
     "eas:web": "eas build --platform web --profile production",
     "generate-icons": "node scripts/generate-icons.js",
-    "convert-icons": "node scripts/convert-to-png.js"
+    "convert-icons": "node scripts/convert-to-png.js",
+    "build:aab": "cd android && ./gradlew bundleRelease",
+    "build:apk-release": "cd android && ./gradlew assembleRelease",
+    "build:internal": "npx expo run:android --variant release",
+    "prebuild": "npx expo prebuild --platform android --clean"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -29,6 +33,7 @@
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
     "@reduxjs/toolkit": "^2.0.1",
+    "eas-cli": "^16.19.3",
     "expo": "~53.0.23",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",

@@ -7,6 +7,15 @@
       "developmentClient": true,
       "distribution": "internal"
     },
+    "internal": {
+      "android": {
+        "buildType": "aab"
+      },
+      "ios": {
+        "autoIncrement": "buildNumber"
+      },
+      "distribution": "internal"
+    },
     "preview": {
       "android": {
         "buildType": "apk"
@@ -17,7 +26,8 @@
     },
     "production": {
       "android": {
-        "buildType": "aab"
+        "buildType": "aab",
+        "gradleCommand": ":app:bundleRelease"
       },
       "ios": {
         "autoIncrement": "buildNumber"
@@ -28,7 +38,8 @@
     },
     "local": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       },
       "ios": {
         "simulator": true
