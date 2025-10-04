@@ -23,6 +23,7 @@
         "backgroundColor": "#B91C1C"
       },
       "package": "com.curate.collection",
+      "versionCode": 10001,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

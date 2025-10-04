@@ -10,7 +10,10 @@
     "lint": "expo lint",
     "build:apk": "eas build --platform android --profile preview",
     "build:local": "eas build --platform android --profile local --local",
-    "build:android": "node scripts/build-android.js",
+    "build:android": "node scripts/build-android.js patch",
+    "build:android:patch": "node scripts/build-android.js patch",
+    "build:android:minor": "node scripts/build-android.js minor",
+    "build:android:major": "node scripts/build-android.js major",
     "build:ios": "node scripts/build-ios.js",
     "eas:preview": "eas build --platform all --profile preview",
     "eas:production": "eas build --platform all --profile production",
@@ -23,6 +26,7 @@
     "build:apk-release": "cd android && ./gradlew assembleRelease",
     "build:internal": "npx expo run:android --variant release",
     "prebuild": "npx expo prebuild --platform android --clean",
+    "generate-keystore": "node scripts/generate-keystore.js",
     "andriod": "npx expo run:android --variant freeDebug"
 
   },
