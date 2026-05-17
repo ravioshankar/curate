@@ -2,6 +2,9 @@ import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import userReducer from './userStore';
 import collectionReducer from './collectionStore';
 import categoriesReducer from './categoriesStore';
+import priceHistoryReducer from './priceHistoryReducer';
+import authReducer from './authStore';
+import syncReducer from './syncStore';
 
 interface AppState {
   currentPage: string;
@@ -29,6 +32,9 @@ export const store = configureStore({
     collection: collectionReducer,
     user: userReducer,
     categories: categoriesReducer,
+    priceHistory: priceHistoryReducer,
+    auth: authReducer,
+    sync: syncReducer,
   },
 });
 
