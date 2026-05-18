@@ -61,6 +61,21 @@ export class SyncService {
       store.dispatch(setSyncing(false));
     }
   }
+
+  async resolveConflict(itemId: string, choice: 'local' | 'remote') {
+    try {
+      console.log(`SyncService: Resolving conflict for ${itemId}, choice: ${choice}`);
+      // Import the action
+      const { resolveConflict } = require('@/src/store/syncStore');
+      // Remove from conflicted items list in Redux
+      store.dispatch(resolveConflict(itemId));
+      // Re-sync to ensure consistency
+      await this.syncNow();
+    } catch (error) {
+      console.error('SyncService: Failed to resolve conflict', error);
+      throw error;
+    }
+  }
 }
 
 export const syncService = new SyncService();
