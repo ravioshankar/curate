@@ -11,6 +11,7 @@ import { useAppDispatch } from '@/src/hooks/useAppDispatch';
 import { initFirebase } from '@/src/services/AuthService';
 import { migrationService } from '@/src/services/MigrationService';
 import { syncService } from '@/src/services/SyncService';
+import { backgroundSyncService } from '@/src/services/BackgroundSyncService';
 
 // Initialize Firebase once at app startup
 initFirebase(firebaseConfig);
@@ -21,9 +22,15 @@ function RootLayoutContent() {
   useEffect(() => {
     // Initialize Firebase listeners and sync service
     syncService.start();
+    
+    // Initialize background sync
+    backgroundSyncService.initialize().catch(err => 
+      console.error('RootLayout: Failed to initialize background sync:', err)
+    );
 
     return () => {
       syncService.stop();
+      backgroundSyncService.stop();
     };
   }, [dispatch]);
 

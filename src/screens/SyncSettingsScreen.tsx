@@ -1,8 +1,9 @@
 import { ConflictResolutionView } from '@/components/ConflictResolutionView';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { syncService } from '@/src/services/SyncService';
+import { backgroundSyncService } from '@/src/services/BackgroundSyncService';
 import { RootState } from '@/src/store/store';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -21,6 +22,7 @@ export function SyncSettingsScreen() {
   const auth = useSelector((state: RootState) => state.auth);
   const sync = useSelector((state: RootState) => state.sync);
   const [autoSync, setAutoSync] = useState(true);
+  const [backgroundSync, setBackgroundSync] = useState(true);
   const [backupEnabled, setBackupEnabled] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [showConflicts, setShowConflicts] = useState(false);
@@ -29,6 +31,13 @@ export function SyncSettingsScreen() {
   const borderColor = useThemeColor({ light: '#eee', dark: '#333' }, 'text');
   const backgroundColor = useThemeColor({ light: '#fff', dark: '#1C1917' }, 'background');
   const tintColor = useThemeColor({}, 'tint');
+
+  // Check background sync status on mount
+  useEffect(() => {
+    backgroundSyncService.isEnabled().then(enabled => {
+      setBackgroundSync(enabled);
+    });
+  }, []);
 
   const hasConflicts = (sync.conflictedItems || []).length > 0;
   const lastSyncDisplay = sync.lastSyncTime
@@ -45,6 +54,28 @@ export function SyncSettingsScreen() {
       console.error('Sync error:', error);
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleBackgroundSyncToggle = async (enabled: boolean) => {
+    try {
+      setBackgroundSync(enabled);
+      if (enabled) {
+        await backgroundSyncService.initialize();
+      } else {
+        await backgroundSyncService.stop();
+      }
+      Alert.alert(
+        'Success',
+        enabled 
+          ? 'Background sync enabled. Your collections will sync every 15 minutes.'
+          : 'Background sync disabled.'
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update background sync settings.');
+      console.error('Background sync toggle error:', error);
+      // Revert the state
+      setBackgroundSync(!enabled);
     }
   };
 
@@ -143,6 +174,19 @@ export function SyncSettingsScreen() {
           </View>
           <Text style={[styles.helperText, { color: textColor }]}>
             Automatically sync changes when connected to the internet
+          </Text>
+
+          <View style={[styles.switchRow, styles.marginTop]}>
+            <Text style={[styles.label, { color: textColor }]}>Background Sync</Text>
+            <Switch
+              value={backgroundSync}
+              onValueChange={handleBackgroundSyncToggle}
+              trackColor={{ false: '#ccc', true: tintColor + '50' }}
+              thumbColor={backgroundSync ? tintColor : '#f4f3f4'}
+            />
+          </View>
+          <Text style={[styles.helperText, { color: textColor }]}>
+            Sync collections every 15 minutes in the background
           </Text>
 
           <View style={[styles.switchRow, styles.marginTop]}>

@@ -16,6 +16,8 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^react-native$': '<rootDir>/__tests__/mocks/react-native.js',
+    '^expo-background-fetch$': '<rootDir>/__tests__/mocks/expo-background-fetch.js',
+    '^expo-task-manager$': '<rootDir>/__tests__/mocks/expo-task-manager.js',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   testPathIgnorePatterns: [
@@ -32,7 +34,7 @@ module.exports = {
     '/dist/',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(uuid|@react-native|firebase)/)',
+    'node_modules/(?!(uuid|@react-native|firebase|expo)/)',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testMatch: [
