@@ -1,135 +1,87 @@
-import { Platform } from 'react-native';
+// BackupService.ts - Encrypted backup and restore for offline-first sync
+import { decryptString, encryptString } from '@/src/utils/encryption';
+import { getCurrentUser } from './AuthService';
 import { databaseService } from './DatabaseService';
-
-interface BackupData {
-  inventory: any[];
-  categories: string[];
-  settings: any;
-  profile: any;
-  timestamp: string;
-  version: string;
-}
+import { opQueueService } from './OpQueueService';
 
 class BackupService {
-  async createBackup(): Promise<string> {
-    try {
-      const [inventory, categories, settings, profile] = await Promise.all([
-        databaseService.getCollectionItems(),
-        databaseService.getCategories(),
-        databaseService.getSettings(),
-        databaseService.getProfile()
-      ]);
+  async createBackup(password: string) {
+    const user = getCurrentUser();
+    if (!user) throw new Error('Not authenticated');
 
-      const backupData: BackupData = {
-        inventory,
-        categories,
-        settings: settings || {},
-        profile: profile || {},
-        timestamp: new Date().toISOString(),
-        version: '1.0'
+    try {
+      const collections = await databaseService.getCollectionItems();
+      const settings = await databaseService.getSettings();
+      const profile = await databaseService.getProfile();
+      const opQueue = await opQueueService.export();
+
+      const backup = {
+        version: 1,
+        timestamp: Date.now(),
+        userId: user.uid,
+        collections,
+        settings,
+        profile,
+        operations: opQueue,
       };
 
-      return JSON.stringify(backupData, null, 2);
+      // Encrypt the backup
+      const json = JSON.stringify(backup);
+      const encrypted = await encryptString(json, password);
+
+      return {
+        encrypted,
+        timestamp: backup.timestamp,
+        userId: user.uid,
+      };
     } catch (error) {
-      console.error('Failed to create backup:', error);
-      throw new Error('Failed to create backup');
+      console.error('BackupService: createBackup failed:', error);
+      throw error;
     }
   }
 
-  async restoreBackup(backupJson: string): Promise<void> {
+  async restoreBackup(encrypted: string, password: string) {
     try {
-      const backupData: BackupData = JSON.parse(backupJson);
-      
-      // Validate backup data
-      if (!backupData.version || !backupData.timestamp) {
-        throw new Error('Invalid backup format');
+      const json = await decryptString(encrypted, password);
+      const backup = JSON.parse(json);
+
+      if (backup.version !== 1) throw new Error('Unsupported backup version');
+
+      // Restore collections
+      for (const item of backup.collections || []) {
+        await databaseService.saveCollectionItem(item);
       }
 
-      // Restore data
-      if (backupData.categories?.length) {
-        // Clear existing categories and restore
-        const currentCategories = await databaseService.getCategories();
-        for (const cat of currentCategories) {
-          await databaseService.deleteCategory(cat);
-        }
-        for (const cat of backupData.categories) {
-          await databaseService.addCategory(cat);
-        }
+      // Restore settings
+      if (backup.settings) {
+        await databaseService.saveSettings(backup.settings);
       }
 
-      if (backupData.inventory?.length) {
-        for (const item of backupData.inventory) {
-          await databaseService.saveCollectionItem(item);
-        }
+      // Restore profile
+      if (backup.profile) {
+        await databaseService.saveProfile(backup.profile);
       }
 
-      if (backupData.settings) {
-        await databaseService.saveSettings(backupData.settings);
+      // Restore operations queue
+      if (backup.operations) {
+        await opQueueService.import(backup.operations);
       }
 
-      if (backupData.profile) {
-        await databaseService.saveProfile(backupData.profile);
-      }
-
+      return {
+        success: true,
+        itemsRestored: (backup.collections || []).length,
+      };
     } catch (error) {
-      console.error('Failed to restore backup:', error);
-      throw new Error('Failed to restore backup');
+      console.error('BackupService: restoreBackup failed:', error);
+      throw error;
     }
   }
 
-  async uploadToGoogleDrive(backupData: string): Promise<string> {
-    if (Platform.OS === 'web') {
-      return this.uploadToGoogleDriveWeb(backupData);
-    } else {
-      return this.uploadToGoogleDriveMobile(backupData);
-    }
-  }
-
-  private async uploadToGoogleDriveWeb(backupData: string): Promise<string> {
-    // For web, we'll use Google Drive API directly
-    const fileName = `curate-backup-${new Date().toISOString().split('T')[0]}.json`;
-    
-    // Create downloadable backup file for now
-    const blob = new Blob([backupData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    return fileName;
-  }
-
-  private async uploadToGoogleDriveMobile(backupData: string): Promise<string> {
-    const fileName = `curate-backup-${new Date().toISOString().split('T')[0]}.json`;
-    
-    // For mobile, create downloadable file using FileSystem
-    try {
-      const FileSystem = require('expo-file-system');
-      const filePath = `${FileSystem.documentDirectory}${fileName}`;
-      
-      await FileSystem.writeAsStringAsync(filePath, backupData);
-      
-      // Share the file
-      const Sharing = require('expo-sharing');
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(filePath);
-      }
-      
-      return fileName;
-    } catch (error) {
-      // Fallback: just return filename
-      return fileName;
-    }
-  }
-
-  async downloadFromGoogleDrive(fileId: string): Promise<string> {
-    // Implementation for downloading from Google Drive
-    throw new Error('Download from Google Drive not implemented yet');
+  async schedulePeriodicBackup(intervalMs: number = 86400000) {
+    // Default: once per day
+    // TODO: implement scheduled backup to Firebase Storage
+    // For now, this is a placeholder
+    console.log(`BackupService: Scheduled periodic backup every ${intervalMs}ms`);
   }
 }
 

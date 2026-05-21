@@ -45,12 +45,17 @@ class DatabaseService {
     }
     
     try {
+      const { opQueueService } = await import('./OpQueueService');
+      
       if (this.isWeb) {
         await webDBService.saveCollectionItem(item);
       } else {
         const sqlite = await this.getSQLiteService();
         await sqlite.saveCollectionItem(item);
       }
+
+      // Record operation for sync
+      await opQueueService.recordOperation(item.id ? 'update' : 'create', 'collections', item);
     } catch (error) {
       console.error('DatabaseService: saveCollectionItem failed', error);
       throw error;
@@ -79,12 +84,17 @@ class DatabaseService {
     if (!this.initialized) return;
     
     try {
+      const { opQueueService } = await import('./OpQueueService');
+      
       if (this.isWeb) {
         await webDBService.deleteCollectionItem(id);
       } else {
         const sqlite = await this.getSQLiteService();
         await sqlite.deleteCollectionItem(id);
       }
+
+      // Record operation for sync
+      await opQueueService.recordOperation('delete', 'collections', { id });
     } catch (error) {
       console.error('DatabaseService: deleteCollectionItem failed', error);
     }

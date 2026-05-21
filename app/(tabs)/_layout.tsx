@@ -1,14 +1,13 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { View, Image } from 'react-native';
-import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store/store';
+import { Tabs } from 'expo-router';
+import { Image, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
+import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { ThemedText } from '@/components/ThemedText';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { CurateLogo } from '@/src/components/common/CurateLogo';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 function AppHeader() {
   const colorScheme = useAppTheme();
@@ -85,6 +84,13 @@ export default function TabLayout() {
         options={{
           title: 'Collection',
           tabBarIcon: ({ color }) => <Icon name="collections" size={32} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="sync"
+        options={{
+          title: 'Sync',
+          tabBarIcon: ({ color }) => <Icon name="cloud-sync" size={32} color={color} />,
         }}
       />
       <Tabs.Screen

@@ -1,0 +1,45 @@
+// firebaseRules.txt - Firestore Security Rules (paste into Firebase Console)
+// Path: Firestore Database → Rules
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to access only their own data
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+
+      // Collections subcollection
+      match /collections/{document=**} {
+        allow read, write: if request.auth.uid == userId;
+      }
+
+      // Operations journal (audit trail)
+      match /operations/{document=**} {
+        allow read, write: if request.auth.uid == userId;
+      }
+
+      // Metadata (sync state)
+      match /metadata/{document=**} {
+        allow read, write: if request.auth.uid == userId;
+      }
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+/**
+ * KEY POINTS:
+ * 1. Each user's data is isolated in /users/{userId}
+ * 2. Users can only read/write their own data (based on Auth.uid)
+ * 3. Three subcollections:
+ *    - collections: User's collection items
+ *    - operations: Audit trail of all sync operations
+ *    - metadata: Sync metadata (version, lastSyncTime, conflicts)
+ * 4. No batch writes allowed; sync engine does sequential writes
+ * 5. For production, add rate limiting and data validation
+ */
