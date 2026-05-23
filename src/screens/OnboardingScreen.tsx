@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity, Alert, Image, Platform } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/src/store/store';
-import { updateProfile, saveProfile, updateSettings, saveSettings } from '@/src/store/userStore';
+import { IQRateLogo } from '@/src/components/common/IQRateLogo';
 import { imageService } from '@/src/services/ImageService';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { CurateLogo } from '@/src/components/common/CurateLogo';
+import { AppDispatch } from '@/src/store/store';
+import { saveProfile, saveSettings, updateProfile, updateSettings } from '@/src/store/userStore';
+import React, { useState } from 'react';
+import { Alert, Image, Platform, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useDispatch } from 'react-redux';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -107,13 +107,13 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <CurateLogo 
+        <IQRateLogo 
           size={80} 
           backgroundColor={`${tintColor}20`}
           orbColor={tintColor}
           elementColor={tintColor}
         />
-        <ThemedText style={[styles.title, { color: tintColor }]}>Welcome to Curate</ThemedText>
+        <ThemedText style={[styles.title, { color: tintColor }]}>Welcome to iQRate</ThemedText>
         <ThemedText style={styles.subtitle}>Let us set up your profile</ThemedText>
       </ThemedView>
 

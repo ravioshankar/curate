@@ -1,15 +1,15 @@
-# Privacy Policy for Curate
+# Privacy Policy for iQRate
 
 **Effective Date:** September 24, 2025
 
 ## Introduction
 
-This Privacy Policy describes how Curate ("we," "our," or "us") handles information when you use our mobile application (the "App"). We are committed to protecting your privacy and being transparent about our data practices.
+This Privacy Policy describes how iQRate ("we," "our," or "us") handles information when you use our mobile application (the "App"). We are committed to protecting your privacy and being transparent about our data practices.
 
 ## Information We Collect
 
 ### Personal Information
-Curate does **not** collect, store, or transmit any personal information to external servers. All data you enter into the app is stored locally on your device.
+iQRate does **not** collect, store, or transmit any personal information to external servers. All data you enter into the app is stored locally on your device.
 
 ### Data You Provide
 - Collection item details (names, descriptions, categories, locations)
@@ -47,7 +47,7 @@ We do **not** share, sell, rent, or disclose any of your information to third pa
 
 ## Children's Privacy
 
-Curate does not knowingly collect personal information from children under 13. Since all data is stored locally on the device and we do not collect any information, the app can be used by children under parental supervision.
+iQRate does not knowingly collect personal information from children under 13. Since all data is stored locally on the device and we do not collect any information, the app can be used by children under parental supervision.
 
 ## Your Rights
 
@@ -63,17 +63,17 @@ We may update this Privacy Policy from time to time. Any changes will be posted 
 
 ## Third-Party Services
 
-Curate does not integrate with any third-party services that collect personal information.
+iQRate does not integrate with any third-party services that collect personal information.
 
 ## Contact Us
 
 If you have any questions about this Privacy Policy, please contact us at:
 
 **Email:** [Your Email Address]
-**App:** Curate - Personal Asset Curator
+**App:** iQRate - Personal Asset Curator
 
 ---
 
 **Last Updated:** September 24, 2025
 
-This privacy policy applies specifically to the Curate mobile application and describes our commitment to protecting your privacy through local-only data storage.
+This privacy policy applies specifically to the iQRate mobile application and describes our commitment to protecting your privacy through local-only data storage.

@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, ColorValue } from 'react-native';
+import { ColorValue, StyleSheet, View } from 'react-native';
 import { ThemedText } from '../../../components/ThemedText';
 
-interface CurateLogoProps {
+interface IQRateLogoProps {
   size?: number;
   showText?: boolean;
   backgroundColor?: ColorValue;
@@ -10,7 +10,7 @@ interface CurateLogoProps {
   elementColor?: ColorValue;
 }
 
-export function CurateLogo({ size = 120, showText = false, backgroundColor = 'transparent', orbColor }: CurateLogoProps) {
+export function IQRateLogo({ size = 120, showText = false, backgroundColor = 'transparent', orbColor }: iQRateLogoProps) {
   const scale = size / 120;
   const circleSize = Math.max(20, 50 * scale); // Minimum size for very small screens
   const spacing = Math.max(8, 15 * scale); // Responsive spacing
@@ -65,7 +65,7 @@ export function CurateLogo({ size = 120, showText = false, backgroundColor = 'tr
       
       {showText && (
         <View style={styles.textContainer}>
-          <ThemedText style={styles.brandText}>Curate</ThemedText>
+          <ThemedText style={styles.brandText}>iQRate</ThemedText>
         </View>
       )}
     </View>

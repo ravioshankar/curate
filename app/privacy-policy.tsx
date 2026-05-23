@@ -1,7 +1,7 @@
-import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import React from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
 
 export default function PrivacyPolicyScreen() {
   return (
@@ -11,7 +11,7 @@ export default function PrivacyPolicyScreen() {
         
         <ThemedText type="subtitle" style={styles.section}>Data Storage</ThemedText>
         <ThemedText style={styles.text}>
-          Curate stores all your data locally on your device. We do not collect, store, or transmit any personal information to external servers.
+          iQRate stores all your data locally on your device. We do not collect, store, or transmit any personal information to external servers.
         </ThemedText>
 
         <ThemedText type="subtitle" style={styles.section}>Information We Do Not Collect</ThemedText>

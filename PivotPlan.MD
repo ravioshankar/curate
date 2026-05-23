@@ -1,14 +1,14 @@
-# Curate Pivot Plan: Data Collection Platform
+# iQRate Pivot Plan: Data Collection Platform
 
 ## Product Thesis
 
-Curate should evolve from a personal inventory tracker into an offline-first data collection platform for structured field capture, audits, inspections, research logs, asset records, and lightweight operational workflows.
+iQRate should evolve from a personal inventory tracker into an offline-first data collection platform for structured field capture, audits, inspections, research logs, asset records, and lightweight operational workflows.
 
-The strongest path is not to abandon inventory. Instead, inventory becomes one built-in template inside a more flexible platform. This preserves the current product DNA while opening Curate to broader use cases.
+The strongest path is not to abandon inventory. Instead, inventory becomes one built-in template inside a more flexible platform. This preserves the current product DNA while opening iQRate to broader use cases.
 
 ## Positioning
 
-Curate helps users create reusable data templates, collect structured records quickly, attach evidence, review data quality, and export usable datasets.
+iQRate helps users create reusable data templates, collect structured records quickly, attach evidence, review data quality, and export usable datasets.
 
 Target use cases:
 
@@ -459,7 +459,7 @@ Tasks:
 
 Deliverable:
 
-- Curate can move from single-user local tool to collaborative data platform.
+- iQRate can move from single-user local tool to collaborative data platform.
 
 ## Suggested Navigation
 
@@ -484,7 +484,7 @@ Use Projects, Records, Templates, Profile for the first pivot. It is simpler and
 
 ## Migration Strategy
 
-Existing Curate inventory should become the first built-in data collection experience.
+Existing iQRate inventory should become the first built-in data collection experience.
 
 Migration mapping:
 
@@ -534,7 +534,7 @@ Start with the smallest useful slice:
 5. Store records locally.
 6. Export project records to CSV.
 
-This creates a real data collection platform while keeping Curate recognizable.
+This creates a real data collection platform while keeping iQRate recognizable.
 
 ## MVP Backlog
 

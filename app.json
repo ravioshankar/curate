@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "Curate",
-    "slug": "curate",
+    "name": "iQRate",
+    "slug": "iQRate",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.svg",
-    "scheme": "curate",
+    "scheme": "iQRate",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.curate.collection",
+      "bundleIdentifier": "com.iQRate.collection",
       "backgroundColor": "#B91C1C",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to take photos of collection items.",
@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#B91C1C"
       },
-      "package": "com.curate.collection",
+      "package": "com.iQRate.collection",
       "versionCode": 10001,
       "permissions": [
         "CAMERA",

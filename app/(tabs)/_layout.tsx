@@ -1,14 +1,14 @@
+import { RootState } from '@/src/store/store';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { View, Image } from 'react-native';
+import { Image, View } from 'react-native';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/src/store/store';
 
+import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { ThemedText } from '@/components/ThemedText';
+import { IQRateLogo } from '@/src/components/common/IQRateLogo';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { CurateLogo } from '@/src/components/common/CurateLogo';
 
 function AppHeader() {
   const colorScheme = useAppTheme();
@@ -17,7 +17,7 @@ function AppHeader() {
   return (
     <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-        <CurateLogo 
+        <IQRateLogo 
           size={28} 
           backgroundColor="transparent"
           orbColor={colors.tint}
@@ -32,7 +32,7 @@ function AppHeader() {
           textShadowOffset: {width: 0, height: 1},
           textShadowRadius: 3,
           marginLeft: 8
-        }}>Curate</ThemedText>
+        }}>iQRate</ThemedText>
       </View>
       <ThemedText style={{ 
         fontSize: 13, 

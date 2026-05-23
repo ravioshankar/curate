@@ -33,11 +33,11 @@ try {
     
     if (appBundle) {
       const sourcePath = path.join(iosBuildDir, appBundle);
-      const destPath = path.join(packageDir, `curate-v${version}.app`);
+      const destPath = path.join(packageDir, `iQRate-v${version}.app`);
       
       // Copy entire .app bundle directory
       execSync(`cp -R "${sourcePath}" "${destPath}"`, { stdio: 'inherit' });
-      console.log(`✅ iOS app copied to: package/ios/curate-v${version}.app`);
+      console.log(`✅ iOS app copied to: package/ios/iQRate-v${version}.app`);
     } else {
       console.log('❌ No .app bundle found in build output');
     }

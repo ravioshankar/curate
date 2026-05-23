@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-This feature adds comprehensive price tracking and valuation history to your Curate collection. Users can now:
+This feature adds comprehensive price tracking and valuation history to your iQRate collection. Users can now:
 
 - Track item values over time
 - View price trends with visual sparkline charts

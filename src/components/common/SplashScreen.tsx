@@ -1,8 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { CurateLogo } from './CurateLogo';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
+import { IQRateLogo } from './IQRateLogo';
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -51,8 +50,8 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
           }
         ]}
       >
-        <CurateLogo size={100} />
-        <ThemedText style={styles.title}>Curate</ThemedText>
+        <IQRateLogo size={100} />
+        <ThemedText style={styles.title}>iQRate</ThemedText>
         <ThemedText style={styles.subtitle}>Premium Asset Curator</ThemedText>
       </Animated.View>
     </View>

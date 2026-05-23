@@ -1,4 +1,4 @@
-# Curate - Release Notes
+# iQRate - Release Notes
 
 ## Version 1.0.0 (Initial Release)
 
@@ -6,7 +6,7 @@
 
 **🎉 Initial Release**
 
-Transform how you organize and cherish your personal belongings with Curate's elegant, intelligent platform.
+Transform how you organize and cherish your personal belongings with iQRate's elegant, intelligent platform.
 
 **✨ Key Features:**
 • **Smart Collection Dashboard** - Beautiful overview of your curated items
@@ -25,7 +25,7 @@ Transform how you organize and cherish your personal belongings with Curate's el
 
 **🔒 Privacy First:** All your personal data is stored locally on your device - no cloud sync required.
 
-Experience the premium way to curate your world. Download Curate today and start organizing your belongings with style and intelligence.
+Experience the premium way to iQRate your world. Download iQRate today and start organizing your belongings with style and intelligence.
 
 ---
 
@@ -41,10 +41,10 @@ Experience the premium way to curate your world. Download Curate today and start
 - **Secondary:** Productivity
 
 ### Keywords
-curate, collection, organize, personal, belongings, assets, inventory, tracker, collector, premium
+iQRate, collection, organize, personal, belongings, assets, inventory, tracker, collector, premium
 
 ### What's New (Short Version)
-Initial release of Curate - your premium personal asset curator. Organize, track, and cherish your belongings with elegant design and intelligent features.
+Initial release of iQRate - your premium personal asset curator. Organize, track, and cherish your belongings with elegant design and intelligent features.
 
 ---
 

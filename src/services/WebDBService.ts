@@ -2,7 +2,7 @@ import { CollectionItem } from '../types/collection';
 import { AppSettings } from '../types/user';
 
 class WebDBService {
-  private dbName = 'CurateDB';
+  private dbName = 'iQRateDB';
   private version = 4;
   private db: IDBDatabase | null = null;
 

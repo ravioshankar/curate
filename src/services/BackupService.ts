@@ -87,7 +87,7 @@ class BackupService {
 
   private async uploadToGoogleDriveWeb(backupData: string): Promise<string> {
     // For web, we'll use Google Drive API directly
-    const fileName = `curate-backup-${new Date().toISOString().split('T')[0]}.json`;
+    const fileName = `iQRate-backup-${new Date().toISOString().split('T')[0]}.json`;
     
     // Create downloadable backup file for now
     const blob = new Blob([backupData], { type: 'application/json' });
@@ -105,7 +105,7 @@ class BackupService {
   }
 
   private async uploadToGoogleDriveMobile(backupData: string): Promise<string> {
-    const fileName = `curate-backup-${new Date().toISOString().split('T')[0]}.json`;
+    const fileName = `iQRate-backup-${new Date().toISOString().split('T')[0]}.json`;
     
     // For mobile, create downloadable file using FileSystem
     try {

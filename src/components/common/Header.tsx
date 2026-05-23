@@ -1,9 +1,9 @@
+import { useThemeColor } from '@/hooks/useThemeColor';
 import { StyleSheet } from 'react-native';
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
+import { IQRateLogo } from './IQRateLogo';
 import { NavButton } from './NavButton';
-import { CurateLogo } from './CurateLogo';
-import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface HeaderProps {
   currentPage: string;
@@ -17,13 +17,13 @@ export function Header({ currentPage, setCurrentPage }: HeaderProps) {
     <ThemedView style={styles.header}>
       <ThemedView style={styles.brandSection}>
         <ThemedView style={styles.titleRow}>
-          <CurateLogo 
+          <IQRateLogo 
             size={32} 
             backgroundColor="transparent"
             orbColor={tintColor}
             elementColor={tintColor}
           />
-          <ThemedText type="title" style={styles.title}>Curate</ThemedText>
+          <ThemedText type="title" style={styles.title}>iQRate</ThemedText>
         </ThemedView>
         <ThemedText style={styles.subtitle}>The smarter way to own.</ThemedText>
       </ThemedView>

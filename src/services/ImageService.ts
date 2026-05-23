@@ -1,9 +1,9 @@
-import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 
 class ImageService {
-  private readonly CURATE_FOLDER = 'Curate-Images';
+  private readonly CURATE_FOLDER = 'iQRate-Images';
 
   async pickImage(): Promise<string | null> {
     try {
@@ -67,7 +67,7 @@ class ImageService {
     try {
       // Generate unique filename
       const timestamp = new Date().getTime();
-      const fileName = `curate-image-${timestamp}.jpg`;
+      const fileName = `iQRate-image-${timestamp}.jpg`;
       
       if (Platform.OS === 'web') {
         return this.uploadToGoogleDriveWeb(imageUri, fileName);

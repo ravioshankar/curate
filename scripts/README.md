@@ -1,7 +1,7 @@
 # Icon Generation Script
 
 ## Overview
-This script generates all required icon sizes for the Curate app across iOS, Android, and Web platforms.
+This script generates all required icon sizes for the iQRate app across iOS, Android, and Web platforms.
 
 ## Usage
 ```bash

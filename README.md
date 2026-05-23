@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="./assets/logo.svg" alt="Curate Logo" width="120" height="120" />
+  <img src="./assets/logo.svg" alt="iQRate Logo" width="120" height="120" />
   
-  # Curate - Premium Personal Asset Curator
+  # iQRate - Premium Personal Asset Curator
   
-  *A sophisticated cross-platform app that helps you curate, organize, and cherish your personal belongings with elegance and intelligence.*
+  *A sophisticated cross-platform app that helps you iQRate, organize, and cherish your personal belongings with elegance and intelligence.*
   
   **Built with Expo, React Native, and Redux Toolkit**
   
@@ -18,7 +18,7 @@
 ## Project Structure
 
 ```
-curate/
+iQRate/
 ├── app/                     # Expo Router pages
 │   ├── (tabs)/             # Tab-based navigation
 │   │   ├── _layout.tsx     # Tab layout configuration

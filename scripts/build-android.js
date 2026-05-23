@@ -67,7 +67,7 @@ if (!fs.existsSync(packageDir)) {
 
 try {
   // Check if keystore exists, generate if missing
-  const keystorePath = path.join(__dirname, '..', 'android', 'app', 'curate-release-key.keystore');
+  const keystorePath = path.join(__dirname, '..', 'android', 'app', 'iQRate-release-key.keystore');
   if (!fs.existsSync(keystorePath)) {
     console.log('Keystore not found, generating...');
     execSync('npm run generate-keystore', { 
@@ -100,10 +100,10 @@ try {
     
     if (apkFile) {
       const sourcePath = path.join(apkBuildDir, apkFile);
-      const destPath = path.join(packageDir, `curate-v${version}-${versionCode}.apk`);
+      const destPath = path.join(packageDir, `iQRate-v${version}-${versionCode}.apk`);
       
       fs.copyFileSync(sourcePath, destPath);
-      console.log(`✅ APK copied to: package/android/curate-v${version}-${versionCode}.apk`);
+      console.log(`✅ APK copied to: package/android/iQRate-v${version}-${versionCode}.apk`);
     } else {
       console.log('❌ No APK file found in build output');
     }
@@ -120,10 +120,10 @@ try {
     
     if (aabFile) {
       const sourcePath = path.join(aabBuildDir, aabFile);
-      const destPath = path.join(packageDir, `curate-v${version}-${versionCode}.aab`);
+      const destPath = path.join(packageDir, `iQRate-v${version}-${versionCode}.aab`);
       
       fs.copyFileSync(sourcePath, destPath);
-      console.log(`✅ AAB copied to: package/android/curate-v${version}-${versionCode}.aab`);
+      console.log(`✅ AAB copied to: package/android/iQRate-v${version}-${versionCode}.aab`);
     } else {
       console.log('❌ No AAB file found in build output');
     }

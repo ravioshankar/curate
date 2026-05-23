@@ -1,4 +1,4 @@
-# Curate App Icon Design
+# iQRate App Icon Design
 
 ## Current Design (Updated)
 - **Logo**: Three overlapping circles (red, blue, green) representing curation and collection
@@ -29,7 +29,7 @@ All icons now use consistent three-circle design:
 - ✅ `/assets/images/favicon.png` (32x32)
 - ✅ `/assets/images/splash-icon.png` (400x400)
 - ✅ `/assets/logo.svg` (120x120 - for in-app use)
-- ✅ `/src/components/common/CurateLogo.tsx` (React component)
+- ✅ `/src/components/common/IQRateLogo.tsx` (React component)
 - ✅ Native iOS and Android icons (auto-generated)
 
 ## Color Palette

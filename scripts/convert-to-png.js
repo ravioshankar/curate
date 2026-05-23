@@ -38,7 +38,7 @@ function convertMainIcons() {
   
   console.log('\n📱 New Icon Design Features:');
   console.log('• Bold white "C" shape for better visibility');
-  console.log('• Curated dots representing organized items');
+  console.log('• IQRated dots representing organized items');
   console.log('• Connection lines showing curation relationships');
   console.log('• Ruby red background for brand recognition');
   console.log('• Optimized for small Android icon sizes');
