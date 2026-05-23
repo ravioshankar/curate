@@ -88,6 +88,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="valuation"
+        options={{
+          title: 'Value',
+          tabBarIcon: ({ color }) => <Icon name="show-chart" size={32} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',

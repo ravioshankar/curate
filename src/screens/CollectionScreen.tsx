@@ -6,7 +6,7 @@ import { CollectionPage } from '../components/common/CollectionPage';
 import { AddItemPage } from '../components/common/AddItemPage';
 import { ItemDetailsPage } from '../components/common/ItemDetailsPage';
 import { RootState, AppDispatch } from '../store/store';
-import { deleteCollectionItem, loadCollection } from '../store/collectionStore';
+import { addCollectionItem, deleteCollectionItem, loadCollection } from '../store/collectionStore';
 import { saveItemToCollection } from '../utils/collectionActions';
 import { CollectionItem } from '../types/collection';
 

@@ -1,19 +1,23 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ColorValue } from 'react-native';
 import { ThemedText } from '../../../components/ThemedText';
 
 interface CurateLogoProps {
   size?: number;
   showText?: boolean;
+  backgroundColor?: ColorValue;
+  orbColor?: ColorValue;
+  elementColor?: ColorValue;
 }
 
-export function CurateLogo({ size = 120, showText = false }: CurateLogoProps) {
+export function CurateLogo({ size = 120, showText = false, backgroundColor = 'transparent', orbColor }: CurateLogoProps) {
   const scale = size / 120;
   const circleSize = Math.max(20, 50 * scale); // Minimum size for very small screens
   const spacing = Math.max(8, 15 * scale); // Responsive spacing
+  const primaryOrbColor = orbColor || '#DC2626';
   
   return (
-    <View style={[styles.container, { width: size, height: size }]}>
+    <View style={[styles.container, { width: size, height: size, backgroundColor }]}>
       {/* Red circle - top left */}
       <View style={[
         styles.circle,
@@ -21,7 +25,7 @@ export function CurateLogo({ size = 120, showText = false }: CurateLogoProps) {
           width: circleSize,
           height: circleSize,
           borderRadius: circleSize / 2,
-          backgroundColor: '#DC2626',
+          backgroundColor: primaryOrbColor,
           opacity: 0.8,
           position: 'absolute',
           left: spacing,

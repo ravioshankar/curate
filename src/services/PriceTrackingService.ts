@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
-import { CollectionItemWithValuation } from '../types/valuation';
+import { CollectionItemWithValuation, PriceRecord } from '../types/valuation';
 import { CollectionItem } from '../types/collection';
 
-const STORAGE_KEY = 'curateCollection';
+const STORAGE_KEY = 'inventory';
+type PriceRecordInput = Omit<PriceRecord, 'id' | 'itemId'> & Partial<Pick<PriceRecord, 'id' | 'itemId'>>;
+type ChartPoint = { date: string; value: number; source: PriceRecord['source'] };
 
 class PriceTrackingService {
   // Generate unique ID for price records
@@ -22,13 +23,14 @@ class PriceTrackingService {
       }
 
       const today = new Date().toISOString();
-      const migratedCount = {};
+      const migratedCount: Record<string, boolean> = {};
 
       for (const item of collection) {
         // Create initial price record from existing data
         if ('pricePaid' in item && item.pricePaid !== undefined && !item.priceHistory) {
-          this.addPriceRecord(item.id, {
+          await this.addPriceRecord(item.id, {
             itemName: item.name,
+            itemId: item.id,
             value: item.pricePaid || 0,
             currency: (item as CollectionItemWithValuation).valSettings?.displayCurrency || 'USD',
             recordedAt: today,
@@ -37,8 +39,9 @@ class PriceTrackingService {
           });
 
           if ('priceExpected' in item && item.priceExpected !== undefined) {
-            this.addPriceRecord(item.id, {
+            await this.addPriceRecord(item.id, {
               itemName: item.name,
+              itemId: item.id,
               value: item.priceExpected || 0,
               currency: (item as CollectionItemWithValuation).valSettings?.displayCurrency || 'USD',
               recordedAt: today,
@@ -68,7 +71,7 @@ class PriceTrackingService {
   }
 
   // Add a new price record for an item
-  async addPriceRecord(itemId: string, record: Parameters<typeof this.addPriceRecord>[1]): Promise<void> {
+  async addPriceRecord(itemId: string, record: PriceRecordInput): Promise<void> {
     try {
       const collection = await this.getCollection();
       
@@ -86,13 +89,13 @@ class PriceTrackingService {
       const item = collection[itemIndex];
 
       // Create price record
-      const priceRecord: Parameters<typeof this.addPriceRecord>[1] & { id?: string } = { ...record };
+      const priceRecord: PriceRecord = {
+        ...record,
+        id: record.id || this.generateId('price', Date.now()),
+        itemId: record.itemId || itemId,
+      };
       
       // Generate ID if not provided
-      if (!priceRecord.id) {
-        priceRecord.id = this.generateId('price', Date.now());
-      }
-
       // Add to collection item
       if (!item.priceHistory) {
         item.priceHistory = [];
@@ -109,7 +112,7 @@ class PriceTrackingService {
       }
 
       // Save updated collection
-      await this.saveCollection();
+      await this.saveCollection(collection);
       
       console.log(`PriceTrackingService: Added price record for ${item.name} - value: ${record.value}`);
     } catch (error) {
@@ -119,7 +122,7 @@ class PriceTrackingService {
   }
 
   // Get all price history for an item
-  async getPriceHistory(itemId: string): Promise<Parameters<typeof this.getPriceHistory>[1] | undefined> {
+  async getPriceHistory(itemId: string): Promise<PriceRecord[]> {
     try {
       const collection = await this.getCollection();
       
@@ -129,7 +132,7 @@ class PriceTrackingService {
 
       const item = collection.find(i => i.id === itemId);
       if (!item || !item.priceHistory) {
-        return undefined;
+        return [];
       }
 
       // Return price history sorted by date (newest first)
@@ -161,7 +164,7 @@ class PriceTrackingService {
             name: item.name,
             category: item.category,
             priceHistory: item.priceHistory.sort((a, b) => 
-              new Date(b.recordedAt).getTime() - new Date(a.recordetAt).getTime()
+              new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
             ),
           });
         }
@@ -210,6 +213,9 @@ class PriceTrackingService {
       }
 
       const collection = await this.getCollection();
+      if (!collection) {
+        return null;
+      }
       const item = collection.find(i => i.id === itemId);
 
       // Get original purchase price
@@ -255,6 +261,7 @@ class PriceTrackingService {
       // Add new price record with manual source
       await this.addPriceRecord(itemId, {
         itemName: item.name,
+        itemId: item.id,
         value: revaluationValue,
         currency,
         recordedAt: new Date().toISOString(),
@@ -278,9 +285,7 @@ class PriceTrackingService {
         return;
       }
 
-      const settings = (collection as unknown) as CollectionItemWithValuation[];
       const now = new Date();
-      const lastRevalueCheck = new Date();
 
       for (const item of collection) {
         if ('lastRevaluedAt' in item && item.lastRevaluedAt) {
@@ -288,7 +293,7 @@ class PriceTrackingService {
           let lastRevaluedDate: Date;
           try {
             lastRevaluedDate = new Date(item.lastRevaluedAt);
-          } catch (e) {
+          } catch {
             continue;
           }
 
@@ -308,9 +313,6 @@ class PriceTrackingService {
         }
       }
 
-      // Save settings with last check time
-      const newSettings = (settings as unknown) as { valSettings?: Partial<ValuationSettings> & { lastRevalueCheck?: string } };
-      
     } catch (error) {
       console.error('PriceTrackingService: scheduleAutoRevaluation failed:', error);
     }
@@ -341,16 +343,16 @@ class PriceTrackingService {
   }
 
   // Save collection to storage
-  async saveCollection(): Promise<void> {
+  async saveCollection(collectionToSave?: CollectionItemWithValuation[]): Promise<void> {
     try {
-      const collection = await this.getCollection();
+      const collection = collectionToSave || await this.getCollection();
       
       if (!collection) {
         return;
       }
 
       // Convert back to standard CollectionItem type for storage
-      const flatCollection: CollectionItem[] = (collection as CollectionItemWithValuation[]).map((item, index) => {
+      const flatCollection: CollectionItem[] = (collection as CollectionItemWithValuation[]).map((item) => {
         // Create a new object to avoid prototype issues
         const newItem = Object.assign({}, item) as any;
         
@@ -367,7 +369,7 @@ class PriceTrackingService {
   }
 
   // Generate price data for chart visualization
-  async generateChartData(itemId: string, limit = 50): Promise<Parameters<typeof this.generateChartData>[1]> {
+  async generateChartData(itemId: string, limit = 50): Promise<ChartPoint[]> {
     try {
       const collection = await this.getCollection();
       
@@ -413,7 +415,7 @@ class PriceTrackingService {
       const alerts: string[] = [];
 
       for (const item of collection) {
-        if ('valSettings' in item && item.valSettings?.enablePriceAlerts === false) {
+        if (item.valSettings?.enablePriceAlerts === false) {
           continue;
         }
 
@@ -424,7 +426,6 @@ class PriceTrackingService {
           const sign = changePercent > 0 ? '📈' : '📉';
           const direction = changePercent > 0 ? 'appreciated' : 'depreciated';
           
-          const alertId = `alert_${item.id}_${Date.now()}`;
           alerts.push(`${sign} ${item.name} has ${direction} by ${Math.abs(changePercent).toFixed(1)}%. Threshold: ${threshold}%`);
         }
       }

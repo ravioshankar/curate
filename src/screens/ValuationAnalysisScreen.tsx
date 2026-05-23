@@ -1,368 +1,664 @@
-import React, { useState } from 'react';
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { useSelector } from 'react-redux';
-import { ThemedView, ThemedText } from '../../components';
+import React, { useMemo, useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { RootState } from '../store/store';
-import { PriceCard } from '../../src/components/PriceCard';
+import { ThemedText } from '../../components/ThemedText';
+import { ThemedView } from '../../components/ThemedView';
+import { AppDispatch, RootState } from '../store/store';
+import { updateCollectionItem } from '../store/collectionStore';
+import { CollectionItem } from '../types/collection';
 
-interface ItemWithValuation {
-  id: string;
-  name: string;
-  category: string;
-  pricePaid?: number;
-  priceHistory?: Array<{ value: number; recordedAt: string }>;
-  lastRevaluedAt?: string;
+type PriceRecord = NonNullable<CollectionItem['priceHistory']>[number];
+type PerformanceFilter = 'all' | 'gainers' | 'losers' | 'stale';
+
+interface ValuationItem extends CollectionItem {
+  currentValue: number;
+  originalValue: number;
+  changeAmount: number;
+  changePercent: number;
+  history: PriceRecord[];
+  isTracked: boolean;
+  isStale: boolean;
+  lastValuedLabel: string;
 }
 
+const STALE_AFTER_DAYS = 90;
+
+const formatCurrency = (amount: number) =>
+  `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const sortHistory = (history: PriceRecord[] = []) =>
+  [...history].sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime());
+
+const daysBetween = (date: string) => {
+  const timestamp = new Date(date).getTime();
+  if (Number.isNaN(timestamp)) return null;
+  return Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24));
+};
+
+const getLastValuedLabel = (recordedAt?: string) => {
+  if (!recordedAt) return 'Not valued yet';
+  const days = daysBetween(recordedAt);
+  if (days === null) return 'Date unavailable';
+  if (days <= 0) return 'Updated today';
+  if (days === 1) return 'Updated yesterday';
+  return `Updated ${days} days ago`;
+};
+
+const toCollectionItem = (item: ValuationItem): CollectionItem => ({
+  id: item.id,
+  name: item.name,
+  category: item.category,
+  location: item.location,
+  lastUsed: item.lastUsed,
+  imageUrl: item.imageUrl,
+  pricePaid: item.pricePaid,
+  priceExpected: item.priceExpected,
+  priceHistory: item.priceHistory,
+  lastRevaluedAt: item.lastRevaluedAt,
+  notes: item.notes,
+});
+
 export function ValuationAnalysisScreen() {
+  const dispatch = useDispatch<AppDispatch>();
   const collection = useSelector((state: RootState) => state.collection.items);
-  
-  // Calculate portfolio metrics
+  const [filter, setFilter] = useState<PerformanceFilter>('all');
+  const [selectedItem, setSelectedItem] = useState<ValuationItem | null>(null);
+  const [valuationInput, setValuationInput] = useState('');
+  const [notesInput, setNotesInput] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const valuationItems = useMemo<ValuationItem[]>(() => {
+    return collection.map((item) => {
+      const history = sortHistory(item.priceHistory);
+      const latestRecord = history[0];
+      const oldestRecord = history[history.length - 1];
+      const fallbackCurrent = item.priceExpected ?? item.pricePaid ?? 0;
+      const currentValue = latestRecord?.value ?? fallbackCurrent;
+      const originalValue = item.pricePaid ?? oldestRecord?.value ?? fallbackCurrent;
+      const changeAmount = currentValue - originalValue;
+      const changePercent = originalValue > 0 ? (changeAmount / originalValue) * 100 : 0;
+      const lastRecordedAt = latestRecord?.recordedAt ?? item.lastRevaluedAt;
+      const daysSinceValuation = lastRecordedAt ? daysBetween(lastRecordedAt) : null;
+
+      return {
+        ...item,
+        currentValue,
+        originalValue,
+        changeAmount,
+        changePercent,
+        history,
+        isTracked: history.length > 0,
+        isStale: !lastRecordedAt || (daysSinceValuation !== null && daysSinceValuation >= STALE_AFTER_DAYS),
+        lastValuedLabel: getLastValuedLabel(lastRecordedAt),
+      };
+    });
+  }, [collection]);
+
   const portfolioStats = useMemo(() => {
-    const itemsWithHistory = collection.filter(item => 
-      Array.isArray(item.priceHistory) && item.priceHistory.length > 0
-    );
-
-    let totalCurrentValue = 0;
-    let totalInvestment = 0;
-    let netAppreciation = 0;
-
-    for (const item of itemsWithHistory) {
-      const currentPrice = item.priceHistory[0]?.value || item.pricePaid || 0;
-      const originalPrice = Array.isArray(item.priceHistory) 
-        ? item.priceHistory[item.priceHistory.length - 1]?.value 
-        : item.pricePaid || 0;
-
-      totalCurrentValue += currentPrice;
-      totalInvestment += originalPrice;
-      netAppreciation += (currentPrice - originalPrice);
-    }
-
+    const trackedItems = valuationItems.filter((item) => item.isTracked || item.currentValue > 0);
+    const totalCurrentValue = trackedItems.reduce((sum, item) => sum + item.currentValue, 0);
+    const totalInvestment = trackedItems.reduce((sum, item) => sum + item.originalValue, 0);
+    const netAppreciation = totalCurrentValue - totalInvestment;
     const appreciationPercent = totalInvestment > 0 ? (netAppreciation / totalInvestment) * 100 : 0;
+    const staleCount = valuationItems.filter((item) => item.isStale).length;
+    const untrackedCount = valuationItems.filter((item) => !item.isTracked).length;
 
     return {
       totalCurrentValue,
       totalInvestment,
       netAppreciation,
       appreciationPercent,
-      itemCount: itemsWithHistory.length,
+      trackedCount: trackedItems.length,
+      staleCount,
+      untrackedCount,
     };
-  }, [collection]);
+  }, [valuationItems]);
 
-  const formatCurrency = (amount: number) => 
-    `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const filteredItems = useMemo(() => {
+    const items = valuationItems.filter((item) => {
+      if (filter === 'gainers') return item.changeAmount > 0;
+      if (filter === 'losers') return item.changeAmount < 0;
+      if (filter === 'stale') return item.isStale;
+      return item.currentValue > 0 || item.isTracked;
+    });
+
+    return items.sort((a, b) => {
+      if (filter === 'stale') {
+        return (a.isTracked === b.isTracked ? 0 : a.isTracked ? 1 : -1) || b.currentValue - a.currentValue;
+      }
+      return Math.abs(b.changePercent) - Math.abs(a.changePercent);
+    });
+  }, [filter, valuationItems]);
+
+  const bestPerformer = valuationItems
+    .filter((item) => item.changeAmount > 0)
+    .sort((a, b) => b.changePercent - a.changePercent)[0];
+  const mostAtRisk = valuationItems
+    .filter((item) => item.changeAmount < 0)
+    .sort((a, b) => a.changePercent - b.changePercent)[0];
+
+  const openValuationModal = (item: ValuationItem) => {
+    setSelectedItem(item);
+    setValuationInput(item.currentValue > 0 ? item.currentValue.toFixed(2) : '');
+    setNotesInput('');
+  };
+
+  const closeValuationModal = () => {
+    if (saving) return;
+    setSelectedItem(null);
+    setValuationInput('');
+    setNotesInput('');
+  };
+
+  const saveValuation = async () => {
+    if (!selectedItem) return;
+
+    const nextValue = Number(valuationInput.replace(/,/g, ''));
+    if (!Number.isFinite(nextValue) || nextValue <= 0) {
+      Alert.alert('Invalid valuation', 'Enter a value greater than zero.');
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const record: PriceRecord = {
+      id: `price_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      itemId: selectedItem.id,
+      itemName: selectedItem.name,
+      value: nextValue,
+      currency: 'USD',
+      recordedAt: now,
+      source: selectedItem.isTracked ? 'manual' : 'initial',
+      notes: notesInput.trim() || `Valued at ${formatCurrency(nextValue)}`,
+    };
+
+    const updatedItem: CollectionItem = {
+      ...toCollectionItem(selectedItem),
+      priceExpected: nextValue,
+      priceHistory: [record, ...selectedItem.history],
+      lastRevaluedAt: now,
+    };
+
+    setSaving(true);
+    try {
+      await dispatch(updateCollectionItem(updatedItem)).unwrap();
+      setSelectedItem(null);
+      setValuationInput('');
+      setNotesInput('');
+    } catch (error) {
+      Alert.alert('Could not save valuation', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const renderItem = (item: ValuationItem) => {
+    const isPositive = item.changeAmount >= 0;
+
+    return (
+      <TouchableOpacity style={styles.itemRow} onPress={() => openValuationModal(item)}>
+        <ThemedView style={styles.itemInfo}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          <Text style={styles.itemCategory}>{item.category} - {item.lastValuedLabel}</Text>
+        </ThemedView>
+
+        <View style={styles.itemMetrics}>
+          <Text style={styles.itemValue}>{formatCurrency(item.currentValue)}</Text>
+          <Text style={[styles.itemChange, isPositive ? styles.positiveText : styles.negativeText]}>
+            {isPositive ? '+' : ''}{item.changePercent.toFixed(1)}%
+          </Text>
+        </View>
+
+        <Icon name={item.isTracked ? 'edit' : 'add-circle-outline'} size={22} color="#2563EB" />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <ThemedView style={styles.container} testID="valuation-analysis-screen">
-      {/* Header */}
-      <ThemedView style={styles.header}>
-        <Text style={[styles.title, { fontSize: 28 }]}>📊 Valuation Portfolio</Text>
-        <TouchableOpacity 
-          onPress={() => alert('Portfolio summary: Total items tracked'}
-        >
-          <Icon name="info-outline" size={24} color="#6B7280" />
-        </TouchableOpacity>
-      </ThemedView>
+      <ScrollView contentContainerStyle={styles.content}>
+        <ThemedView style={styles.header}>
+          <View>
+            <Text style={styles.title}>Valuation Portfolio</Text>
+            <Text style={styles.subtitle}>{portfolioStats.trackedCount} items valued</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => Alert.alert('Valuation tracking', 'Record current values over time to see gains, losses, stale estimates, and total portfolio movement.')}
+          >
+            <Icon name="info-outline" size={24} color="#6B7280" />
+          </TouchableOpacity>
+        </ThemedView>
 
-      {/* Portfolio Summary Cards */}
-      <ThemedView style={styles.summarySection}>
-        <View style={styles.summaryCard}>
-          <Text style={[styles.summaryLabel, { fontSize: 14 }]}>Current Portfolio Value</Text>
-          <Text style={[styles.summaryValue, { color: '#059669' }]}>{formatCurrency(portfolioStats.totalCurrentValue)}</Text>
-          <Text style={[styles.summarySubtext, { color: '#6B7280' }]}>Tracked items</Text>
-        </View>
+        <ThemedView style={styles.summarySection}>
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryLabel}>Current Value</Text>
+            <Text style={[styles.summaryValue, styles.positiveText]}>{formatCurrency(portfolioStats.totalCurrentValue)}</Text>
+            <Text style={styles.summarySubtext}>Latest recorded valuations</Text>
+          </View>
 
-        <View style={styles.summaryCard}>
-          <Text style={[styles.summaryLabel, { fontSize: 14 }]}>Original Investment</Text>
-          <Text style={[styles.summaryValue, { color: '#6B7280' }]}>{formatCurrency(portfolioStats.totalInvestment)}</Text>
-          <Text style={[styles.summarySubtext, { color: '#6B7280' }]}>Initial costs</Text>
-        </View>
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryLabel}>Original Cost</Text>
+            <Text style={styles.summaryValue}>{formatCurrency(portfolioStats.totalInvestment)}</Text>
+            <Text style={styles.summarySubtext}>Purchase or first value</Text>
+          </View>
 
-        <View style={[styles.summaryCard, portfolioStats.appreciationPercent >= 0 && styles.positiveSummary]}>
-          <Text style={[styles.summaryLabel, { fontSize: 14 }]}>Net Change</Text>
-          <Text style={[
-            styles.summaryValue, 
-            portfolioStats.appreciationPercent >= 0 ? { color: '#059669' } : { color: '#dc2626' }
-          ]}>
-            {portfolioStats.appreciationPercent >= 0 ? '+' : ''}
-            {formatCurrency(portfolioStats.netAppreciation)}
-          </Text>
-          <Text style={[styles.summarySubtext, { color: '#6B7280' }]}>
-            {portfolioStats.appreciationPercent >= 0 ? '▲ Appreciated' : '▼ Depreciated'} {portfolioStats.itemCount} items
-          </Text>
-        </View>
-      </ThemedView>
+          <View style={[styles.summaryCard, portfolioStats.netAppreciation >= 0 ? styles.positiveSummary : styles.negativeSummary]}>
+            <Text style={styles.summaryLabel}>Net Change</Text>
+            <Text style={[styles.summaryValue, portfolioStats.netAppreciation >= 0 ? styles.positiveText : styles.negativeText]}>
+              {portfolioStats.netAppreciation >= 0 ? '+' : ''}{formatCurrency(portfolioStats.netAppreciation)}
+            </Text>
+            <Text style={styles.summarySubtext}>
+              {portfolioStats.appreciationPercent >= 0 ? '+' : ''}{portfolioStats.appreciationPercent.toFixed(1)}% overall
+            </Text>
+          </View>
+        </ThemedView>
 
-      {/* Top Gainers/Losers */}
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">🏆 Top Performers</ThemedText>
-        
-        <FlatList
-          data={collection.slice(0, 5)} // Show top 5 items for now
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.itemRow}>
-              <ThemedView style={styles.itemInfo}>
-                <Text style={[styles.itemName, { fontSize: 15 }]}>
-                  {Array.isArray(item.priceHistory) ? `${item.name}` : 'Not Tracked'}
-                </Text>
-                <Text style={[styles.itemCategory, { fontSize: 12, color: '#6B7280' }]}>
-                  {item.category}
-                </Text>
-              </ThemedView>
+        <ThemedView style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <ThemedText type="subtitle">Performance Watchlist</ThemedText>
+            <TouchableOpacity
+              style={styles.smallButton}
+              onPress={() => {
+                const firstStale = valuationItems.find((item) => item.isStale) ?? valuationItems[0];
+                if (firstStale) openValuationModal(firstStale);
+              }}
+            >
+              <Icon name="add" size={18} color="#FFFFFF" />
+              <Text style={styles.smallButtonText}>Record</Text>
+            </TouchableOpacity>
+          </View>
 
-              {Array.isArray(item.priceHistory) && (
-                <>
-                  <Text style={[
-                    styles.itemValue,
-                    { 
-                      color: item.pricePaid > 0 ? '#10B981' : '#6B7280',
-                      fontSize: 14,
-                      fontWeight: '600',
-                    }
-                  ]}>
-                    {formatCurrency(item.priceHistory[0]?.value || item.pricePaid || 0)}
-                  </Text>
-                  
-                  <TouchableOpacity 
-                    style={styles.trackButton}
-                    onPress={() => console.log('Track price for', item.name)}
-                  >
-                    <Icon name="add-circle-outline" size={18} color="#3B82F6" />
-                  </TouchableOpacity>
-                </>
-              )}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBar}>
+            {[
+              ['all', 'All'],
+              ['gainers', 'Gainers'],
+              ['losers', 'Losses'],
+              ['stale', 'Needs Update'],
+            ].map(([value, label]) => (
+              <TouchableOpacity
+                key={value}
+                style={[styles.filterChip, filter === value && styles.activeFilterChip]}
+                onPress={() => setFilter(value as PerformanceFilter)}
+              >
+                <Text style={[styles.filterText, filter === value && styles.activeFilterText]}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {filteredItems.length > 0 ? (
+            filteredItems.slice(0, 8).map((item) => (
+              <View key={item.id}>{renderItem(item)}</View>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No items match this view.</Text>
             </View>
           )}
-        />
-      </ThemedView>
-
-      {/* Insights & Recommendations */}
-      <ThemedView style={styles.insightsSection}>
-        <ThemedText type="subtitle">💡 Smart Insights</ThemedText>
-        
-        <ThemedView style={styles.insightItem}>
-          <Icon name="analytics" size={20} color="#3B82F6" />
-          <Text style={[styles.insightText, { color: '#6B7280' }]}>
-            Track more items to get full portfolio analytics
-          </Text>
         </ThemedView>
 
-        <ThemedView style={styles.insightItem}>
-          <Icon name="trending-up" size={20} color="#10B981" />
-          <Text style={[styles.insightText, { color: '#6B7280' }]}>
-            Items with price history show your collection's value evolution
-          </Text>
+        <ThemedView style={styles.insightsSection}>
+          <ThemedText type="subtitle">Smart Insights</ThemedText>
+
+          <ThemedView style={styles.insightItem}>
+            <Icon name="schedule" size={20} color="#D97706" />
+            <Text style={styles.insightText}>
+              {portfolioStats.staleCount > 0
+                ? `${portfolioStats.staleCount} items have stale or missing valuations.`
+                : 'All tracked valuations are current.'}
+            </Text>
+          </ThemedView>
+
+          <ThemedView style={styles.insightItem}>
+            <Icon name="trending-up" size={20} color="#059669" />
+            <Text style={styles.insightText}>
+              {bestPerformer
+                ? `${bestPerformer.name} is up ${bestPerformer.changePercent.toFixed(1)}%.`
+                : 'Record a second valuation to identify top gainers.'}
+            </Text>
+          </ThemedView>
+
+          <ThemedView style={styles.insightItem}>
+            <Icon name="warning-amber" size={20} color="#DC2626" />
+            <Text style={styles.insightText}>
+              {mostAtRisk
+                ? `${mostAtRisk.name} is down ${Math.abs(mostAtRisk.changePercent).toFixed(1)}%.`
+                : `${portfolioStats.untrackedCount} items are ready for first valuation.`}
+            </Text>
+          </ThemedView>
         </ThemedView>
+      </ScrollView>
 
-        <ThemedView style={styles.insightItem}>
-          <Icon name="assignment" size={20} color="#F59E0B" />
-          <Text style={[styles.insightText, { color: '#6B7280' }]}>
-            Tap "Revalue" to update current valuations automatically
-          </Text>
-        </ThemedView>
-      </ThemedView>
-
-      {/* Action Buttons */}
-      <ThemedView style={styles.actionsBar}>
-        <TouchableOpacity 
-          style={[styles.actionButton, { backgroundColor: '#3B82F6' }]}
-          onPress={() => alert('Start tracking new items')}
+      <Modal visible={Boolean(selectedItem)} animationType="slide" transparent onRequestClose={closeValuationModal}>
+        <KeyboardAvoidingView
+          style={styles.modalBackdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <Icon name="add" size={20} color="white" />
-          <Text style={[styles.actionButtonText, { color: 'white' }]}>+ Track Items</Text>
-        </TouchableOpacity>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Record Valuation</Text>
+                <Text style={styles.modalSubtitle}>{selectedItem?.name}</Text>
+              </View>
+              <TouchableOpacity style={styles.iconButton} onPress={closeValuationModal}>
+                <Icon name="close" size={22} color="#374151" />
+              </TouchableOpacity>
+            </View>
 
-        <TouchableOpacity 
-          style={[styles.actionButton, { backgroundColor: '#6B7280' }]}
-          onPress={() => alert('View full analytics')}
-        >
-          <Icon name="analytics-outline" size={20} color="white" />
-          <Text style={[styles.actionButtonText, { color: 'white' }]}>Analytics</Text>
-        </TouchableOpacity>
-      </ThemedView>
+            <Text style={styles.inputLabel}>Current value</Text>
+            <TextInput
+              value={valuationInput}
+              onChangeText={setValuationInput}
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+              style={styles.input}
+              autoFocus
+            />
 
-      {/* Export/Settings */}
-      <View style={styles.footer}>
-        <TouchableOpacity 
-          style={styles.footerButton}
-          onPress={() => alert('Export your collection data')}
-        >
-          <Icon name="download" size={20} color="#6B7280" />
-          <Text style={[styles.footerText, { color: '#6B7280' }]}>Export Data</Text>
-        </TouchableOpacity>
+            <Text style={styles.inputLabel}>Notes</Text>
+            <TextInput
+              value={notesInput}
+              onChangeText={setNotesInput}
+              placeholder="Appraisal, market check, condition notes"
+              style={[styles.input, styles.notesInput]}
+              multiline
+            />
 
-        <TouchableOpacity 
-          style={styles.footerButton}
-          onPress={() => alert('Valuation settings')}
-        >
-          <Icon name="settings" size={20} color="#6B7280" />
-          <Text style={[styles.footerText, { color: '#6B7280' }]}>Settings</Text>
-        </TouchableOpacity>
-      </View>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={closeValuationModal}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.saveButton]} onPress={saveValuation} disabled={saving}>
+                <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </ThemedView>
   );
 }
-
-// Add useMemo import to imports at the top
-import { useMemo } from 'react';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
+  content: {
+    paddingBottom: 28,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: 24,
     paddingBottom: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
   },
   title: {
+    color: '#111827',
+    fontSize: 28,
     fontWeight: '700',
+  },
+  subtitle: {
+    color: '#6B7280',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  iconButton: {
+    minHeight: 40,
+    minWidth: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   summarySection: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    gap: 8,
   },
   summaryCard: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    padding: 14,
   },
   positiveSummary: {
-    borderColor: '#10B981',
-    backgroundColor: 'rgba(16, 185, 129, 0.04)',
+    borderColor: '#86EFAC',
+    backgroundColor: '#F0FDF4',
+  },
+  negativeSummary: {
+    borderColor: '#FCA5A5',
+    backgroundColor: '#FEF2F2',
   },
   summaryLabel: {
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
     color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   summaryValue: {
+    color: '#374151',
     fontSize: 20,
     fontWeight: '700',
     marginVertical: 4,
   },
   summarySubtext: {
-    fontSize: 12,
-    marginTop: 4,
     color: '#6B7280',
+    fontSize: 12,
   },
   section: {
     paddingHorizontal: 16,
+    marginBottom: 14,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 8,
+  },
+  smallButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2563EB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  smallButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  filterBar: {
+    gap: 8,
+    paddingBottom: 8,
+  },
+  filterChip: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  activeFilterChip: {
+    borderColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
+  },
+  filterText: {
+    color: '#4B5563',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  activeFilterText: {
+    color: '#1D4ED8',
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    marginVertical: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#E5E7EB',
+    padding: 14,
+    marginBottom: 8,
+    gap: 12,
   },
   itemInfo: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   itemName: {
-    fontSize: 15,
-    fontWeight: '600',
     color: '#111827',
+    fontSize: 15,
+    fontWeight: '700',
   },
   itemCategory: {
+    color: '#6B7280',
     fontSize: 12,
     marginTop: 4,
   },
+  itemMetrics: {
+    alignItems: 'flex-end',
+    minWidth: 86,
+  },
   itemValue: {
-    fontSize: 15,
-    fontWeight: '600',
+    color: '#111827',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  itemChange: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  positiveText: {
     color: '#059669',
   },
-  trackButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#EFF6FF',
-    justifyContent: 'center',
-    alignItems: 'center',
+  negativeText: {
+    color: '#DC2626',
+  },
+  emptyState: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 18,
+  },
+  emptyText: {
+    color: '#6B7280',
+    textAlign: 'center',
   },
   insightsSection: {
     paddingHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 16,
+    gap: 8,
   },
   insightItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    padding: 14,
   },
   insightText: {
+    color: '#4B5563',
+    flex: 1,
     fontSize: 14,
-    marginLeft: 12,
     lineHeight: 20,
+    marginLeft: 12,
   },
-  actionsBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
-  },
-  actionButton: {
+  modalBackdrop: {
     flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(17, 24, 39, 0.45)',
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 20,
+  },
+  modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    paddingVertical: 12,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    justifyContent: 'space-between',
+    marginBottom: 18,
   },
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+  modalTitle: {
+    color: '#111827',
+    fontSize: 20,
+    fontWeight: '800',
   },
-  footer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
-  },
-  footerButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-  },
-  footerText: {
-    fontSize: 14,
+  modalSubtitle: {
     color: '#6B7280',
-    fontWeight: '500',
-    marginLeft: 4,
+    fontSize: 14,
+    marginTop: 2,
+  },
+  inputLabel: {
+    color: '#374151',
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  input: {
+    minHeight: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    color: '#111827',
+    fontSize: 16,
+    paddingHorizontal: 12,
+    marginBottom: 14,
+  },
+  notesInput: {
+    minHeight: 86,
+    paddingTop: 12,
+    textAlignVertical: 'top',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  modalButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 13,
+  },
+  cancelButton: {
+    backgroundColor: '#F3F4F6',
+  },
+  saveButton: {
+    backgroundColor: '#2563EB',
+  },
+  cancelButtonText: {
+    color: '#374151',
+    fontWeight: '800',
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
   },
 });

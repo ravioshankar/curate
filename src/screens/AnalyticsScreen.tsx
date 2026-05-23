@@ -88,7 +88,7 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
             <ThemedText style={styles.statValue}>{categories.length}</ThemedText>
           </ThemedView>
           <ThemedView style={styles.statRow}>
-            <ThemedText style={styles.statLabel}>Unused Items (>1yr):</ThemedText>
+            <ThemedText style={styles.statLabel}>Unused Items (&gt;1yr):</ThemedText>
             <ThemedText style={[styles.statValue, { color: longUnusedItems.length > 0 ? '#dc2626' : '#059669' }]}>
               {longUnusedItems.length}
             </ThemedText>
@@ -491,11 +491,11 @@ export function AnalyticsScreen({ onBack }: AnalyticsScreenProps) {
           <ThemedView style={styles.recommendationItem}>
             <ThemedText style={styles.recommendationIcon}>🎯</ThemedText>
             <ThemedText style={styles.recommendationText}>
-              Focus on using items in the '{categories.reduce((max, cat) => {
+              Focus on using items in the {categories.reduce((max, cat) => {
                 const catUnused = collection.filter(item => item.category === cat && longUnusedItems.includes(item));
                 const maxUnused = collection.filter(item => item.category === max && longUnusedItems.includes(item));
                 return catUnused.length > maxUnused.length ? cat : max;
-              }, categories[0] || 'General')}' category - they have the most unused items.
+              }, categories[0] || 'General')} category - they have the most unused items.
             </ThemedText>
           </ThemedView>
         </ThemedView>

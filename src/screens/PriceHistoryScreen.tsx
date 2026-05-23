@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { useSelector } from 'react-redux';
-import { ThemedView, ThemedText } from '../../components';
+import { useDispatch, useSelector } from 'react-redux';
+import { ThemedText } from '../../components/ThemedText';
+import { ThemedView } from '../../components/ThemedView';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { RootState } from '../store/store';
+import { AppDispatch, RootState } from '../store/store';
 import { priceHistoryActions } from '../store/priceHistoryReducer';
 import { priceTrackingService } from '../../src/services/PriceTrackingService';
-import { PriceCard } from '../PriceCard';
+import { PriceCard } from '../components/PriceCard';
 
 interface PriceHistoryScreenProps {
   itemId: string;
@@ -15,6 +16,7 @@ interface PriceHistoryScreenProps {
 }
 
 export function PriceHistoryScreen({ itemId, itemName, category }: PriceHistoryScreenProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const [showAddPrice, setShowAddPrice] = useState(false);
   const [newValue, setNewValue] = useState<string>('');
   
@@ -32,10 +34,7 @@ export function PriceHistoryScreen({ itemId, itemName, category }: PriceHistoryS
   const formatCurrency = (amount: number) => `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   
   // Calculate price change
-  const originalPrice = parseFloat(priceRecords[priceRecords.length - 1]?.notes?.replace(/[^0-9.-]/g, '') || '0') || 
-                       parseFloat((state.priceHistory.items[itemId] as any)?.[0]?.value?.toString().match(/\d+/)?.[0] || '0');
-  
-  const originalPrice = 0; // Simplified - would need to track purchase price separately
+  const originalPrice = priceRecords[priceRecords.length - 1]?.value || 0;
 
   // Sort records by date (newest first)
   const sortedRecords = priceRecords.sort((a, b) => 
@@ -43,7 +42,6 @@ export function PriceHistoryScreen({ itemId, itemName, category }: PriceHistoryS
   );
 
   // Calculate overall change
-  const recentRecord = sortedRecords[0];
   const changePercent = originalPrice > 0 ? ((currentValuation - originalPrice) / originalPrice * 100) : 0;
   const trend = changePercent > 5 ? 'up' : changePercent < -5 ? 'down' : 'stable';
 
@@ -56,14 +54,18 @@ export function PriceHistoryScreen({ itemId, itemName, category }: PriceHistoryS
     const priceValue = parseFloat(newValue);
     
     // Add price record to store
-    priceHistoryActions.addPriceRecord(itemId, {
+    dispatch(priceHistoryActions.addPriceRecord({
+      itemId,
+      record: {
       itemName,
+      itemId,
       value: priceValue,
       currency: 'USD',
       recordedAt: new Date().toISOString(),
       source: 'manual',
       notes: `Manual entry - ${priceValue.toFixed(2)}`,
-    });
+      },
+    }));
 
     // Set default for next time
     setNewValue('');
@@ -79,7 +81,7 @@ export function PriceHistoryScreen({ itemId, itemName, category }: PriceHistoryS
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Delete', style: 'destructive', onPress: () => {
-          priceHistoryActions.removePriceRecord({ itemId, recordId });
+          dispatch(priceHistoryActions.removePriceRecord({ itemId, recordId }));
         }}
       ]
     );
@@ -180,7 +182,7 @@ export function PriceHistoryScreen({ itemId, itemName, category }: PriceHistoryS
           <ThemedView style={styles.emptyState}>
             <Text style={styles.emptyText}>No price history yet</Text>
             <Text style={[styles.emptyHint, { color: '#6B7280' }]}>
-              Tap "Add Price" to record the current value of this item
+              Tap Add Price to record the current value of this item
             </Text>
           </ThemedView>
         )}
@@ -240,7 +242,7 @@ export function PriceHistoryScreen({ itemId, itemName, category }: PriceHistoryS
             </View>
 
             <ThemedText style={styles.hint}>
-              Example: If your watch is worth $2,500, enter "2500" or "2500.00"
+              Example: If your watch is worth $2,500, enter 2500 or 2500.00
             </ThemedText>
 
             <View style={styles.modalButtons}>
@@ -303,6 +305,9 @@ const styles = StyleSheet.create({
   historySection: {
     flex: 1,
     paddingHorizontal: 16,
+    marginTop: 8,
+  },
+  tableContainer: {
     marginTop: 8,
   },
   historyRow: {

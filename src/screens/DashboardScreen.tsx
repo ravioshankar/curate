@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { StatCard } from '../components/common/StatCard';
-import { RootState } from '../store/store';
+import { AppDispatch, RootState } from '../store/store';
 import { calculateCollectionStats } from '../utils/collectionUtils';
 import { loadCollection, deleteCollectionItem } from '../store/collectionStore';
 import { saveItemToCollection } from '../utils/collectionActions';
@@ -19,7 +19,7 @@ import AnalyticsScreen from './AnalyticsScreen';
 import { getCategoryIcon } from '../utils/categoryIcons';
 
 export function DashboardScreen() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const collection = useSelector((state: RootState) => state.collection.items);
   const formatPrice = (amount: number) => `$${amount.toFixed(2)}`;
   const tintColor = useThemeColor({}, 'tint');

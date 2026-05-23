@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { ThemedView, ThemedText } from '../components';
+import { ThemedView } from '../../components/ThemedView';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 interface PriceCardProps {
@@ -10,7 +10,7 @@ interface PriceCardProps {
   originalValue: number;
   changePercent: number;
   trend: 'up' | 'down' | 'stable';
-  chartData?: Array<{ date: string; value: number; source: string }>;
+  chartData?: { date: string; value: number; source: string }[];
   onEditPress: () => void;
 }
 
@@ -27,17 +27,6 @@ export function PriceCard({
   // Format currency
   const formatCurrency = (amount: number) => `$${amount.toLocaleString()}`;
   
-  // Calculate visual bar height percentage
-  const maxChange = Math.max(
-    ...chartData?.map(d => (d.value - originalValue) / originalValue * 100 || 0),
-    changePercent,
-    5 // minimum visible height
-  );
-  
-  const barHeight = chartData && originalValue > 0 
-    ? ((currentValue - originalValue) / originalValue) * 100
-    : changePercent;
-
   return (
     <ThemedView style={styles.card} testID={`price-card-${itemName.toLowerCase().replace(/\s+/g, '-')}`}>
       {/* Header */}

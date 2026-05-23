@@ -80,4 +80,5 @@ export interface CollectionItemWithValuation extends CollectionItem {
   lastRevaluedAt?: string;
   marketWatchData?: MarketWatchData;
   transactionHistory?: TransactionRecord[];
+  valSettings?: Partial<ValuationSettings>;
 }

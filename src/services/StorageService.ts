@@ -33,7 +33,7 @@ export class StorageService {
 
   static async updateItem(updatedItem: CollectionItem): Promise<CollectionItem[]> {
     const inventory = await this.getInventory();
-    const newInventory = collection.map(item => 
+    const newInventory = inventory.map(item =>
       item.id === updatedItem.id ? updatedItem : item
     );
     await this.saveInventory(newInventory);

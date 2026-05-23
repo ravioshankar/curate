@@ -114,7 +114,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
           elementColor={tintColor}
         />
         <ThemedText style={[styles.title, { color: tintColor }]}>Welcome to Curate</ThemedText>
-        <ThemedText style={styles.subtitle}>Let's set up your profile</ThemedText>
+        <ThemedText style={styles.subtitle}>Let us set up your profile</ThemedText>
       </ThemedView>
 
       <ThemedView style={styles.form}>

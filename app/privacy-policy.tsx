@@ -14,7 +14,7 @@ export default function PrivacyPolicyScreen() {
           Curate stores all your data locally on your device. We do not collect, store, or transmit any personal information to external servers.
         </ThemedText>
 
-        <ThemedText type="subtitle" style={styles.section}>Information We Don't Collect</ThemedText>
+        <ThemedText type="subtitle" style={styles.section}>Information We Do Not Collect</ThemedText>
         <ThemedText style={styles.text}>
           • Personal identifiers{'\n'}
           • Location data{'\n'}

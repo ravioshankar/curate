@@ -63,7 +63,7 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
 
       {filteredCollection.length === 0 && searchText.length > 0 && (
         <ThemedView style={styles.emptyState}>
-          <ThemedText style={styles.emptyStateText}>No items found matching "{searchText}"</ThemedText>
+          <ThemedText style={styles.emptyStateText}>No items found matching {searchText}</ThemedText>
         </ThemedView>
       )}
       

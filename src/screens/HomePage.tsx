@@ -1,8 +1,8 @@
 import { StyleSheet, ScrollView } from 'react-native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
-import { StatCard } from './StatCard';
-import { CollectionItem } from '../src/types/collection';
+import { ThemedText } from '../../components/ThemedText';
+import { ThemedView } from '../../components/ThemedView';
+import { StatCard } from '../components/common/StatCard';
+import { CollectionItem } from '../types/collection';
 
 interface HomePageProps {
   inventory: CollectionItem[];
@@ -27,19 +27,19 @@ export function HomePage({ inventory }: HomePageProps) {
         <StatCard 
           title="Total Items" 
           value={safeInventory.length} 
-          icon={<ThemedText style={styles.iconText}>📦</ThemedText>}
+          iconName="inventory-2"
           color="#6366F1" 
         />
         <StatCard 
           title="Categories" 
           value={categories} 
-          icon={<ThemedText style={styles.iconText}>🏷️</ThemedText>}
+          iconName="category"
           color="#06B6D4" 
         />
         <StatCard 
           title="Unused > 1yr" 
           value={longUnusedItems.length} 
-          icon={<ThemedText style={styles.iconText}>⏰</ThemedText>}
+          iconName="schedule"
           color="#EF4444" 
         />
       </ThemedView>

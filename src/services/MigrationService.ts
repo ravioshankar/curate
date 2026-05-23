@@ -7,10 +7,8 @@
 
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DatabaseService } from '../services/DatabaseService';
+import { databaseService } from '../services/DatabaseService';
 import { StorageService } from '../services/StorageService';
-import { collectionStoreActions } from '../store/collectionStore';
-import { priceTrackingService } from '../services/PriceTrackingService';
 
 const MIGRATION_STATUS_KEY = 'curate_migration_status';
 const MIGRATION_COMPLETE_KEY = 'curate_valuation_tracking_enabled';
@@ -70,12 +68,10 @@ class MigrationService {
         return;
       }
 
-      const database = new DatabaseService();
-      
       for (const item of inventory) {
         try {
           // Save to database with migration notes
-          await database.saveCollectionItem({
+          await databaseService.saveCollectionItem({
             ...item,
             notes: item.notes || `${item.name} (migrated from storage service)`,
           });
@@ -85,7 +81,7 @@ class MigrationService {
           // If database save fails, keep in AsyncStorage
           console.warn(
             `MigrationService: Failed to migrate ${item.name}:`, 
-            error.message
+            error instanceof Error ? error.message : error
           );
         }
       }
@@ -107,8 +103,7 @@ class MigrationService {
       const currentStatus = await AsyncStorage.getItem(MIGRATION_STATUS_KEY) || '0';
       let completedCount = parseInt(currentStatus, 10);
 
-      const database = new DatabaseService();
-      const collection = await database.getCollectionItems();
+      const collection = await databaseService.getCollectionItems();
 
       if (!collection || collection.length === 0) {
         console.log('MigrationService: No collection items to initialize');
@@ -149,7 +144,7 @@ class MigrationService {
                 initialPrice.notes = `Estimated value - ${item.name}`;
               } else if (existingInitial === 0) {
                 // Add as additional record if no purchase price
-                await database.saveCollectionItem({
+                await databaseService.saveCollectionItem({
                   ...item,
                   priceHistory: [
                     ...(item.priceHistory || []),
@@ -173,7 +168,7 @@ class MigrationService {
         } catch (error) {
           console.error(
             `MigrationService: Failed to enable price history for ${item.name}:`, 
-            error.message
+            error instanceof Error ? error.message : error
           );
         }
       }
@@ -190,8 +185,7 @@ class MigrationService {
    */
   private async updateValuationSettings(): Promise<void> {
     try {
-      const database = new DatabaseService();
-      const currentSettings = await database.getSettings() || null;
+      const currentSettings = await databaseService.getSettings() || null;
 
       // Merge with valuation-specific settings
       const defaultSettings: any = {};
@@ -205,7 +199,7 @@ class MigrationService {
         displayCurrency: 'USD', // Default to USD, can be changed in UI
       };
 
-      await database.saveSettings(defaultSettings);
+      await databaseService.saveSettings(defaultSettings);
       console.log('MigrationService: Updated settings with valuation tracking');
 
     } catch (error) {
@@ -245,10 +239,8 @@ class MigrationService {
    */
   async populateInitialData(): Promise<void> {
     try {
-      const database = new DatabaseService();
-      
       // Check if already populated
-      const collection = await database.getCollectionItems();
+      const collection = await databaseService.getCollectionItems();
       
       if (collection && collection.length > 0) {
         console.log('MigrationService: Collection already has data');
@@ -261,7 +253,7 @@ class MigrationService {
       // Only populate in development/debug mode
       if (__DEV__) {
         for (const item of devData.mockCollection) {
-          await database.saveCollectionItem(item);
+          await databaseService.saveCollectionItem(item);
         }
 
         console.log('MigrationService: Loaded mock collection data');
