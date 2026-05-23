@@ -1,20 +1,20 @@
+import { useThemeColor } from '@/hooks/useThemeColor';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useState, useEffect } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View, Image, Appearance } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Appearance, Image, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
-import { CollectionItem } from '../../types/collection';
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { useCurrency } from '../providers/SimpleCurrencyProvider';
-import { getCurrencyInfo } from '../../utils/currencyUtils';
-import { CategoryDropdown } from './CategoryDropdown';
-import { LocationDropdown } from './LocationDropdown';
-import { loadCategories } from '../../store/categoriesStore';
-import { RootState, AppDispatch } from '../../store/store';
 import { databaseService } from '../../services/DatabaseService';
 import { imageService } from '../../services/ImageService';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { loadCategories } from '../../store/categoriesStore';
+import { AppDispatch, RootState } from '../../store/store';
+import { CollectionItem } from '../../types/collection';
+import { getCurrencyInfo } from '../../utils/currencyUtils';
+import { useCurrency } from '../providers/SimpleCurrencyProvider';
+import { CategoryDropdown } from './CategoryDropdown';
+import { LocationDropdown } from './LocationDropdown';
 
 interface ItemFormProps {
   item?: CollectionItem;
@@ -68,8 +68,19 @@ export function ItemForm({ item, onSubmit, onCancel, isEdit = false }: ItemFormP
     dispatch(loadCategories());
   }, [dispatch]);
 
+  const parseDateString = (value?: string) => {
+    if (!value) return new Date();
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  };
+
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const openLastUsedPicker = () => {
+    setSelectedDate(parseDateString(formData.lastUsed));
+    setShowDatePicker(true);
   };
 
   const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
@@ -209,13 +220,23 @@ export function ItemForm({ item, onSubmit, onCancel, isEdit = false }: ItemFormP
         />
         <ThemedView style={styles.inputContainer}>
           <ThemedText style={styles.label}>Last Used Date</ThemedText>
-          <TouchableOpacity 
-            style={[styles.dateButton, { borderColor, backgroundColor: cardBg }]} 
-            onPress={() => setShowDatePicker(true)}
-          >
-            <ThemedText style={styles.dateButtonText}>{formData.lastUsed}</ThemedText>
-          </TouchableOpacity>
-          {showDatePicker && (
+          {Platform.OS === 'web' ? (
+            <input
+              type="date"
+              value={formData.lastUsed}
+              onChange={(event) => handleChange('lastUsed', event.currentTarget.value)}
+              placeholder="YYYY-MM-DD"
+              style={StyleSheet.flatten([styles.input, { borderColor, backgroundColor: cardBg }]) as any}
+            />
+          ) : (
+            <TouchableOpacity 
+              style={[styles.dateButton, { borderColor, backgroundColor: cardBg }]} 
+              onPress={openLastUsedPicker}
+            >
+              <ThemedText style={styles.dateButtonText}>{formData.lastUsed}</ThemedText>
+            </TouchableOpacity>
+          )}
+          {showDatePicker && Platform.OS !== 'web' && (
             <DateTimePicker
               value={selectedDate}
               mode="date"

@@ -1,3 +1,4 @@
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -11,16 +12,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useDispatch, useSelector } from 'react-redux';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
-import { AppDispatch, RootState } from '../store/store';
 import {
   createDataProject,
   createDataRecord,
   loadDataCollection,
 } from '../store/dataCollectionStore';
+import { AppDispatch, RootState } from '../store/store';
 import { DataRecord, DataTemplate, TemplateField } from '../types/dataCollection';
 
 const formatDate = (value: string) => new Date(value).toLocaleDateString();
@@ -48,6 +49,8 @@ export function ProjectsScreen() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [recordValues, setRecordValues] = useState<Record<string, unknown>>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [activeDateFieldKey, setActiveDateFieldKey] = useState<string | null>(null);
+  const [activeDate, setActiveDate] = useState<Date>(new Date());
 
   useEffect(() => {
     dispatch(loadDataCollection());
@@ -132,10 +135,48 @@ export function ProjectsScreen() {
           errors[field.key] = `${field.label} must be a number`;
         }
       }
+
+      if (field.type === 'date' && !isBlank) {
+        const parsedDate = new Date(String(value));
+        if (Number.isNaN(parsedDate.getTime())) {
+          errors[field.key] = `${field.label} must be a valid date`;
+        }
+      }
     }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const parseDateValue = (value: unknown) => {
+    if (typeof value === 'string' && value.trim()) {
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    }
+    return new Date();
+  };
+
+  const openDatePicker = (field: TemplateField) => {
+    const existingValue = recordValues[field.key];
+    setActiveDateFieldKey(field.key);
+    setActiveDate(parseDateValue(existingValue));
+  };
+
+  const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (!activeDateFieldKey) return;
+
+    if (Platform.OS === 'android') {
+      setActiveDateFieldKey(null);
+    }
+
+    if (date) {
+      setActiveDate(date);
+      const formatted = date.toISOString().split('T')[0];
+      const field = selectedProjectTemplate?.fields.find((item) => item.key === activeDateFieldKey);
+      if (field) {
+        updateValue(field, formatted);
+      }
+    }
   };
 
   const handleSaveRecord = async (status: DataRecord['status']) => {
@@ -198,6 +239,45 @@ export function ProjectsScreen() {
               );
             })}
           </View>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </View>
+      );
+    }
+
+    if (field.type === 'date') {
+      const rawValue = typeof value === 'string' ? value : '';
+      const displayValue = rawValue ? new Date(rawValue).toLocaleDateString() : '';
+
+      return (
+        <View key={field.id} style={styles.fieldBlock}>
+          <Text style={styles.fieldLabel}>{field.label}{field.required ? ' *' : ''}</Text>
+          {Platform.OS === 'web' ? (
+            <input
+              type="date"
+              value={rawValue}
+              onChange={(event) => updateValue(field, event.currentTarget.value)}
+              placeholder="YYYY-MM-DD"
+              style={StyleSheet.flatten(styles.input) as any}
+            />
+          ) : (
+            <TouchableOpacity
+              style={[styles.dateInput, !rawValue && styles.dateInputPlaceholder]}
+              onPress={() => openDatePicker(field)}
+            >
+              <Text style={[styles.dateInputText, !rawValue && styles.placeholderText]}>
+                {rawValue ? displayValue : 'Select date'}
+              </Text>
+            </TouchableOpacity>
+          )}
+          {activeDateFieldKey === field.key && Platform.OS !== 'web' && (
+            <DateTimePicker
+              value={activeDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              maximumDate={new Date()}
+              onChange={handleDateChange}
+            />
+          )}
           {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
       );
@@ -731,6 +811,26 @@ const styles = StyleSheet.create({
     color: '#334155',
     fontSize: 13,
     fontWeight: '700',
+  },
+  dateInput: {
+    minHeight: 46,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  dateInputText: {
+    color: '#0F172A',
+    fontSize: 15,
+  },
+  dateInputPlaceholder: {
+    borderColor: '#CBD5E1',
+    backgroundColor: '#F8FAFC',
+  },
+  placeholderText: {
+    color: '#9CA3AF',
   },
   optionTextSelected: {
     color: '#1D4ED8',
