@@ -3,6 +3,7 @@ import userReducer from './userStore';
 import collectionReducer from './collectionStore';
 import categoriesReducer from './categoriesStore';
 import priceHistoryReducer from './priceHistoryReducer';
+import dataCollectionReducer from './dataCollectionStore';
 
 interface AppState {
   currentPage: string;
@@ -31,6 +32,7 @@ export const store = configureStore({
     user: userReducer,
     categories: categoriesReducer,
     priceHistory: priceHistoryReducer,
+    dataCollection: dataCollectionReducer,
   },
 });
 
