@@ -80,18 +80,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Icon name="home" size={32} color={color} />,
         }}
       />
+      {/* New Data Collection Tab - replaces old projects/collection tabs */}
       <Tabs.Screen
-        name="projects"
+        name="data-collection/projects-list"
         options={{
-          title: 'Projects',
-          tabBarIcon: ({ color }) => <Icon name="assignment" size={32} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="collection"
-        options={{
-          title: 'Collection',
-          tabBarIcon: ({ color }) => <Icon name="collections" size={32} color={color} />,
+          title: 'Data Collection',
+          tabBarIcon: ({ color }) => <Icon name="layers-outline" size={32} color={color} />,
         }}
       />
       <Tabs.Screen
