@@ -10,7 +10,7 @@ interface IQRateLogoProps {
   elementColor?: ColorValue;
 }
 
-export function IQRateLogo({ size = 120, showText = false, backgroundColor = 'transparent', orbColor }: iQRateLogoProps) {
+export function IQRateLogo({ size = 120, showText = false, backgroundColor = 'transparent', orbColor }: IQRateLogoProps) {
   const scale = size / 120;
   const circleSize = Math.max(20, 50 * scale); // Minimum size for very small screens
   const spacing = Math.max(8, 15 * scale); // Responsive spacing

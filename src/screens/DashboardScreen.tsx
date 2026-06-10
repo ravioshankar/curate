@@ -1,10 +1,10 @@
 import { StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { StatCard } from '../components/common/StatCard';
 import { AppDispatch, RootState } from '../store/store';
 import { calculateCollectionStats } from '../utils/collectionUtils';
@@ -15,15 +15,21 @@ import { databaseService } from '../services/DatabaseService';
 import { AddItemPage } from '../components/common/AddItemPage';
 import { CurrencyProvider } from '../components/providers/SimpleCurrencyProvider';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import AnalyticsScreen from './AnalyticsScreen';
+import { AnalyticsScreen } from './AnalyticsScreen';
 import { getCategoryIcon } from '../utils/categoryIcons';
 
 export function DashboardScreen() {
   const dispatch = useDispatch<AppDispatch>();
+  const colorScheme = useAppTheme();
   const collection = useSelector((state: RootState) => state.collection.items);
   const formatPrice = (amount: number) => `$${amount.toFixed(2)}`;
   const tintColor = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({ light: '#e5e7eb', dark: '#333' }, 'text');
+  const sectionBackground = colorScheme === 'dark' ? '#292524' : '#FFFFFF';
+  const chipBackground = colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(28, 25, 23, 0.06)';
+  const rowBackground = colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(28, 25, 23, 0.04)';
+  const reviewBackground = colorScheme === 'dark' ? 'rgba(248, 113, 113, 0.14)' : 'rgba(220, 38, 38, 0.08)';
+  const valueBackground = colorScheme === 'dark' ? 'rgba(16, 185, 129, 0.14)' : 'rgba(5, 150, 105, 0.08)';
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -154,7 +160,7 @@ export function DashboardScreen() {
       </ThemedView>
 
       {/* Quick Actions */}
-      <ThemedView style={[styles.section, { borderColor }]}>
+      <ThemedView style={[styles.section, { backgroundColor: sectionBackground, borderColor }]}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Quick Actions</ThemedText>
         <ThemedView style={styles.actionsGrid}>
           <TouchableOpacity 
@@ -182,11 +188,15 @@ export function DashboardScreen() {
       </ThemedView>
 
       {/* Category Filter */}
-      <ThemedView style={[styles.section, { borderColor }]}>
+      <ThemedView style={[styles.section, { backgroundColor: sectionBackground, borderColor }]}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>Categories</ThemedText>
         <ThemedView style={styles.categoryGrid}>
           <TouchableOpacity 
-            style={[styles.categoryChip, selectedCategory === 'all' && { backgroundColor: tintColor }]}
+            style={[
+              styles.categoryChip,
+              { backgroundColor: chipBackground },
+              selectedCategory === 'all' && { backgroundColor: tintColor },
+            ]}
             onPress={() => setSelectedCategory('all')}
           >
             <ThemedText style={[styles.categoryText, selectedCategory === 'all' && { color: 'white' }]}>All</ThemedText>
@@ -194,7 +204,11 @@ export function DashboardScreen() {
           {categories.map(category => (
             <TouchableOpacity 
               key={category}
-              style={[styles.categoryChip, selectedCategory === category && { backgroundColor: tintColor }]}
+              style={[
+                styles.categoryChip,
+                { backgroundColor: chipBackground },
+                selectedCategory === category && { backgroundColor: tintColor },
+              ]}
               onPress={() => setSelectedCategory(category)}
             >
               <ThemedText style={styles.categoryIcon}>{getCategoryIcon(category)}</ThemedText>
@@ -212,12 +226,12 @@ export function DashboardScreen() {
 
       {/* Items Needing Attention */}
       {longUnusedItems.length > 0 && (
-        <ThemedView style={[styles.section, { borderColor }]}>
+        <ThemedView style={[styles.section, { backgroundColor: sectionBackground, borderColor }]}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             <Icon name="warning" size={18} color="#F59E0B" /> Items to Review{selectedCategory !== 'all' ? ` (${selectedCategory})` : ''}
           </ThemedText>
           {longUnusedItems.slice(0, 3).map(item => (
-            <ThemedView key={item.id} style={styles.reviewItem}>
+            <ThemedView key={item.id} style={[styles.reviewItem, { backgroundColor: reviewBackground }]}>
               <Icon name="schedule" size={20} color="#F59E0B" />
               <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
               <ThemedView style={styles.itemInfo}>
@@ -233,12 +247,12 @@ export function DashboardScreen() {
       )}
 
       {/* Recent Activity */}
-      <ThemedView style={[styles.section, { borderColor }]}>
+      <ThemedView style={[styles.section, { backgroundColor: sectionBackground, borderColor }]}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>
           Recent Activity{selectedCategory !== 'all' ? ` (${selectedCategory})` : ''}
         </ThemedText>
         {recentItems.map(item => (
-          <ThemedView key={item.id} style={styles.recentItem}>
+          <ThemedView key={item.id} style={[styles.recentItem, { backgroundColor: rowBackground }]}>
             <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
             <ThemedView style={styles.itemInfo}>
               <ThemedText style={styles.itemName}>{item.name}</ThemedText>
@@ -251,12 +265,12 @@ export function DashboardScreen() {
 
       {/* Top Value Items */}
       {topValueItems.length > 0 && (
-        <ThemedView style={[styles.section, { borderColor }]}>
+        <ThemedView style={[styles.section, { backgroundColor: sectionBackground, borderColor }]}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             💎 Most Valuable{selectedCategory !== 'all' ? ` (${selectedCategory})` : ''}
           </ThemedText>
           {topValueItems.map(item => (
-            <ThemedView key={item.id} style={styles.valueItem}>
+            <ThemedView key={item.id} style={[styles.valueItem, { backgroundColor: valueBackground }]}>
               <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
               <ThemedView style={styles.itemInfo}>
                 <ThemedText style={styles.itemName}>{item.name}</ThemedText>
@@ -295,7 +309,7 @@ export function DashboardScreen() {
           />
           <ScrollView style={styles.searchResults}>
             {searchResults.map(item => (
-              <ThemedView key={item.id} style={styles.searchItem}>
+              <ThemedView key={item.id} style={[styles.searchItem, { backgroundColor: rowBackground }]}>
                 <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
                 <ThemedView style={styles.itemInfo}>
                   <ThemedText style={styles.itemName}>{item.name}</ThemedText>
@@ -319,21 +333,22 @@ export function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 16,
+    gap: 10,
   },
   section: {
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
@@ -341,7 +356,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 12,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   actionsGrid: {
     flexDirection: 'row',
@@ -350,9 +365,10 @@ const styles = StyleSheet.create({
   actionCard: {
     flex: 1,
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 8,
-    gap: 8,
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    gap: 10,
   },
   actionText: {
     color: 'white',
@@ -372,7 +388,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -402,29 +417,28 @@ const styles = StyleSheet.create({
   reviewItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-    gap: 12,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    gap: 14,
   },
   recentItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    marginBottom: 8,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    gap: 12,
   },
   valueItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    marginBottom: 8,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    gap: 12,
   },
   itemInfo: {
     flex: 1,

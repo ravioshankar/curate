@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { CurrencySelector } from '@/src/components/common/CurrencySelector';
 import { ProfileOption } from '@/src/components/common/ProfileOption';
 import { ThemeToggle } from '@/src/components/common/ThemeToggle';
@@ -15,12 +16,12 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
-import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 
 export function ProfileScreen() {
   const { profile, settings } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch<AppDispatch>();
+  const colorScheme = useAppTheme();
   const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor({ light: '#eee', dark: '#333' }, 'text');
   const textColor = useThemeColor({ light: '#1C1917', dark: '#F5F5F4' }, 'text');
@@ -82,7 +83,7 @@ export function ProfileScreen() {
       if (imageUri) {
         setEditAvatar(imageUri);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to select photo');
     }
   };
@@ -97,40 +98,52 @@ export function ProfileScreen() {
       if (imageUri) {
         setEditAvatar(imageUri);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to capture photo');
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#1C1917' : '#FEF7F0' }]}>
       <ThemedView style={[styles.header, { borderBottomColor: borderColor }]}>
-        <TouchableOpacity onPress={isEditing ? pickImage : startEdit}>
+        <TouchableOpacity onPress={isEditing ? pickImage : startEdit} activeOpacity={0.85}>
           {(isEditing ? editAvatar : profile.avatar) ? (
-            <Image source={{ uri: isEditing ? editAvatar : profile.avatar }} style={{ width: 80, height: 80, borderRadius: 40 }} />
+            <View style={styles.avatarWrap}>
+              <Image
+                source={{ uri: isEditing ? editAvatar : profile.avatar }}
+                style={[
+                  styles.avatar,
+                  { borderColor: colorScheme === 'dark' ? '#44403C' : '#FFFFFF' },
+                ]}
+                resizeMode="cover"
+              />
+              {isEditing && (
+                <View style={styles.cameraOverlay}>
+                  <Icon name="camera-alt" size={20} color="white" />
+                </View>
+              )}
+            </View>
           ) : (
-            <Icon name="account-circle" size={80} color={iconColor} />
-          )}
-          {isEditing && (
-            <View style={styles.cameraOverlay}>
-              <Icon name="camera-alt" size={24} color="white" />
+            <View style={styles.avatarWrap}>
+              <Icon name="account-circle" size={96} color={iconColor} />
+              {profile.email ? (
+                <View style={[styles.emailBadge, { backgroundColor: tintColor }]}>
+                  <Icon name="check" size={14} color="#FFFFFF" />
+                </View>
+              ) : null}
             </View>
           )}
         </TouchableOpacity>
         {isEditing ? (
-          <TextInput 
-            value={editName} 
-            onChangeText={setEditName} 
-            style={[styles.nameInput, { color: textColor, borderBottomColor: textColor }]}
-            selectionColor={textColor} 
-            placeholder="Name"
-            placeholderTextColor="#999"
-          />
-        ) : (
-          <ThemedText style={styles.name}>{profile.name}</ThemedText>
-        )}
-        {isEditing ? (
-          <View>
+          <>
+            <TextInput
+              value={editName}
+              onChangeText={setEditName}
+              style={[styles.nameInput, { color: textColor, borderBottomColor: textColor }]}
+              selectionColor={textColor}
+              placeholder="Name"
+              placeholderTextColor="#999"
+            />
             <TextInput 
               value={editEmail} 
               onChangeText={(text) => {
@@ -147,9 +160,14 @@ export function ProfileScreen() {
             {emailError ? (
               <ThemedText style={styles.errorText}>{emailError}</ThemedText>
             ) : null}
-          </View>
+          </>
         ) : (
-          <ThemedText style={styles.email} lightColor="#666" darkColor="#999">{profile.email}</ThemedText>
+          <>
+            <ThemedText style={styles.name}>{profile.name}</ThemedText>
+            <ThemedText style={styles.email} lightColor="#78716C" darkColor="#D6D3D1">
+              {profile.email || 'No email added'}
+            </ThemedText>
+          </>
         )}
         {isEditing && (
           <View style={styles.avatarOptions}>
@@ -279,18 +297,52 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    padding: 32,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
     borderBottomWidth: 1,
+    width: '100%',
+  },
+  avatarWrap: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 104,
+    height: 104,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 3,
+  },
+  cameraOverlay: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 14,
+    padding: 6,
+  },
+  emailBadge: {
+    position: 'absolute',
+    bottom: 10,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 16,
+    fontSize: 26,
+    fontWeight: '700',
+    marginTop: 20,
+    textAlign: 'center',
   },
   email: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 4,
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
   },
   section: {
     marginTop: 16,
@@ -364,16 +416,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
-  cameraOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 12,
-    padding: 4,
-  },
   avatarOptions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: 12,
     marginTop: 16,
   },

@@ -1,53 +1,67 @@
 import { RootState } from '@/src/store/store';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Image, View } from 'react-native';
+import { Image, View, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { IQRateLogo } from '@/src/components/common/IQRateLogo';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 function AppHeader() {
   const colorScheme = useAppTheme();
   const colors = Colors[colorScheme];
 
   return (
-    <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-        <IQRateLogo 
-          size={28} 
+    <View style={styles.headerContent}>
+      <View style={styles.brandRow}>
+        <IQRateLogo
+          size={30}
           backgroundColor="transparent"
           orbColor={colors.tint}
           elementColor={colors.tint}
         />
-        <ThemedText style={{ 
-          fontSize: 24, 
+        <ThemedText style={{
+          fontSize: 26,
           fontWeight: '800', 
-          color: colorScheme === 'dark' ? '#FFFFFF' : '#B91C1C',
-          letterSpacing: 1,
-          textShadowColor: colorScheme === 'dark' ? 'rgba(185, 28, 28, 0.5)' : 'rgba(185, 28, 28, 0.3)',
-          textShadowOffset: {width: 0, height: 1},
-          textShadowRadius: 3,
-          marginLeft: 8
+          color: colors.text,
+          marginLeft: 10
         }}>iQRate</ThemedText>
       </View>
-      <ThemedText style={{ 
-        fontSize: 13, 
-        fontWeight: '500',
-        color: '#64748B',
-        fontStyle: 'italic',
-        letterSpacing: 0.5,
-        marginTop: 3,
-        textShadowColor: 'rgba(100, 116, 139, 0.2)',
-        textShadowOffset: {width: 0, height: 1},
-        textShadowRadius: 1
-      }}>The smarter way to own.</ThemedText>
+        <ThemedText style={{
+        fontSize: 12,
+        fontWeight: '600',
+        color: colorScheme === 'dark' ? '#D6D3D1' : '#78716C',
+        marginTop: 2,
+        textTransform: 'uppercase',
+      }}>The smarter way to own</ThemedText>
     </View>
   );
 }
+
+interface TabIconProps {
+  color: string;
+  focused: boolean;
+  name: string;
+}
+
+const getTabIcon = (props: TabIconProps) => {
+  const { color, focused, name } = props;
+  const size = focused ? 28 : 26;
+
+  switch (name) {
+    case 'home':
+      return <Icon name={focused ? 'home' : 'home-outline'} size={size} color={color} />;
+    case 'data-collection':
+      return <Icon name={focused ? 'database-plus' : 'database-plus-outline'} size={size} color={color} />;
+    case 'valuation':
+      return <Icon name={focused ? 'chart-pie' : 'chart-pie'} size={size} color={color} />;
+    default:
+      return <Icon name="circle" size={size} color={color} />;
+  }
+};
 
 export default function TabLayout() {
   const colorScheme = useAppTheme();
@@ -57,59 +71,93 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.tint,
+        tabBarActiveTintColor: colors.tabIconSelected,
         tabBarInactiveTintColor: colors.tabIconDefault,
         headerShown: true,
         headerTitle: () => <AppHeader />,
         headerStyle: {
           backgroundColor: colors.background,
-          height: 90,
+          height: 88,
         },
-        headerTintColor: colors.text,
-
+        headerShadowVisible: false,
         tabBarStyle: {
-          backgroundColor: colors.background,
-          paddingBottom: 8,
-          height: 70,
+          backgroundColor: colors.surface,
+          paddingBottom: 10,
+          paddingTop: 8,
+          height: 80,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        tabBarHideOnKeyboard: true,
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '700',
+          textTransform: 'uppercase',
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Icon name="home" size={32} color={color} />,
+          headerTitleAlign: 'center',
+          tabBarIcon: ({ color, focused }) => getTabIcon({ name: 'home', color, focused }),
         }}
       />
-      {/* New Data Collection Tab - replaces old projects/collection tabs */}
       <Tabs.Screen
         name="data-collection/projects-list"
         options={{
           title: 'Data Collection',
-          tabBarIcon: ({ color }) => <Icon name="layers-outline" size={32} color={color} />,
+          headerTitleAlign: 'center',
+          tabBarIcon: ({ color, focused }) => getTabIcon({ name: 'data-collection', color, focused }),
         }}
       />
       <Tabs.Screen
         name="valuation"
         options={{
           title: 'Value',
-          tabBarIcon: ({ color }) => <Icon name="show-chart" size={32} color={color} />,
+          headerTitleAlign: 'center',
+          tabBarIcon: ({ color, focused }) => getTabIcon({ name: 'valuation', color, focused }),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => 
+          headerTitleAlign: 'center',
+          tabBarIcon: ({ color, focused }) =>
             profile.avatar ? (
               <Image 
                 source={{ uri: profile.avatar }} 
-                style={{ width: 32, height: 32, borderRadius: 16 }} 
+                style={[
+                  styles.profileAvatar,
+                  focused && { borderColor: colors.tabIconSelected },
+                ]}
               />
             ) : (
-              <Icon name="account-circle" size={32} color={color} />
+              <Icon name={focused ? 'account-circle' : 'account-circle-outline'} size={28} color={color} />
             ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  headerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+});
