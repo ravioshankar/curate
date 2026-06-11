@@ -95,16 +95,7 @@ export class ProjectStorage {
    */
   async archive(id: string): Promise<void> {
     try {
-      const projects = await this.getAll();
-      
-      const index = projects.findIndex(p => p.id === id);
-      if (index === -1) return;
-
-      // Get all other fields to preserve
-      const project = projects[index];
-      
-      // Archive logic: change status and optionally move records
-      await AsyncStorage.setItem(this.TABLE_KEY, JSON.stringify(projects));
+      await this.moveStatus(id, 'archived');
     } catch (error) {
       console.error('Error archiving project:', error);
       throw error;
@@ -158,7 +149,6 @@ export class ProjectStorage {
   async search(query: string): Promise<DataProject[]> {
     try {
       const allProjects = await this.getAll();
-      const percent = `%${query}%`;
       return allProjects.filter(p => 
         p.name.toLowerCase().includes(query.toLowerCase()) ||
         (p.description && p.description.toLowerCase().includes(query.toLowerCase()))

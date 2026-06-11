@@ -88,11 +88,6 @@ export class RecordStorage {
         throw new Error(`Record ${id} not found`);
       }
 
-      // Don't allow modifying createdAt or status timestamp after creation
-      const allowedUpdates = Object.keys(updates).filter(k => 
-        k !== 'createdAt' && k !== 'submittedAt' && k !== 'reviewDate' && k !== 'reviewerComment'
-      );
-      
       const updatedRecord = { ...records[index], ...updates };
       updatedRecord.updatedAt = new Date().toISOString();
       
@@ -197,6 +192,21 @@ export class RecordStorage {
       await AsyncStorage.setItem(this.TABLE_KEY, JSON.stringify(filtered));
     } catch (error) {
       console.error('Error deleting record:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all records for a project
+   */
+  async deleteByProject(projectId: string): Promise<void> {
+    try {
+      const records = await this.getAll();
+      const filtered = records.filter(record => record.projectId !== projectId);
+
+      await AsyncStorage.setItem(this.TABLE_KEY, JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Error deleting project records:', error);
       throw error;
     }
   }
