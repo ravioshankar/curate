@@ -37,7 +37,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [fadeAnim, onFinish, scaleAnim]);
 
   return (
     <View style={styles.container}>

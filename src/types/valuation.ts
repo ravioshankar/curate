@@ -4,8 +4,7 @@
  * Extends the core collection tracking with price history and market data
  */
 
-import { CollectionStats } from './collection';
-import { CollectionItem } from '../types/collection';
+import { CollectionItem, CollectionStats } from './collection';
 
 export interface PriceRecord {
   id: string;
@@ -65,11 +64,11 @@ export interface ValuationSettings {
 export interface PriceChartData {
   itemId: string;
   itemName: string;
-  prices: Array<{
+  prices: {
     date: string;
     value: number;
     source: string;
-  }>;
+  }[];
   currentValue?: number;
   currentValueDate?: string;
 }

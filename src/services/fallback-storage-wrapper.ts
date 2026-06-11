@@ -157,7 +157,9 @@ export class FallbackStorageWrapper {
             latencyMs: Date.now() - startTime
           };
         } catch (fallbackError) {
-          throw new Error(`getAll failed: ${(error as Error).message}`);
+          const primaryMessage = error instanceof Error ? error.message : String(error);
+          const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+          throw new Error(`getAll failed: ${primaryMessage}; fallback failed: ${fallbackMessage}`);
         }
       } else {
         throw error;
@@ -168,7 +170,7 @@ export class FallbackStorageWrapper {
   // Initialize storage
   async init(): Promise<{ success: boolean; message: string; fallbackEnabled: boolean }> {
     try {
-      const result = await this.storageInitializer.init();
+      await this.storageInitializer.init();
       
       if (this.config.verbose) {
         console.log('✅ [FallbackStorage] Storage initialized with fallback mode enabled');

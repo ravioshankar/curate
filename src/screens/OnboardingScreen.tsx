@@ -7,7 +7,6 @@ import { AppDispatch } from '@/src/store/store';
 import { saveProfile, saveSettings, updateProfile, updateSettings } from '@/src/store/userStore';
 import React, { useState } from 'react';
 import { Alert, Image, Platform, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch } from 'react-redux';
 
@@ -20,7 +19,6 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const tintColor = useThemeColor({}, 'tint');
   const iconColor = useThemeColor({}, 'icon');
   const textColor = useThemeColor({}, 'text');
-  const insets = useSafeAreaInsets();
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

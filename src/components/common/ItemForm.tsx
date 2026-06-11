@@ -40,6 +40,8 @@ export function ItemForm({ item, onSubmit, onCancel, isEdit = false }: ItemFormP
   const isDarkMode = backgroundColor === '#1C1917' || Appearance.getColorScheme() === 'dark';
   const { currency } = useCurrency();
   const currentCurrency = getCurrencyInfo(currency);
+  const getErrorMessage = (error: unknown, fallback: string) =>
+    error instanceof Error ? error.message : fallback;
   
   const [formData, setFormData] = useState({
     name: item?.name || '',
@@ -120,7 +122,7 @@ export function ItemForm({ item, onSubmit, onCancel, isEdit = false }: ItemFormP
       await databaseService.deleteCategory(categoryName);
       dispatch(loadCategories());
     } catch (error) {
-      Alert.alert('Error', 'Cannot delete default category');
+      Alert.alert('Could not delete category', getErrorMessage(error, 'Cannot delete default category'));
     }
   };
 
@@ -132,7 +134,7 @@ export function ItemForm({ item, onSubmit, onCancel, isEdit = false }: ItemFormP
         handleChange('imageUrl', uri);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to pick image');
+      Alert.alert('Could not pick image', getErrorMessage(error, 'Failed to pick image'));
     }
   };
 
@@ -144,7 +146,7 @@ export function ItemForm({ item, onSubmit, onCancel, isEdit = false }: ItemFormP
         handleChange('imageUrl', uri);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to take photo');
+      Alert.alert('Could not take photo', getErrorMessage(error, 'Failed to take photo'));
     }
   };
 

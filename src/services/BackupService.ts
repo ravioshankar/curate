@@ -109,13 +109,13 @@ class BackupService {
     
     // For mobile, create downloadable file using FileSystem
     try {
-      const FileSystem = require('expo-file-system');
+      const FileSystem = await import('expo-file-system');
       const filePath = `${FileSystem.documentDirectory}${fileName}`;
       
       await FileSystem.writeAsStringAsync(filePath, backupData);
       
       // Share the file
-      const Sharing = require('expo-sharing');
+      const Sharing = await import('expo-sharing');
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(filePath);
       }
@@ -123,6 +123,7 @@ class BackupService {
       return fileName;
     } catch (error) {
       // Fallback: just return filename
+      console.warn('Backup share failed:', error instanceof Error ? error.message : error);
       return fileName;
     }
   }

@@ -132,18 +132,6 @@ export class MigrationService {
       values.notes = item.notes;
     }
 
-    // Handle price history - could be array or string
-    let priceHistory: any[] | string;
-    if (Array.isArray(item.priceHistory)) {
-      priceHistory = item.priceHistory;
-    } else if (typeof item.priceHistory === 'string') {
-      try {
-        priceHistory = JSON.parse(item.priceHistory);
-      } catch {
-        priceHistory = item.priceHistory;
-      }
-    }
-
     // Photos -> photo attachments
     const photoAttachments: any[] = [];
     if (Array.isArray(item.image)) {
@@ -309,13 +297,6 @@ export class MigrationService {
           estimatedSizeMB: 0
         };
       }
-
-      // Preview a sample of migrated records
-      const sampleMigration = await this.migrateInventoryItem(
-        existingItems[0],
-        'proj_preview',
-        'tmpl_preview'
-      );
 
       return {
         itemsCount: existingItems.length,

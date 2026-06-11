@@ -4,7 +4,6 @@
  * Showcases how to use fallback mode with existing storage services.
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StorageInitializer } from '../services/storage-init';
 import { createFallbackStorageWrapper } from '../services/fallback-storage-wrapper';
 
