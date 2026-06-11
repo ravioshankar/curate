@@ -9,6 +9,7 @@ import { ProjectStorage } from './project-storage';
 import { TemplateStorage } from './template-storage';
 import { RecordStorage } from './record-storage';
 import { MigrationService } from './migration';
+import { type TemplateCategory } from '@/src/types/data-collection';
 
 export class StorageInitializer {
   private projectStorage: ProjectStorage;
@@ -44,7 +45,7 @@ export class StorageInitializer {
       }
 
       // Create built-in templates if not exist
-      await this.createDefaultBuiltInTemplates();
+      const defaultTemplatesCreated = await this.createDefaultBuiltInTemplates();
 
       // Check migration status
       const needsMigration = await this.checkMigrationNeeded();
@@ -62,7 +63,7 @@ export class StorageInitializer {
       return {
         success: true,
         message: 'Storage initialized successfully',
-        defaultTemplatesCreated: this.countTemplates(),
+        defaultTemplatesCreated,
         recordsMigrated
       };
 
@@ -87,14 +88,16 @@ export class StorageInitializer {
   /**
    * Create default built-in templates if they don't exist
    */
-  private async createDefaultBuiltInTemplates(): Promise<void> {
-    const builtInCategories = [
+  private async createDefaultBuiltInTemplates(): Promise<number> {
+    const builtInCategories: TemplateCategory[] = [
       'inventory',
       'inspection', 
       'audit',
       'maintenance',
       'research'
     ];
+
+    let createdCount = 0;
 
     for (const category of builtInCategories) {
       try {
@@ -124,11 +127,14 @@ export class StorageInitializer {
             `Default ${templateNames[category]} template`,
             category
           );
+          createdCount++;
         }
       } catch (error) {
         console.error(`Error creating template for category ${category}:`, error);
       }
     }
+
+    return createdCount;
   }
 
   /**
@@ -201,9 +207,9 @@ export class StorageInitializer {
   /**
    * Count existing templates
    */
-  private countTemplates(): number {
+  private async countTemplates(): Promise<number> {
     try {
-      return this.templateStorage.getAll().then(templates => templates.length);
+      return await this.templateStorage.getAll().then(templates => templates.length);
     } catch (error) {
       console.error('Error counting templates:', error);
       return 0;
@@ -236,9 +242,9 @@ export class StorageInitializer {
         healthy: true,
         storageType: 'asyncStorage',
         tables: {
-          projects: projects.length,
-          templates: templates.length,
-          records: records.length
+          projects: projectsCount,
+          templates: templatesCount,
+          records: recordsCount
         },
         migrationComplete: await AsyncStorage.getItem('migration_complete') === 'true',
         version: await AsyncStorage.getItem('storageVersion') || 'v1.0'
@@ -247,7 +253,9 @@ export class StorageInitializer {
       console.error('Health check failed:', error);
       return {
         healthy: false,
-        error: (error as Error).message
+        error: (error as Error).message,
+        migrationComplete: false,
+        version: await AsyncStorage.getItem('storageVersion') || 'v1.0'
       };
     }
   }

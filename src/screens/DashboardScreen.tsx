@@ -128,6 +128,7 @@ export function DashboardScreen() {
   const searchResults = collection.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const hasItems = collection.length > 0;
 
   return (
     <ScrollView 
@@ -158,6 +159,23 @@ export function DashboardScreen() {
           color="#F59E0B" 
         />
       </ThemedView>
+
+      {!hasItems && (
+        <ThemedView style={[styles.emptyHero, { backgroundColor: sectionBackground, borderColor }]}>
+          <Icon name="inventory-2" size={34} color={tintColor} />
+          <ThemedText style={styles.emptyHeroTitle}>Start your collection</ThemedText>
+          <ThemedText style={styles.emptyHeroText}>
+            Add your first item to unlock categories, value tracking, search, and insights.
+          </ThemedText>
+          <TouchableOpacity
+            style={[styles.primaryInlineButton, { backgroundColor: tintColor }]}
+            onPress={() => setShowAddModal(true)}
+          >
+            <Icon name="add" size={20} color="white" />
+            <ThemedText style={styles.primaryInlineButtonText}>Add Item</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      )}
 
       {/* Quick Actions */}
       <ThemedView style={[styles.section, { backgroundColor: sectionBackground, borderColor }]}>
@@ -308,16 +326,26 @@ export function DashboardScreen() {
             onChangeText={handleSearch}
           />
           <ScrollView style={styles.searchResults}>
-            {searchResults.map(item => (
-              <ThemedView key={item.id} style={[styles.searchItem, { backgroundColor: rowBackground }]}>
-                <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
-                <ThemedView style={styles.itemInfo}>
-                  <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-                  <ThemedText style={styles.itemCategory}>{item.category}</ThemedText>
+            {searchResults.length > 0 ? (
+              searchResults.map(item => (
+                <ThemedView key={item.id} style={[styles.searchItem, { backgroundColor: rowBackground }]}>
+                  <ThemedText style={styles.itemCategoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
+                  <ThemedView style={styles.itemInfo}>
+                    <ThemedText style={styles.itemName}>{item.name}</ThemedText>
+                    <ThemedText style={styles.itemCategory}>{item.category}</ThemedText>
+                  </ThemedView>
+                  <ThemedText style={styles.itemValue}>{formatPrice(item.pricePaid || 0)}</ThemedText>
                 </ThemedView>
-                <ThemedText style={styles.itemValue}>{formatPrice(item.pricePaid || 0)}</ThemedText>
+              ))
+            ) : (
+              <ThemedView style={[styles.searchEmpty, { backgroundColor: rowBackground }]}>
+                <Icon name="search-off" size={28} color={tintColor} />
+                <ThemedText style={styles.emptyHeroTitle}>No matching items</ThemedText>
+                <ThemedText style={styles.emptyHeroText}>
+                  Try a different name or add the item if it is not in your collection yet.
+                </ThemedText>
               </ThemedView>
-            ))}
+            )}
           </ScrollView>
         </ThemedView>
       </Modal>
@@ -352,6 +380,41 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
+  },
+  emptyHero: {
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  emptyHeroTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  emptyHeroText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 6,
+    opacity: 0.72,
+    textAlign: 'center',
+  },
+  primaryInlineButton: {
+    alignItems: 'center',
+    borderRadius: 10,
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  primaryInlineButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '700',
   },
   sectionTitle: {
     marginBottom: 12,
@@ -489,6 +552,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
     marginBottom: 8,
+  },
+  searchEmpty: {
+    alignItems: 'center',
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 20,
   },
 
   addButton: {

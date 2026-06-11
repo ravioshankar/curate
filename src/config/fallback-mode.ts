@@ -6,8 +6,6 @@
  * to AsyncStorage when failures occur.
  */
 
-import type { FallbackConfig } from '../services/fallback-storage';
-
 export interface FallbackModeOptions {
   /** Enable fallback mode (graceful degradation) */
   enabled: boolean;
@@ -51,7 +49,7 @@ export const defaultFallbackModeOptions: FallbackModeOptions = {
 /**
  * Environment-specific fallback configuration overrides
  */
-export const getFallbackModeConfig = (environment: string): FallbackConfig & {
+export const getFallbackModeConfig = (environment: string): FallbackModeOptions & {
   fallbackEnabled: boolean;
 } => {
   

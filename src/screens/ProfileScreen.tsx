@@ -34,6 +34,7 @@ export function ProfileScreen() {
   const [emailError, setEmailError] = useState('');
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [showBackupManager, setShowBackupManager] = useState(false);
+  const hasProfileEmail = Boolean(profile.email);
 
   useEffect(() => {
     dispatch(loadSettings());
@@ -167,6 +168,15 @@ export function ProfileScreen() {
             <ThemedText style={styles.email} lightColor="#78716C" darkColor="#D6D3D1">
               {profile.email || 'No email added'}
             </ThemedText>
+            <TouchableOpacity
+              onPress={startEdit}
+              style={[styles.editProfileButton, { borderColor: tintColor }]}
+            >
+              <Icon name="edit" size={18} color={tintColor} />
+              <ThemedText style={[styles.editProfileText, { color: tintColor }]}>
+                {hasProfileEmail ? 'Edit Profile' : 'Complete Profile'}
+              </ThemedText>
+            </TouchableOpacity>
           </>
         )}
         {isEditing && (
@@ -343,6 +353,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
+  },
+  editProfileButton: {
+    alignItems: 'center',
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  editProfileText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   section: {
     marginTop: 16,

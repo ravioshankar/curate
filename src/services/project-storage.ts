@@ -6,7 +6,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DataProject, type ProjectSettings, type ProjectStatus } from '@/types';
+import { type DataProject, type ProjectSettings, type ProjectStatus } from '@/src/types';
 
 export class ProjectStorage {
   private readonly TABLE_KEY = 'data_projects_v1';

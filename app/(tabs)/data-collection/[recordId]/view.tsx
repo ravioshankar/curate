@@ -1,31 +1,53 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-// Import types
+import { RecordStorage } from '@/src/services/record-storage';
 import { type DataRecord } from '@/src/types/data-collection';
+
+const getRecordTitle = (record: DataRecord) =>
+  typeof record.values.name === 'string' && record.values.name.trim()
+    ? record.values.name
+    : 'Untitled record';
+
+const getRecordDescription = (record: DataRecord) =>
+  typeof record.values.description === 'string' ? record.values.description : '';
+
+const getRecordValue = (record: DataRecord) =>
+  typeof record.values.value === 'number' ? record.values.value : undefined;
 
 export default function RecordViewScreen() {
   const { recordId } = useLocalSearchParams();
   const router = useRouter();
+  const normalizedRecordId = Array.isArray(recordId) ? recordId[0] : recordId;
+  const recordStorage = useMemo(() => new RecordStorage(), []);
+  const [record, setRecord] = useState<DataRecord | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Placeholder data - in real implementation, this would come from storage
-  const placeholderRecord: DataRecord = {
-    id: typeof recordId === 'string' ? recordId : '',
-    projectId: '',
-    templateId: undefined,
-    name: 'Sample Record',
-    description: 'This is a sample record. Tap the back button to go back to the project details.',
-    value: 0,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  const loadRecord = useCallback(async () => {
+    if (!normalizedRecordId) return;
+
+    try {
+      setLoading(true);
+      setRecord(await recordStorage.getById(normalizedRecordId));
+    } catch (error) {
+      console.error('Error loading record:', error);
+      Alert.alert('Error', 'Failed to load record');
+    } finally {
+      setLoading(false);
+    }
+  }, [normalizedRecordId, recordStorage]);
+
+  useEffect(() => {
+    loadRecord();
+  }, [loadRecord]);
 
   const handleDeleteRecord = async () => {
+    if (!record) return;
+
     Alert.alert(
       'Delete Record',
-      'Are you sure you want to delete this record? This action cannot be undone.',
+      'Delete this record? This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -33,8 +55,8 @@ export default function RecordViewScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              // In real implementation, call recordStorage.delete(recordId)
-              Alert.alert('Action Cancelled', 'Record deletion cancelled.');
+              await recordStorage.delete(record.id);
+              router.back();
             } catch (error) {
               console.error('Error deleting record:', error);
               Alert.alert('Error', 'Failed to delete record');
@@ -45,101 +67,113 @@ export default function RecordViewScreen() {
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <Stack.Screen options={{ title: 'Record' }} />
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={styles.loadingText}>Loading record...</Text>
+      </View>
+    );
+  }
+
+  if (!record) {
+    return (
+      <View style={styles.centered}>
+        <Stack.Screen options={{ title: 'Record' }} />
+        <Text style={styles.recordName}>Record not found</Text>
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => router.back()}>
+          <Text style={styles.secondaryButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const recordDescription = getRecordDescription(record);
+  const recordValue = getRecordValue(record);
+
   return (
-    <ScrollView 
+    <ScrollView
       contentContainerStyle={{ flexGrow: 1, padding: 24 }}
       showsVerticalScrollIndicator={false}
     >
-      <Stack.Screen 
+      <Stack.Screen
         options={{
-          title: `${placeholderRecord.name}`,
+          title: getRecordTitle(record),
           headerBackTitle: 'Back',
         }}
       />
 
-      {/* Record Header */}
       <View style={styles.card}>
-        <Text style={styles.recordName}>{placeholderRecord.name}</Text>
-        
-        {placeholderRecord.templateId && (
-          <View style={styles.templateBadgeContainer}>
-            <Text style={styles.templateBadgeText}>Template ID: {placeholderRecord.templateId?.substring(0, 8)}...</Text>
-          </View>
-        )}
+        <Text style={styles.recordName}>{getRecordTitle(record)}</Text>
 
-        <View style={[styles.badge, placeholderRecord.status === 'completed' ? styles.badgeCompleted : styles.badgePending]}>
-          <Text style={styles.badgeText}>{placeholderRecord.status}</Text>
+        <View style={styles.templateBadgeContainer}>
+          <Text style={styles.templateBadgeText}>Template: {record.templateId}</Text>
+        </View>
+
+        <View style={[styles.badge, record.status === 'submitted' || record.status === 'approved' ? styles.badgeCompleted : styles.badgePending]}>
+          <Text style={styles.badgeText}>{record.status}</Text>
         </View>
       </View>
 
-      {/* Record Details */}
-      {placeholderRecord.description && (
+      {recordDescription ? (
         <View style={styles.card}>
           <Text style={styles.label}>Description</Text>
-          <Text style={styles.description}>{placeholderRecord.description}</Text>
+          <Text style={styles.description}>{recordDescription}</Text>
         </View>
-      )}
+      ) : null}
 
-      {placeholderRecord.value !== undefined && placeholderRecord.value !== null && (
+      {recordValue !== undefined ? (
         <View style={styles.card}>
           <Text style={styles.label}>Value</Text>
-          <Text style={styles.value}>{placeholderRecord.value.toLocaleString()}</Text>
+          <Text style={styles.value}>{recordValue.toLocaleString()}</Text>
         </View>
-      )}
+      ) : null}
 
-      {/* Timestamps */}
       <View style={styles.card}>
-        <Text style={styles.label}>Created At</Text>
+        <Text style={styles.label}>Captured</Text>
         <Text style={styles.timestamp}>
-          {new Date(placeholderRecord.createdAt).toLocaleString()}
+          {new Date(record.metadata.capturedAt || record.createdAt).toLocaleString()}
         </Text>
       </View>
 
-      {placeholderRecord.updatedAt !== placeholderRecord.createdAt && (
-        <>
-          <View style={styles.card}>
-            <Text style={styles.label}>Updated At</Text>
-            <Text style={styles.timestamp}>
-              {new Date(placeholderRecord.updatedAt).toLocaleString()}
-            </Text>
-          </View>
-        </>
-      )}
+      <View style={styles.card}>
+        <Text style={styles.label}>Updated</Text>
+        <Text style={styles.timestamp}>
+          {new Date(record.updatedAt).toLocaleString()}
+        </Text>
+      </View>
 
-      {/* Project ID (if available) */}
-      {placeholderRecord.projectId && (
-        <View style={styles.card}>
-          <Text style={styles.label}>Project ID</Text>
-          <Text style={styles.idText}>{placeholderRecord.projectId}</Text>
-        </View>
-      )}
-
-      {/* Action Buttons */}
       <View style={styles.actionsContainer}>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => router.push({
-            pathname: '/data-collection/[recordId]/edit',
-            params: { recordId: placeholderRecord.id },
-          })}
+        <TouchableOpacity
+          style={[styles.actionButton, styles.secondaryButton]}
+          onPress={() => router.back()}
         >
-          <Text style={styles.actionButtonText}>Edit Record</Text>
+          <Text style={styles.secondaryButtonText}>Back to Project</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => handleDeleteRecord()}
+          onPress={handleDeleteRecord}
         >
-          <Text style={styles.actionButtonText} style={styles.deleteButtonText}>Delete</Text>
+          <Text style={styles.actionButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 }
 
-import { StyleSheet } from 'react-native';
-
 const styles = StyleSheet.create({
+  centered: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  loadingText: {
+    color: '#6b7280',
+    marginTop: 12,
+  },
   card: {
     backgroundColor: 'white',
     borderRadius: 12,
@@ -156,6 +190,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1e293b',
     marginBottom: 8,
+    textAlign: 'center',
   },
   templateBadgeContainer: {
     backgroundColor: '#f1f5f9',
@@ -168,6 +203,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   badge: {
+    alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -209,41 +245,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9ca3af',
   },
-  idText: {
-    fontSize: 12,
-    color: '#9ca3af',
-    fontFamily: 'monospace',
-  },
   actionsContainer: {
     marginTop: 8,
     gap: 12,
   },
   actionButton: {
-    flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
-  editButton: {
-    backgroundColor: '#3b82f6',
-    shadowColor: '#3b82f6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+  secondaryButton: {
+    backgroundColor: '#e5e7eb',
+  },
+  secondaryButtonText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '600',
   },
   deleteButton: {
     backgroundColor: '#ef4444',
-    shadowColor: '#ef4444',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
   },
   actionButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
-  deleteButtonText: {
-    textDecorationLine: 'underline',
-  }
 });

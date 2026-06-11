@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { router } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
@@ -148,6 +149,7 @@ export function ValuationAnalysisScreen() {
   const mostAtRisk = valuationItems
     .filter((item) => item.changeAmount < 0)
     .sort((a, b) => a.changePercent - b.changePercent)[0];
+  const hasCollectionItems = valuationItems.length > 0;
 
   const openValuationModal = (item: ValuationItem) => {
     setSelectedItem(item);
@@ -271,6 +273,11 @@ export function ValuationAnalysisScreen() {
             <TouchableOpacity
               style={styles.smallButton}
               onPress={() => {
+                if (!hasCollectionItems) {
+                  Alert.alert('No items to value', 'Add items from the Dashboard tab first, then record their current values here.');
+                  return;
+                }
+
                 const firstStale = valuationItems.find((item) => item.isStale) ?? valuationItems[0];
                 if (firstStale) openValuationModal(firstStale);
               }}
@@ -303,7 +310,21 @@ export function ValuationAnalysisScreen() {
             ))
           ) : (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No items match this view.</Text>
+              <Icon name={hasCollectionItems ? 'filter-list-off' : 'inventory-2'} size={28} color="#6B7280" />
+              <Text style={styles.emptyTitle}>
+                {hasCollectionItems ? 'No items match this view' : 'Add items to start valuations'}
+              </Text>
+              <Text style={styles.emptyText}>
+                {hasCollectionItems
+                  ? 'Try another filter or record a fresh valuation for an item.'
+                  : 'Valuation uses your collection items to track current value, gains, losses, and stale estimates.'}
+              </Text>
+              {!hasCollectionItems && (
+                <TouchableOpacity style={styles.emptyActionButton} onPress={() => router.push('/')}>
+                  <Icon name="inventory-2" size={18} color="#FFFFFF" />
+                  <Text style={styles.emptyActionText}>Add Items</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </ThemedView>
@@ -557,15 +578,40 @@ const styles = StyleSheet.create({
     color: '#DC2626',
   },
   emptyState: {
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     padding: 18,
   },
+  emptyTitle: {
+    color: '#111827',
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 8,
+    textAlign: 'center',
+  },
   emptyText: {
     color: '#6B7280',
+    lineHeight: 20,
+    marginTop: 4,
     textAlign: 'center',
+  },
+  emptyActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2563EB',
+    borderRadius: 8,
+    gap: 6,
+    marginTop: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  emptyActionText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
   },
   insightsSection: {
     paddingHorizontal: 16,

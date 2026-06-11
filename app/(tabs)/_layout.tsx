@@ -10,6 +10,27 @@ import { useAppTheme } from '@/hooks/useAppTheme';
 import { IQRateLogo } from '@/src/components/common/IQRateLogo';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+const TAB_ICONS = {
+  home: {
+    active: 'view-dashboard',
+    inactive: 'view-dashboard-outline',
+  },
+  'data-collection': {
+    active: 'clipboard-list',
+    inactive: 'clipboard-list-outline',
+  },
+  valuation: {
+    active: 'chart-box',
+    inactive: 'chart-box-outline',
+  },
+  profile: {
+    active: 'account-circle',
+    inactive: 'account-circle-outline',
+  },
+} as const;
+
+type TabIconName = keyof typeof TAB_ICONS;
+
 function AppHeader() {
   const colorScheme = useAppTheme();
   const colors = Colors[colorScheme];
@@ -23,20 +44,16 @@ function AppHeader() {
           orbColor={colors.tint}
           elementColor={colors.tint}
         />
-        <ThemedText style={{
-          fontSize: 26,
-          fontWeight: '800', 
-          color: colors.text,
-          marginLeft: 10
-        }}>iQRate</ThemedText>
+        <ThemedText style={[styles.brandTitle, { color: colors.text }]}>iQRate</ThemedText>
       </View>
-        <ThemedText style={{
-        fontSize: 12,
-        fontWeight: '600',
-        color: colorScheme === 'dark' ? '#D6D3D1' : '#78716C',
-        marginTop: 2,
-        textTransform: 'uppercase',
-      }}>The smarter way to own</ThemedText>
+      <ThemedText
+        style={[
+          styles.brandTagline,
+          { color: colorScheme === 'dark' ? '#D6D3D1' : '#78716C' },
+        ]}
+      >
+        The smarter way to own
+      </ThemedText>
     </View>
   );
 }
@@ -44,23 +61,15 @@ function AppHeader() {
 interface TabIconProps {
   color: string;
   focused: boolean;
-  name: string;
+  name: TabIconName;
 }
 
 const getTabIcon = (props: TabIconProps) => {
   const { color, focused, name } = props;
   const size = focused ? 28 : 26;
+  const iconName = TAB_ICONS[name][focused ? 'active' : 'inactive'];
 
-  switch (name) {
-    case 'home':
-      return <Icon name={focused ? 'home' : 'home-outline'} size={size} color={color} />;
-    case 'data-collection':
-      return <Icon name={focused ? 'database-plus' : 'database-plus-outline'} size={size} color={color} />;
-    case 'valuation':
-      return <Icon name={focused ? 'chart-pie' : 'chart-pie'} size={size} color={color} />;
-    default:
-      return <Icon name="circle" size={size} color={color} />;
-  }
+  return <Icon name={iconName} size={size} color={color} />;
 };
 
 export default function TabLayout() {
@@ -98,16 +107,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Dashboard',
           headerTitleAlign: 'center',
+          tabBarAccessibilityLabel: 'Dashboard tab',
           tabBarIcon: ({ color, focused }) => getTabIcon({ name: 'home', color, focused }),
         }}
       />
       <Tabs.Screen
         name="data-collection/projects-list"
         options={{
-          title: 'Data Collection',
+          title: 'Collect',
           headerTitleAlign: 'center',
+          tabBarAccessibilityLabel: 'Data collection tab',
           tabBarIcon: ({ color, focused }) => getTabIcon({ name: 'data-collection', color, focused }),
         }}
       />
@@ -116,6 +127,7 @@ export default function TabLayout() {
         options={{
           title: 'Value',
           headerTitleAlign: 'center',
+          tabBarAccessibilityLabel: 'Valuation tab',
           tabBarIcon: ({ color, focused }) => getTabIcon({ name: 'valuation', color, focused }),
         }}
       />
@@ -124,6 +136,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           headerTitleAlign: 'center',
+          tabBarAccessibilityLabel: 'Profile and settings tab',
           tabBarIcon: ({ color, focused }) =>
             profile.avatar ? (
               <Image 
@@ -134,10 +147,17 @@ export default function TabLayout() {
                 ]}
               />
             ) : (
-              <Icon name={focused ? 'account-circle' : 'account-circle-outline'} size={28} color={color} />
+              getTabIcon({ name: 'profile', color, focused })
             ),
         }}
       />
+      <Tabs.Screen name="collection" options={{ href: null }} />
+      <Tabs.Screen name="projects" options={{ href: null }} />
+      <Tabs.Screen name="data-collection/create-record" options={{ href: null }} />
+      <Tabs.Screen name="data-collection/templates-screen" options={{ href: null }} />
+      <Tabs.Screen name="data-collection/[recordId]/view" options={{ href: null }} />
+      <Tabs.Screen name="data-collection/projects/create" options={{ href: null }} />
+      <Tabs.Screen name="data-collection/projects/[id]/detail" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -152,6 +172,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  brandTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    marginLeft: 10,
+  },
+  brandTagline: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 2,
+    textTransform: 'uppercase',
   },
   profileAvatar: {
     width: 30,

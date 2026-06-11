@@ -1,0 +1,4 @@
+interface:
+  display_name: "Improve Tab Icons"
+  short_description: "Improve app tab bar icon choices"
+  default_prompt: "Use $improve-tab-icons to audit and update an app tab bar with consistent, distinct icons."

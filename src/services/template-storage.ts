@@ -6,7 +6,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DataTemplate, type TemplateField } from '@/types';
+import { type DataTemplate, type TemplateCategory, type TemplateField } from '@/src/types';
 
 export class TemplateStorage {
   private readonly TABLE_KEY = 'data_templates_v1';
@@ -56,7 +56,7 @@ export class TemplateStorage {
   async getCustom(): Promise<DataTemplate[]> {
     try {
       const allTemplates = await this.getAll();
-      return allTemplates.filter(t => !t.isBuiltIn || t.isBuiltIn === false);
+      return allTemplates.filter(t => !t.isBuiltIn);
     } catch (error) {
       console.error('Error getting custom templates:', error);
       return [];
@@ -91,7 +91,7 @@ export class TemplateStorage {
   /**
    * Create a built-in template (e.g., Inventory Item, Inspection Checklist)
    */
-  async createBuiltInTemplate(name: string, description?: string, category?: string): Promise<DataTemplate> {
+  async createBuiltInTemplate(name: string, description?: string, category?: TemplateCategory): Promise<DataTemplate> {
     try {
       // Define field structure based on category
       const fields = this.getDefaultFieldsForCategory(category || 'custom');

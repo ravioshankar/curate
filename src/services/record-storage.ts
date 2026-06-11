@@ -6,7 +6,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { type DataRecord } from '@/types';
+import { type DataAttachment, type DataRecord } from '@/src/types';
 
 export class RecordStorage {
   private readonly TABLE_KEY = 'data_records_v1';
@@ -58,12 +58,6 @@ export class RecordStorage {
       const records = await this.getAll();
       
       // Handle attachment IDs - need to assign record ID after creation
-      if (newRecord.attachments) {
-        newRecord.attachments.forEach(attachment => {
-          delete attachment.recordId; // Will be set below
-        });
-      }
-
       records.push(newRecord);
       
       await AsyncStorage.setItem(this.TABLE_KEY, JSON.stringify(records));
@@ -133,7 +127,7 @@ export class RecordStorage {
   /**
    * Add attachment to record
    */
-  async addAttachment(recordId: string, attachment: Partial<DataAttachment>): Promise<void> {
+  async addAttachment(recordId: string, attachment: Omit<Partial<DataAttachment>, 'recordId'>): Promise<void> {
     try {
       const records = await this.getAll();
       
@@ -145,8 +139,8 @@ export class RecordStorage {
         id: generateEntityId('att_'),
         recordId: recordId,
         fieldKey: attachment.fieldKey || null,
-        type: attachment.type,
-        uri: attachment.uri,
+        type: attachment.type || 'document',
+        uri: attachment.uri || '',
         fileName: attachment.fileName,
         mimeType: attachment.mimeType,
         createdAt: new Date().toISOString()

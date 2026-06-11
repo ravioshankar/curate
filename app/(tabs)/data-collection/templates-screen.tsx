@@ -1,50 +1,39 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { projectStorage, templateStorage, StorageInitializer } from '@/src/services/storage-exports';
-
-const { width } = Dimensions.get('window');
+import { StorageInitializer, TemplateStorage } from '@/src/services/storage-exports';
+import { type DataTemplate } from '@/src/types/data-collection';
 
 export default function TemplatesScreen() {
-  const [templates, setTemplates] = useState([]);
+  const [templates, setTemplates] = useState<DataTemplate[]>([]);
   const [filterCategory, setFilterCategory] = useState('all');
+  const templateStorage = useMemo(() => new TemplateStorage(), []);
+  const storageInitializer = useMemo(() => new StorageInitializer(), []);
 
   React.useEffect(() => {
     async function init() {
       try {
-        await StorageInitializer.init();
-        
-        // Load all templates
+        await storageInitializer.init();
         const allTemplates = await templateStorage.getAll();
-        
-        // Group by category
-        const categories: Record<string, string[]> = {};
-        
-        for (const template of allTemplates) {
-          const category = template.category || 'Custom';
-          
-          if (!categories[category]) {
-            categories[category] = [];
-          }
-          
-          categories[category].push(template);
-        }
-        
-        setTemplates(categories);
+        setTemplates(allTemplates);
       } catch (error) {
         console.error('Error loading templates:', error);
       }
     }
     
     init();
-  }, []);
+  }, [storageInitializer, templateStorage]);
+
+  const visibleTemplates = templates.filter((template) => {
+    if (filterCategory === 'all') return true;
+    return template.category === filterCategory;
+  });
 
   const getCategoryName = (categoryId: string): string => {
     const nameMap: Record<string, string> = {
@@ -58,23 +47,11 @@ export default function TemplatesScreen() {
     return nameMap[categoryId] || categoryId;
   };
 
-  const getTemplateName = (templateId: string): string => {
-    const templateMap: Record<string, string> = {
-      'tmpl_inventory_default': 'Inventory Item',
-      'tmpl_inspection_default': 'Inspection Checklist',
-      'tmpl_audit_default': 'Asset Audit',
-      'tmpl_maintenance_default': 'Maintenance Log',
-      'tmpl_research_default': 'Research Observation',
-    };
-    
-    return templateMap[templateId] || 'Custom Template';
-  };
-
-  const getTemplateDescription = (template: any): string => {
+  const getTemplateDescription = (template: DataTemplate): string => {
     return template.description || '';
   };
 
-  const renderTemplateCard = ({ item }: { item: any }) => {
+  const renderTemplateCard = ({ item }: { item: DataTemplate }) => {
     const isBuiltIn = item.isBuiltIn ?? false;
     
     return (
@@ -83,7 +60,7 @@ export default function TemplatesScreen() {
         onPress={() => {}} // Future: use or edit template
       >
         <View style={styles.templateHeader}>
-          <Text style={styles.templateName}>{getTemplateName(item.id)}</Text>
+          <Text style={styles.templateName}>{item.name}</Text>
           
           <View style={styles.categoryBadge}>
             <Ionicons name="pricetag" size={12} color="#666" />
@@ -151,13 +128,12 @@ export default function TemplatesScreen() {
 
       {/* Template Grid */}
       <FlatList
-        data={Object.values(templates).flat()}
+        data={visibleTemplates}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        columnSpacing={16}
         contentContainerStyle={styles.gridContainer}
         renderItem={renderTemplateCard}
-        scrollEnabled={false} // Future: enable scrolling
+        columnWrapperStyle={styles.columnWrapper}
       />
 
       {/* Floating Action Button */}
@@ -211,7 +187,11 @@ const styles = StyleSheet.create({
   gridContainer: {
     padding: 16,
   },
+  columnWrapper: {
+    gap: 16,
+  },
   templateCard: {
+    flex: 1,
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,

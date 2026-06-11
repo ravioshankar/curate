@@ -1,62 +1,69 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-// Import storage services
-import { projectStorage } from '@/src/services/project-storage';
-import { recordStorage } from '@/src/services/record-storage';
-import { type DataRecord } from '@/src/types/data-collection';
+import { ProjectStorage } from '@/src/services/project-storage';
+import { RecordStorage } from '@/src/services/record-storage';
+import { type DataProject, type DataRecord } from '@/src/types/data-collection';
+
+const getRecordTitle = (record: DataRecord) =>
+  typeof record.values.name === 'string' && record.values.name.trim()
+    ? record.values.name
+    : 'Untitled record';
+
+const getRecordDescription = (record: DataRecord) =>
+  typeof record.values.description === 'string' ? record.values.description : '';
+
+const getRecordValue = (record: DataRecord) =>
+  typeof record.values.value === 'number' ? record.values.value : undefined;
 
 export default function ProjectDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  
-  // State
-  const [project, setProject] = useState<any>(null);
+  const projectId = Array.isArray(id) ? id[0] : id;
+  const projectStorage = useMemo(() => new ProjectStorage(), []);
+  const recordStorage = useMemo(() => new RecordStorage(), []);
+
+  const [project, setProject] = useState<DataProject | null>(null);
   const [records, setRecords] = useState<DataRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'value'>('date');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
-  useEffect(() => {
-    loadProjectData();
-  }, [id]);
+  const loadProjectData = useCallback(async () => {
+    if (!projectId) return;
 
-  const loadProjectData = async () => {
     try {
-      // Get project details
-      const projectData = await projectStorage.getById(id as string);
+      setLoading(true);
+      const projectData = await projectStorage.getById(projectId);
       setProject(projectData);
 
-      // Get all records for this project
-      const allRecords = await recordStorage.getByProjectId(id as string);
-      
-      // Filter by search query if provided
+      const allRecords = await recordStorage.getAll(projectId);
+
       let filteredRecords = allRecords;
       if (searchQuery) {
-        filteredRecords = allRecords.filter(record => 
-          record.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          record.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        const lowerSearchQuery = searchQuery.toLowerCase();
+        filteredRecords = allRecords.filter(record =>
+          getRecordTitle(record).toLowerCase().includes(lowerSearchQuery) ||
+          getRecordDescription(record).toLowerCase().includes(lowerSearchQuery)
         );
       }
 
-      // Sort records
       const sortedRecords = [...filteredRecords].sort((a, b) => {
         switch (sortBy) {
           case 'name':
-            return sortOrder === 'asc' 
-              ? a.name.localeCompare(b.name) 
-              : b.name.localeCompare(a.name);
+            return sortOrder === 'asc'
+              ? getRecordTitle(a).localeCompare(getRecordTitle(b))
+              : getRecordTitle(b).localeCompare(getRecordTitle(a));
           case 'value':
-            if (a.value && b.value) {
-              return sortOrder === 'asc' ? a.value - b.value : b.value - a.value;
-            }
-            return 0;
+            return sortOrder === 'asc'
+              ? (getRecordValue(a) ?? 0) - (getRecordValue(b) ?? 0)
+              : (getRecordValue(b) ?? 0) - (getRecordValue(a) ?? 0);
           case 'date':
           default:
-            return sortOrder === 'asc' 
+            return sortOrder === 'asc'
               ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
               : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         }
@@ -69,22 +76,19 @@ export default function ProjectDetailScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, projectStorage, recordStorage, searchQuery, sortBy, sortOrder]);
+
+  useEffect(() => {
+    loadProjectData();
+  }, [loadProjectData]);
 
   const handleCreateRecord = async () => {
-    try {
-      // Navigate to create record screen (placeholder)
-      router.push({
-        pathname: '/data-collection/create-record',
-        params: { projectId: id as string },
-      });
-      
-      // Reload records after creation
-      await loadProjectData();
-    } catch (error) {
-      console.error('Error creating record:', error);
-      Alert.alert('Error', 'Failed to create record');
-    }
+    if (!projectId) return;
+
+    router.push({
+      pathname: '/data-collection/create-record',
+      params: { projectId },
+    });
   };
 
   const handleDeleteRecord = async (recordId: string) => {
@@ -112,7 +116,7 @@ export default function ProjectDetailScreen() {
   };
 
   const renderRecordCard = ({ item }: { item: DataRecord }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.recordCard}
       onPress={() => router.push({
         pathname: '/data-collection/[recordId]/view',
@@ -120,33 +124,33 @@ export default function ProjectDetailScreen() {
       })}
     >
       <View style={styles.recordHeader}>
-        <Text style={styles.recordName}>{item.name || 'Untitled'}</Text>
+        <Text style={styles.recordName}>{getRecordTitle(item)}</Text>
         <View style={styles.badgesContainer}>
           {item.status && (
-            <View style={[styles.badge, item.status === 'completed' ? styles.badgeCompleted : styles.badgePending]}>
+            <View style={[styles.badge, item.status === 'submitted' || item.status === 'approved' ? styles.badgeCompleted : styles.badgePending]}>
               <Text style={styles.badgeText}>{item.status}</Text>
             </View>
           )}
         </View>
       </View>
 
-      {item.description && (
+      {getRecordDescription(item) ? (
         <Text style={styles.recordDescription} numberOfLines={2}>
-          {item.description}
+          {getRecordDescription(item)}
         </Text>
-      )}
+      ) : null}
 
-      {item.value !== undefined && item.value !== null && (
-        <Text style={styles.recordValue}>{item.value}</Text>
-      )}
+      {getRecordValue(item) !== undefined ? (
+        <Text style={styles.recordValue}>{getRecordValue(item)}</Text>
+      ) : null}
 
       <View style={styles.recordFooter}>
         <Text style={styles.recordDate}>
           {new Date(item.createdAt).toLocaleDateString()}
         </Text>
-        
+
         <View style={styles.actionButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => handleDeleteRecord(item.id)}
             style={styles.deleteButton}
           >
@@ -178,7 +182,7 @@ export default function ProjectDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           title: `${project.name} - Records`,
         }}
@@ -192,10 +196,7 @@ export default function ProjectDetailScreen() {
         )}
         <View style={styles.divider} />
         <Text style={styles.statsText}>
-          Records: {records.length} • 
-          {project.templates && project.templates.length > 0 && (
-            <span> Templates: {project.templates.length}</span>
-          )}
+          Records: {records.length} • Templates: {project.templateIds.length}
         </Text>
       </View>
 
@@ -207,7 +208,7 @@ export default function ProjectDetailScreen() {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-        
+
         <View style={styles.filterButtons}>
           <TouchableOpacity
             style={[styles.filterButton, sortBy === 'date' ? styles.activeFilter : {}]}
@@ -215,14 +216,14 @@ export default function ProjectDetailScreen() {
           >
             <Text style={styles.filterText}>Date</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[styles.filterButton, sortBy === 'name' ? styles.activeFilter : {}]}
             onPress={() => setSortBy('name')}
           >
             <Text style={styles.filterText}>Name</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[styles.filterButton, sortBy === 'value' ? styles.activeFilter : {}]}
             onPress={() => setSortBy('value')}
@@ -231,14 +232,14 @@ export default function ProjectDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.sortOrderButton}
           onPress={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
         >
-          <Ionicons 
-            name={sortOrder === 'desc' ? 'arrow-up-down' : 'arrow-down-up'} 
-            size={16} 
-            color="#6b7280" 
+          <Ionicons
+            name={sortOrder === 'desc' ? 'swap-vertical' : 'swap-vertical-outline'}
+            size={16}
+            color="#6b7280"
           />
         </TouchableOpacity>
       </View>
@@ -256,8 +257,8 @@ export default function ProjectDetailScreen() {
           <Ionicons name="document-text-outline" size={64} color="#9ca3af" />
           <Text style={styles.emptyText}>No records yet</Text>
           <Text style={styles.emptySubtext}>Create your first record to get started!</Text>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.createButton}
             onPress={handleCreateRecord}
           >
@@ -268,7 +269,7 @@ export default function ProjectDetailScreen() {
 
       {/* Floating Action Button - only show if records exist */}
       {records.length > 0 && (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.fab}
           onPress={handleCreateRecord}
         >
@@ -278,8 +279,6 @@ export default function ProjectDetailScreen() {
     </View>
   );
 }
-
-import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
@@ -346,11 +345,11 @@ const styles = StyleSheet.create({
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
   emptyText: { fontSize: 18, fontWeight: '600', color: '#6b7280', marginTop: 16, textAlign: 'center' },
   emptySubtext: { fontSize: 14, color: '#9ca3af', marginTop: 8, textAlign: 'center' },
-  createButton: { 
-    backgroundColor: '#3b82f6', 
-    paddingHorizontal: 24, 
-    paddingVertical: 12, 
-    borderRadius: 12, 
+  createButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
     marginTop: 24,
     shadowColor: '#3b82f6',
     shadowOffset: { width: 0, height: 4 },

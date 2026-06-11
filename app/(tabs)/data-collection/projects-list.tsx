@@ -1,103 +1,143 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
+  Alert,
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
   TextInput,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
-import { projectStorage, StorageInitializer } from '@/src/services/storage-exports';
+import { Stack, useRouter } from 'expo-router';
+import { ProjectStorage, StorageInitializer } from '@/src/services/storage-exports';
+import { type DataProject } from '@/src/types/data-collection';
 
 export default function ProjectsListScreen() {
-  const [projects, setProjects] = useState([]);
-  const [filteredProjects, setFilteredProjects] = useState([]);
+  const router = useRouter();
+  const [projects, setProjects] = useState<DataProject[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<DataProject[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterActive, setFilterActive] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectDescription, setNewProjectDescription] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const projectStorage = useMemo(() => new ProjectStorage(), []);
+  const storageInitializer = useMemo(() => new StorageInitializer(), []);
+
+  const filterProjects = useCallback((sourceProjects: DataProject[], query: string, showActiveOnly: boolean) => {
+    let filtered = [...sourceProjects];
+
+    if (showActiveOnly) {
+      filtered = filtered.filter(p => p.status === 'active');
+    }
+
+    if (query.trim()) {
+      const lowerQuery = query.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(lowerQuery) ||
+        p.description?.toLowerCase().includes(lowerQuery)
+      );
+    }
+
+    setFilteredProjects(filtered);
+  }, []);
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      const allProjects = await projectStorage.getAll();
+      setProjects(allProjects);
+      filterProjects(allProjects, searchQuery, filterActive);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  }, [filterActive, filterProjects, projectStorage, searchQuery]);
 
   React.useEffect(() => {
     async function init() {
       try {
-        await StorageInitializer.init();
+        await storageInitializer.init();
         fetchProjects();
       } catch (error) {
         console.error('Error initializing storage:', error);
       }
     }
-    
+
     init();
-  }, []);
+  }, [fetchProjects, storageInitializer]);
 
   React.useEffect(() => {
-    filterProjects(searchQuery, filterActive);
-  }, [searchQuery, filterActive]);
-
-  const fetchProjects = async () => {
-    try {
-      const allProjects = await projectStorage.getAll();
-      setProjects(allProjects);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    }
-  };
-
-  const filterProjects = (query: string, showActiveOnly: boolean) => {
-    let filtered = [...projects];
-    
-    if (showActiveOnly) {
-      filtered = filtered.filter(p => p.status === 'active');
-    }
-    
-    if (query.trim()) {
-      const lowerQuery = query.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(lowerQuery) ||
-        p.description?.toLowerCase().includes(lowerQuery)
-      );
-    }
-    
-    setFilteredProjects(filtered);
-  };
+    filterProjects(projects, searchQuery, filterActive);
+  }, [searchQuery, filterActive, filterProjects, projects]);
 
   const handleCreateProject = async () => {
+    const trimmedName = newProjectName.trim();
+    const trimmedDescription = newProjectDescription.trim();
+
+    if (!trimmedName) {
+      Alert.alert('Project name required', 'Enter a name so this project is easy to find later.');
+      return;
+    }
+
     try {
-      // Create a new project with default settings
-      const newProject = await projectStorage.create('New Project', 'Untitled data collection project');
-      
-      fetchProjects();
+      setIsCreating(true);
+      const newProject = await projectStorage.create(
+        trimmedName,
+        trimmedDescription || 'Untitled data collection project'
+      );
+
+      await fetchProjects();
+      setNewProjectName('');
+      setNewProjectDescription('');
       setShowCreateModal(false);
-      
-      // Optionally navigate to detail screen
-      // router.push(`/data-collection/${newProject.id}`);
+
+      router.push({
+        pathname: '/data-collection/projects/[id]/detail',
+        params: { id: newProject.id },
+      });
     } catch (error) {
       console.error('Error creating project:', error);
+      Alert.alert('Could not create project', 'Please try again.');
+    } finally {
+      setIsCreating(false);
     }
   };
 
   const handleDeleteProject = async (projectId: string, projectName: string) => {
-    try {
-      if (confirm(`Delete project "${projectName}"? This will also delete all records.`)) {
-        await projectStorage.delete(projectId);
-        fetchProjects();
-      }
-    } catch (error) {
-      console.error('Error deleting project:', error);
-    }
+    Alert.alert(
+      'Delete project',
+      `Delete "${projectName}" and its records? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await projectStorage.delete(projectId);
+              fetchProjects();
+            } catch (error) {
+              console.error('Error deleting project:', error);
+              Alert.alert('Could not delete project', 'Please try again.');
+            }
+          },
+        },
+      ]
+    );
   };
 
-  const renderProjectItem = ({ item }: { item: any }) => {
+  const renderProjectItem = ({ item }: { item: DataProject }) => {
     return (
       <TouchableOpacity
         style={styles.projectCard}
-        onPress={() => {
-          // Navigate to project detail
-          // router.push(`/data-collection/${item.id}`);
-        }}
+        onPress={() =>
+          router.push({
+            pathname: '/data-collection/projects/[id]/detail',
+            params: { id: item.id },
+          })
+        }
       >
         <View style={styles.projectHeader}>
           <Text style={styles.projectName}>{item.name}</Text>
@@ -105,25 +145,25 @@ export default function ProjectsListScreen() {
             {item.status}
           </Text>
         </View>
-        
+
         {item.description && (
           <Text style={styles.projectDescription}>{item.description}</Text>
         )}
-        
+
         <Text style={styles.projectTemplates}>
           Templates: {item.templateIds?.length || 0}
         </Text>
-        
+
         <View style={styles.actionsContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editButton}
             onPress={() => {}} // Future: edit project
           >
             <Ionicons name="pencil" size={18} color="#666" />
             <Text style={styles.editButtonText}>Edit</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.deleteButton, item.status === 'archived' && styles.archiveHighlight]}
             onPress={() => handleDeleteProject(item.id, item.name)}
           >
@@ -142,7 +182,7 @@ export default function ProjectsListScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           title: 'My Projects',
           headerLeft: () => null, // Will be handled by tab layout
@@ -166,10 +206,10 @@ export default function ProjectsListScreen() {
         style={styles.filterButton}
         onPress={() => setFilterActive(!filterActive)}
       >
-        <Ionicons 
-          name={filterActive ? 'radio-button-on' : 'radio-button-off'} 
-          size={24} 
-          color="#666" 
+        <Ionicons
+          name={filterActive ? 'radio-button-on' : 'radio-button-off'}
+          size={24}
+          color="#666"
         />
         <Text style={styles.filterButtonText}>
           {filterActive ? 'Show Active Only' : 'Show All Projects'}
@@ -182,9 +222,15 @@ export default function ProjectsListScreen() {
           <Ionicons name="folder-open" size={64} color="#ccc" />
           <Text style={styles.emptyStateTitle}>No Projects Yet</Text>
           <Text style={styles.emptyStateDescription}>
-            You haven't created any data collection projects yet.
-            Tap + to create your first project.
+            Create a project to group templates, records, and field work in one place.
           </Text>
+          <TouchableOpacity
+            style={styles.emptyStateButton}
+            onPress={() => setShowCreateModal(true)}
+          >
+            <Ionicons name="add" size={18} color="#fff" />
+            <Text style={styles.emptyStateButtonText}>Create Project</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -219,34 +265,38 @@ export default function ProjectsListScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Create New Project</Text>
-            
+
             <TextInput
+              value={newProjectName}
+              onChangeText={setNewProjectName}
               placeholder="Project Name"
               placeholderTextColor="#999"
-              editable={false} // Future: make editable
               style={styles.inputPlaceholder}
             />
-            
+
             <TextInput
+              value={newProjectDescription}
+              onChangeText={setNewProjectDescription}
               placeholder="Project Description (optional)"
               placeholderTextColor="#999"
-              editable={false}
+              multiline
               style={[styles.inputPlaceholder, { minHeight: 80 }]}
             />
-            
+
             <View style={styles.modalActions}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: '#f5f5f5' }]}
                 onPress={() => setShowCreateModal(false)}
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={styles.modalButton}
                 onPress={handleCreateProject}
+                disabled={isCreating}
               >
-                <Text style={styles.modalButtonText}>Create</Text>
+                <Text style={styles.modalButtonText}>{isCreating ? 'Creating...' : 'Create'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -355,6 +405,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
   },
+  editButtonText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 4,
+  },
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -395,6 +451,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     paddingHorizontal: 20,
+  },
+  emptyStateButton: {
+    alignItems: 'center',
+    backgroundColor: '#3498db',
+    borderRadius: 10,
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+  },
+  emptyStateButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
   fab: {
     position: 'absolute',

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Curate Development Journey"
+  short_description: "Guide ongoing Curate app development"
+  default_prompt: "Use $curate-development-journey to plan and implement the next Curate app improvement with focused validation."

@@ -7,6 +7,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StorageInitializer } from './storage-init';
+import { type DataProject, type DataRecord, type DataTemplate } from '@/src/types/data-collection';
 
 export interface FallbackStorageConfig {
   /** Enable automatic fallback on failure */
@@ -35,64 +36,6 @@ export type FallbackResult<T> = {
 };
 
 // Helper function to execute with retry logic
-async function executeWithRetry<T>(
-  operation: Promise<T>,
-  operationName: string,
-  maxRetries = 3,
-  delayMs = 1000
-): Promise<FallbackResult<T>> {
-  
-  const startTime = Date.now();
-  let retriesAttempted = 0;
-
-  try {
-    const result = await operation;
-    
-    return {
-      success: true,
-      data: result as T,
-      error: undefined,
-      fallbackUsed: false,
-      retriesAttempted: 0,
-      latencyMs: Date.now() - startTime
-    };
-  } catch (error) {
-    
-    while (retriesAttempted < maxRetries) {
-      retriesAttempted++;
-      
-      if (this.verbose) {
-        console.warn(`⚠️ [FallbackStorage] ${operationName} failed, retrying (${retriesAttempted}/${maxRetries})`);
-        console.warn(error);
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-      
-      try {
-        const result = await operation;
-        
-        if (this.verbose) {
-          console.log(`✅ [FallbackStorage] ${operationName} succeeded on retry ${retriesAttempted}`);
-        }
-        
-        return {
-          success: true,
-          data: result as T,
-          error: undefined,
-          fallbackUsed: false,
-          retriesAttempted,
-          latencyMs: Date.now() - startTime
-        };
-      } catch (retryError) {
-        // Continue loop to try next retry
-      }
-    }
-    
-    // All retries exhausted, throw error
-    throw new Error(`${operationName} failed after ${maxRetries} retries: ${(error as Error).message}`);
-  }
-}
-
 export class FallbackStorageWrapper {
   private config: FallbackStorageConfig;
   private storageInitializer: StorageInitializer;
@@ -242,7 +185,7 @@ export class FallbackStorageWrapper {
   }
 
   // Check health
-  async checkHealth(): Promise<{ healthy: boolean; backend: string; fallbackCount?: number }> {
+  async checkHealth(): Promise<{ healthy: boolean; backend: string; fallbackCount?: number; lastError?: string }> {
     try {
       await this.storageInitializer.checkHealth();
       

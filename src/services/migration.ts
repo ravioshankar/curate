@@ -6,7 +6,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DataProject, DataTemplate, TemplateField, DataRecord, type GeoLocation } from '@/types/data-collection';
+import { type DataProject, type DataRecord, type DataTemplate, type TemplateField } from '@/src/types/data-collection';
 
 export class MigrationService {
   private readonly INVENTORY_DATA_KEY = 'collection_items_v1';

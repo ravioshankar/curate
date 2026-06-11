@@ -47,7 +47,11 @@ export class DatabaseStorage {
     ];
 
     for (const key of keysToClear) {
-      await AsyncStorage.setItem(key, this.storageType === 'asyncStorage' ? null : '');
+      if (this.storageType === 'asyncStorage') {
+        await AsyncStorage.removeItem(key);
+      } else {
+        await AsyncStorage.setItem(key, '');
+      }
     }
   }
 }

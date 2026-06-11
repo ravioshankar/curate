@@ -4,8 +4,8 @@
     "slug": "iQRate",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.svg",
-    "scheme": "iQRate",
+    "icon": "./assets/images/icon.png",
+    "scheme": "iqrate",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
