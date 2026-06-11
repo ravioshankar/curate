@@ -19,12 +19,14 @@ export function CategoryManager({ onBack }: CategoryManagerProps) {
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({ light: '#e5e7eb', dark: '#333' }, 'text');
   const cardBg = useThemeColor({ light: 'white', dark: '#1f1f1f' }, 'background');
   const placeholderColor = useThemeColor({ light: '#999', dark: '#666' }, 'text');
+
+  const getErrorMessage = (error: unknown) =>
+    error instanceof Error ? error.message : 'Please try again.';
 
   useEffect(() => {
     loadCategories();
@@ -61,7 +63,7 @@ export function CategoryManager({ onBack }: CategoryManagerProps) {
       setSelectedIcon('📦');
       Alert.alert('Success', 'Category added successfully');
     } catch (error) {
-      Alert.alert('Error', 'Failed to add category');
+      Alert.alert('Could not add category', getErrorMessage(error));
     }
   };
 
@@ -80,7 +82,7 @@ export function CategoryManager({ onBack }: CategoryManagerProps) {
               await loadCategories();
               Alert.alert('Success', 'Category deleted successfully');
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete category');
+              Alert.alert('Could not delete category', getErrorMessage(error));
             }
           }
         }

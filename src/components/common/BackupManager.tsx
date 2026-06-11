@@ -14,11 +14,13 @@ interface BackupManagerProps {
 export function BackupManager({ onBack }: BackupManagerProps) {
   const [loading, setLoading] = useState(false);
   
-  const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
   const borderColor = useThemeColor({ light: '#e5e7eb', dark: '#333' }, 'text');
   const cardBg = useThemeColor({ light: 'white', dark: '#1f1f1f' }, 'background');
+
+  const getErrorMessage = (error: unknown) =>
+    error instanceof Error ? error.message : 'Please try again.';
 
   const handleCreateBackup = async () => {
     setLoading(true);
@@ -32,7 +34,7 @@ export function BackupManager({ onBack }: BackupManagerProps) {
         [{ text: 'OK' }]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to create backup. Please try again.');
+      Alert.alert('Backup failed', getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -65,14 +67,14 @@ export function BackupManager({ onBack }: BackupManagerProps) {
                 await backupService.restoreBackup(backupData);
                 Alert.alert('Success', 'Backup restored successfully. Please restart the app.');
               } catch (error) {
-                Alert.alert('Error', 'Failed to restore backup. Please check the file format.');
+                Alert.alert('Restore failed', getErrorMessage(error));
               }
             }
           }
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to read backup file.');
+      Alert.alert('Could not read backup file', getErrorMessage(error));
     } finally {
       setLoading(false);
     }

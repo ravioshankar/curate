@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Modal, FlatList, TextInput } from '
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { getCategoryIcon } from '../../utils/categoryIcons';
 
 interface CategoryDropdownProps {
   label: string;
@@ -16,8 +17,6 @@ interface CategoryDropdownProps {
   backgroundColor: string;
   onDeleteCategory?: (category: string) => void;
 }
-
-import { getCategoryIcon } from '../../utils/categoryIcons';
 
 export function CategoryDropdown({ 
   label, 
