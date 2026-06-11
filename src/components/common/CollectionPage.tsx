@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextInput, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, ScrollView, TextInput, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { ThemedView } from '@/components/ThemedView';
@@ -6,7 +6,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { CollectionItem } from '../../types/collection';
 import { useCurrency } from '../providers/SimpleCurrencyProvider';
-import { getCurrencyInfo } from '../../utils/currencyUtils';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 
 interface CollectionPageProps {
@@ -25,7 +24,7 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
   const cardBg = useThemeColor({ light: 'white', dark: '#1f1f1f' }, 'background');
   const borderColor = useThemeColor({ light: '#e5e7eb', dark: '#333' }, 'text');
   const placeholderColor = useThemeColor({ light: '#999', dark: '#666' }, 'text');
-  const { currency, formatPrice } = useCurrency();
+  const { formatPrice } = useCurrency();
   
   const filteredCollection = (collection || []).filter(item =>
     item.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -46,7 +45,7 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
       </ThemedView>
       
       <ThemedView style={[styles.searchContainer, { backgroundColor: cardBg, borderColor }]}>
-        <ThemedText style={styles.searchIcon}><ThemedText>🔍</ThemedText></ThemedText>
+        <Icon name="search" size={20} color={placeholderColor} style={styles.searchIcon} />
         <TextInput
           style={[styles.searchInput, { color: textColor }]}
           placeholder="Search items..."
@@ -63,15 +62,23 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
 
       {filteredCollection.length === 0 && searchText.length > 0 && (
         <ThemedView style={styles.emptyState}>
-          <ThemedText style={styles.emptyStateText}>No items found matching {searchText}</ThemedText>
+          <Icon name="search-off" size={42} color={placeholderColor} />
+          <ThemedText style={styles.emptyStateTitle}>No items found</ThemedText>
+          <ThemedText style={styles.emptyStateText}>
+            No items match {searchText}. Try another name, category, or location.
+          </ThemedText>
         </ThemedView>
       )}
       
       {collection.length === 0 && (
         <ThemedView style={styles.emptyState}>
-          <ThemedText style={styles.emptyStateIcon}>📦</ThemedText>
+          <Icon name="inventory-2" size={48} color={tintColor} style={styles.emptyStateIcon} />
           <ThemedText style={styles.emptyStateTitle}>No Items Yet</ThemedText>
           <ThemedText style={styles.emptyStateText}>Start building your collection by adding your first item</ThemedText>
+          <TouchableOpacity style={[styles.emptyStateButton, { backgroundColor: tintColor }]} onPress={onAddItem}>
+            <Icon name="add" size={18} color="#FFFFFF" />
+            <ThemedText style={styles.emptyStateButtonText}>Add Item</ThemedText>
+          </TouchableOpacity>
         </ThemedView>
       )}
 
@@ -86,6 +93,8 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
               key={item.id} 
               item={item} 
               onView={() => onViewItem(item)}
+              onUpdate={() => onUpdateItem(item)}
+              onDelete={() => onDeleteItem(item.id)}
               cardBg={cardBg}
               textColor={textColor}
               borderColor={borderColor}
@@ -125,9 +134,11 @@ const ImageWithFallback = ({ imageUrl, style, placeholderStyle }: {
   );
 };
 
-const CollectionCard = ({ item, onView, cardBg, textColor, borderColor, tintColor, formatPrice }: {
+const CollectionCard = ({ item, onView, onUpdate, onDelete, cardBg, textColor, borderColor, tintColor, formatPrice }: {
   item: CollectionItem;
   onView: () => void;
+  onUpdate: () => void;
+  onDelete: () => void;
   cardBg: string;
   textColor: string;
   borderColor: string;
@@ -145,29 +156,59 @@ const CollectionCard = ({ item, onView, cardBg, textColor, borderColor, tintColo
       placeholderStyle={[styles.cardImage, styles.placeholderImage, { backgroundColor: '#f3f4f6' }]}
     />
     <View style={styles.cardContent}>
-      <ThemedText style={[styles.cardTitle, { color: textColor }]}>{item.name}</ThemedText>
+      <View style={styles.cardHeader}>
+        <ThemedText style={[styles.cardTitle, { color: textColor }]} numberOfLines={2}>{item.name}</ThemedText>
+        <TouchableOpacity style={[styles.iconAction, { backgroundColor: `${tintColor}15` }]} onPress={onUpdate}>
+          <Icon name="edit" size={16} color={tintColor} />
+        </TouchableOpacity>
+      </View>
       <View style={styles.categoryContainer}>
         <ThemedText style={styles.categoryIcon}>{getCategoryIcon(item.category)}</ThemedText>
         <ThemedText style={[styles.cardCategory, { color: textColor }]}>{item.category}</ThemedText>
       </View>
-      <ThemedText style={[styles.cardLocation, { color: textColor }]}><ThemedText>📍</ThemedText> {item.location}</ThemedText>
+      <View style={styles.inlineInfo}>
+        <Icon name="place" size={14} color={textColor} />
+        <ThemedText style={[styles.cardLocation, { color: textColor }]} numberOfLines={1}>
+          {item.location}
+        </ThemedText>
+      </View>
       
       {(item.pricePaid || item.priceExpected) && (
         <View style={[styles.priceSection, { borderTopColor: borderColor }]}>
           {item.pricePaid && (
-            <ThemedText style={styles.pricePaid}><ThemedText>💰</ThemedText> Paid: {formatPrice(item.pricePaid)}</ThemedText>
+            <View style={styles.inlineInfo}>
+              <Icon name="payments" size={14} color="#059669" />
+              <ThemedText style={styles.pricePaid}>Paid: {formatPrice(item.pricePaid)}</ThemedText>
+            </View>
           )}
           {item.priceExpected && (
-            <ThemedText style={styles.priceExpected}><ThemedText>🎯</ThemedText> Expected: {formatPrice(item.priceExpected)}</ThemedText>
+            <View style={styles.inlineInfo}>
+              <Icon name="track-changes" size={14} color="#d97706" />
+              <ThemedText style={styles.priceExpected}>Expected: {formatPrice(item.priceExpected)}</ThemedText>
+            </View>
           )}
         </View>
       )}
       
       <View style={styles.cardFooter}>
-        <ThemedText style={[styles.cardDate, { color: textColor }]}><ThemedText>📅</ThemedText> Last used: {item.lastUsed}</ThemedText>
+        <View style={styles.inlineInfo}>
+          <Icon name="event" size={14} color={textColor} />
+          <ThemedText style={[styles.cardDate, { color: textColor }]} numberOfLines={1}>
+            {item.lastUsed}
+          </ThemedText>
+        </View>
         <View style={[styles.chevronContainer, { backgroundColor: `${tintColor}15` }]}>
           <Icon name="chevron-right" size={16} color={tintColor} />
         </View>
+      </View>
+      <View style={styles.cardActions}>
+        <TouchableOpacity style={[styles.detailsButton, { backgroundColor: tintColor }]} onPress={onView}>
+          <Icon name="visibility" size={16} color="#FFFFFF" style={styles.detailsButtonIcon} />
+          <ThemedText style={styles.detailsButtonText}>Details</ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+          <Icon name="delete-outline" size={18} color="#EF4444" />
+        </TouchableOpacity>
       </View>
     </View>
   </TouchableOpacity>
@@ -208,7 +249,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   searchIcon: {
-    fontSize: 16,
     marginRight: 8,
   },
   searchInput: {
@@ -231,7 +271,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyStateIcon: {
-    fontSize: 48,
     marginBottom: 16,
   },
   emptyStateTitle: {
@@ -244,6 +283,20 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  emptyStateButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+  },
+  emptyStateButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
   scrollContent: {
     paddingBottom: 100,
@@ -277,9 +330,10 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   cardTitle: {
+    flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 4,
+    marginRight: 8,
   },
   categoryContainer: {
     flexDirection: 'row',
@@ -295,8 +349,8 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   cardLocation: {
+    flex: 1,
     fontSize: 12,
-    marginBottom: 8,
     opacity: 0.7,
   },
   priceSection: {
@@ -306,7 +360,6 @@ const styles = StyleSheet.create({
   pricePaid: {
     fontSize: 12,
     color: '#059669',
-    marginBottom: 2,
   },
   priceExpected: {
     fontSize: 12,
@@ -318,21 +371,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
+  inlineInfo: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+    marginBottom: 4,
+  },
+  iconAction: {
+    alignItems: 'center',
+    borderRadius: 16,
+    height: 32,
+    justifyContent: 'center',
+    width: 32,
+  },
   detailsButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 12,
-    marginHorizontal: 12,
-    marginBottom: 8,
     paddingVertical: 10,
-    paddingHorizontal: 16,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
   },
   detailsButtonIcon: {
     marginRight: 6,
@@ -344,11 +402,9 @@ const styles = StyleSheet.create({
   },
   cardActions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 4,
-    marginBottom: 8,
-    marginHorizontal: 12,
+    alignItems: 'center',
     gap: 8,
+    marginTop: 10,
   },
   editButton: {
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -361,12 +417,11 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderRadius: 20,
-    padding: 8,
-    minWidth: 36,
-    minHeight: 36,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    height: 38,
+    width: 38,
   },
   modalContainer: {
     flex: 1,
@@ -461,12 +516,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 4,
   },
   cardDate: {
     fontSize: 12,
     opacity: 0.7,
-    flex: 1,
   },
   chevronContainer: {
     borderRadius: 12,
