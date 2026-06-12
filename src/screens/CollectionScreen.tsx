@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Modal, Alert } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
+import { Stack } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { CollectionPage } from '../components/common/CollectionPage';
 import { AddItemPage } from '../components/common/AddItemPage';
@@ -62,6 +63,11 @@ export function CollectionScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <Stack.Screen
+        options={{
+          title: 'Catalog',
+        }}
+      />
       {viewingItem ? (
         <ItemDetailsPage 
           item={viewingItem}

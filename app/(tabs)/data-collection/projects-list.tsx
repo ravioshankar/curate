@@ -21,7 +21,7 @@ import { type DataProject, type ProjectStatus } from '@/src/types/data-collectio
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
-type CollectMode = 'projects' | 'collection';
+type CollectMode = 'records' | 'catalog';
 
 export default function ProjectsListScreen() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function ProjectsListScreen() {
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeMode, setActiveMode] = useState<CollectMode>('projects');
+  const [activeMode, setActiveMode] = useState<CollectMode>('records');
   const projectStorage = useMemo(() => new ProjectStorage(), []);
   const recordStorage = useMemo(() => new RecordStorage(), []);
   const storageInitializer = useMemo(() => new StorageInitializer(), []);
@@ -120,7 +120,7 @@ export default function ProjectsListScreen() {
     const trimmedDescription = newProjectDescription.trim();
 
     if (!trimmedName) {
-      Alert.alert('Project name required', 'Enter a name so this project is easy to find later.');
+      Alert.alert('Record set name required', 'Enter a name so this record set is easy to find later.');
       return;
     }
 
@@ -128,7 +128,7 @@ export default function ProjectsListScreen() {
       setIsCreating(true);
       const newProject = await projectStorage.create(
         trimmedName,
-        trimmedDescription || 'Untitled data collection project'
+        trimmedDescription || 'Untitled record set'
       );
 
       await fetchProjects();
@@ -148,8 +148,8 @@ export default function ProjectsListScreen() {
 
   const handleMoveProject = async (project: DataProject, nextStatus: ProjectStatus) => {
     const action = nextStatus === 'archived' ? 'Archive' : 'Restore';
-    Alert.alert(
-      `${action} project`,
+      Alert.alert(
+      `${action} record set`,
       `${action} "${project.name}"?`,
       [
         { text: 'Cancel', style: 'cancel' },
@@ -161,7 +161,7 @@ export default function ProjectsListScreen() {
               fetchProjects();
             } catch (error) {
               console.error('Error moving project:', error);
-              Alert.alert(`Could not ${action.toLowerCase()} project`, 'Please try again.');
+              Alert.alert(`Could not ${action.toLowerCase()} record set`, 'Please try again.');
             }
           },
         },
@@ -171,7 +171,7 @@ export default function ProjectsListScreen() {
 
   const handleDeleteProject = async (project: DataProject) => {
     Alert.alert(
-      'Delete project',
+      'Delete record set',
       `Delete "${project.name}" and its records? This cannot be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
@@ -185,7 +185,7 @@ export default function ProjectsListScreen() {
               fetchProjects();
             } catch (error) {
               console.error('Error deleting project:', error);
-              Alert.alert('Could not delete project', 'Please try again.');
+              Alert.alert('Could not delete record set', 'Please try again.');
             }
           },
         },
@@ -278,12 +278,12 @@ export default function ProjectsListScreen() {
     );
   };
 
-  if (activeMode === 'collection') {
+  if (activeMode === 'catalog') {
     return (
       <ThemedView style={styles.container}>
         <Stack.Screen
           options={{
-            title: 'Collect',
+            title: 'Catalog',
             headerLeft: () => null,
           }}
         />
@@ -294,10 +294,10 @@ export default function ProjectsListScreen() {
               { backgroundColor: controlBg, borderColor: colors.border },
               styles.modeChipInactive,
             ]}
-            onPress={() => setActiveMode('projects')}
+            onPress={() => setActiveMode('records')}
           >
             <Ionicons name="layers-outline" size={16} color={mutedText} />
-            <Text style={[styles.modeChipText, { color: mutedText }]}>Projects</Text>
+            <Text style={[styles.modeChipText, { color: mutedText }]}>Records</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -307,7 +307,7 @@ export default function ProjectsListScreen() {
             disabled
           >
             <Ionicons name="albums" size={16} color={colors.tint} />
-            <Text style={[styles.modeChipText, { color: colors.tint }]}>Collection</Text>
+            <Text style={[styles.modeChipText, { color: colors.tint }]}>Catalog</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.inlineModeContent}>
@@ -324,43 +324,43 @@ export default function ProjectsListScreen() {
           <Ionicons name="folder-open-outline" size={28} color={colors.tint} />
         </View>
         <View style={styles.heroTextBlock}>
-          <Text style={[styles.heroTitle, { color: colors.text }]}>Collection Projects</Text>
+          <Text style={[styles.heroTitle, { color: colors.text }]}>Collect Workspaces</Text>
           <Text style={[styles.heroSubtitle, { color: mutedText }]}>
-            Organize records by workflow, audit, inventory set, or research batch.
+            Use Records for structured forms and Catalog for photo-friendly personal items.
           </Text>
         </View>
       </View>
 
       <View style={styles.modeSwitcherRow}>
-        <TouchableOpacity
-          style={[
-            styles.modeChip,
-            { backgroundColor: `${colors.tint}16`, borderColor: colors.tint },
-          ]}
-          disabled
-        >
-          <Ionicons name="layers" size={16} color={colors.tint} />
-          <Text style={[styles.modeChipText, { color: colors.tint }]}>Projects</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.modeChip,
-            { backgroundColor: controlBg, borderColor: colors.border },
-          ]}
-          onPress={() => setActiveMode('collection')}
-        >
-          <Ionicons name="albums-outline" size={16} color={mutedText} />
-          <Text style={[styles.modeChipText, { color: mutedText }]}>Collection</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[
+              styles.modeChip,
+              { backgroundColor: `${colors.tint}16`, borderColor: colors.tint },
+            ]}
+            disabled
+          >
+            <Ionicons name="layers" size={16} color={colors.tint} />
+            <Text style={[styles.modeChipText, { color: colors.tint }]}>Records</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.modeChip,
+              { backgroundColor: controlBg, borderColor: colors.border },
+            ]}
+            onPress={() => setActiveMode('catalog')}
+          >
+            <Ionicons name="albums-outline" size={16} color={mutedText} />
+            <Text style={[styles.modeChipText, { color: mutedText }]}>Catalog</Text>
+          </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity
-        style={[styles.heroAction, { backgroundColor: colors.tint }]}
-        onPress={openCreateModal}
-      >
-        <Ionicons name="add" size={20} color="#FFFFFF" />
-        <Text style={styles.heroActionText}>New Project</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.heroAction, { backgroundColor: colors.tint }]}
+          onPress={openCreateModal}
+        >
+          <Ionicons name="add" size={20} color="#FFFFFF" />
+          <Text style={styles.heroActionText}>New Record Set</Text>
+        </TouchableOpacity>
 
       <View style={styles.statsRow}>
         <View style={[styles.statTile, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -447,7 +447,7 @@ export default function ProjectsListScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen
         options={{
-          title: 'Collect',
+          title: 'Records',
           headerLeft: () => null,
         }}
       />

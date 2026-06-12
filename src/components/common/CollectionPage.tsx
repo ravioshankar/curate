@@ -36,7 +36,7 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
         <ThemedView>
-          <ThemedText style={styles.pageTitle}>My Collection</ThemedText>
+          <ThemedText style={styles.pageTitle}>Item Catalog</ThemedText>
           <ThemedText style={styles.itemCount}>{filteredCollection.length} {filteredCollection.length === 1 ? 'item' : 'items'}</ThemedText>
         </ThemedView>
         <TouchableOpacity style={[styles.addButton, { backgroundColor: tintColor }]} onPress={onAddItem}>
@@ -48,7 +48,7 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
         <Icon name="search" size={20} color={placeholderColor} style={styles.searchIcon} />
         <TextInput
           style={[styles.searchInput, { color: textColor }]}
-          placeholder="Search items..."
+          placeholder="Search catalog items..."
           value={searchText}
           onChangeText={setSearchText}
           placeholderTextColor={placeholderColor}
@@ -63,9 +63,9 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
       {filteredCollection.length === 0 && searchText.length > 0 && (
         <ThemedView style={styles.emptyState}>
           <Icon name="search-off" size={42} color={placeholderColor} />
-          <ThemedText style={styles.emptyStateTitle}>No items found</ThemedText>
+          <ThemedText style={styles.emptyStateTitle}>No catalog items found</ThemedText>
           <ThemedText style={styles.emptyStateText}>
-            No items match {searchText}. Try another name, category, or location.
+            No catalog items match {searchText}. Try another name, category, or location.
           </ThemedText>
         </ThemedView>
       )}
@@ -73,11 +73,11 @@ export const CollectionPage = ({ collection, searchText, setSearchText, onUpdate
       {collection.length === 0 && (
         <ThemedView style={styles.emptyState}>
           <Icon name="inventory-2" size={48} color={tintColor} style={styles.emptyStateIcon} />
-          <ThemedText style={styles.emptyStateTitle}>No Items Yet</ThemedText>
-          <ThemedText style={styles.emptyStateText}>Start building your collection by adding your first item</ThemedText>
+          <ThemedText style={styles.emptyStateTitle}>No Catalog Items Yet</ThemedText>
+          <ThemedText style={styles.emptyStateText}>Start your catalog by adding the first item, photo optional.</ThemedText>
           <TouchableOpacity style={[styles.emptyStateButton, { backgroundColor: tintColor }]} onPress={onAddItem}>
             <Icon name="add" size={18} color="#FFFFFF" />
-            <ThemedText style={styles.emptyStateButtonText}>Add Item</ThemedText>
+            <ThemedText style={styles.emptyStateButtonText}>Add Catalog Item</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       )}
