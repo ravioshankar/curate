@@ -110,6 +110,10 @@ export default function ProjectsListScreen() {
     setShowCreateModal(true);
   };
 
+  const openCollection = () => {
+    router.push('/collection');
+  };
+
   const handleCreateProject = async () => {
     const trimmedName = newProjectName.trim();
     const trimmedDescription = newProjectDescription.trim();
@@ -288,6 +292,10 @@ export default function ProjectsListScreen() {
         <TouchableOpacity style={[styles.heroAction, { backgroundColor: colors.tint }]} onPress={openCreateModal}>
           <Ionicons name="add" size={20} color="#FFFFFF" />
           <Text style={styles.heroActionText}>New</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.heroAction, styles.secondaryHeroAction, { borderColor: colors.border }]} onPress={openCollection}>
+          <Ionicons name="albums-outline" size={20} color={colors.text} />
+          <Text style={[styles.heroActionText, { color: colors.text }]}>Collection</Text>
         </TouchableOpacity>
       </View>
 
@@ -502,6 +510,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '800',
+  },
+  secondaryHeroAction: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
   },
   statsRow: {
     flexDirection: 'row',
