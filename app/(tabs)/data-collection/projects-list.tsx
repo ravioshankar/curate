@@ -11,13 +11,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
+import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { CollectionScreen } from '@/src/screens/CollectionScreen';
 import { ProjectStorage, RecordStorage, StorageInitializer } from '@/src/services/storage-exports';
 import { type DataProject, type ProjectStatus } from '@/src/types/data-collection';
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+type CollectMode = 'projects' | 'collection';
 
 export default function ProjectsListScreen() {
   const router = useRouter();
@@ -36,6 +40,7 @@ export default function ProjectsListScreen() {
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeMode, setActiveMode] = useState<CollectMode>('projects');
   const projectStorage = useMemo(() => new ProjectStorage(), []);
   const recordStorage = useMemo(() => new RecordStorage(), []);
   const storageInitializer = useMemo(() => new StorageInitializer(), []);
@@ -108,10 +113,6 @@ export default function ProjectsListScreen() {
     setNewProjectName('');
     setNewProjectDescription('');
     setShowCreateModal(true);
-  };
-
-  const openCollection = () => {
-    router.push('/collection');
   };
 
   const handleCreateProject = async () => {
@@ -277,6 +278,45 @@ export default function ProjectsListScreen() {
     );
   };
 
+  if (activeMode === 'collection') {
+    return (
+      <ThemedView style={styles.container}>
+        <Stack.Screen
+          options={{
+            title: 'Collect',
+            headerLeft: () => null,
+          }}
+        />
+        <View style={styles.modeSwitcherRow}>
+          <TouchableOpacity
+            style={[
+              styles.modeChip,
+              { backgroundColor: controlBg, borderColor: colors.border },
+              styles.modeChipInactive,
+            ]}
+            onPress={() => setActiveMode('projects')}
+          >
+            <Ionicons name="layers-outline" size={16} color={mutedText} />
+            <Text style={[styles.modeChipText, { color: mutedText }]}>Projects</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.modeChip,
+              { backgroundColor: `${colors.tint}16`, borderColor: colors.tint },
+            ]}
+            disabled
+          >
+            <Ionicons name="albums" size={16} color={colors.tint} />
+            <Text style={[styles.modeChipText, { color: colors.tint }]}>Collection</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.inlineModeContent}>
+          <CollectionScreen />
+        </View>
+      </ThemedView>
+    );
+  }
+
   const renderHeader = () => (
     <View style={styles.headerContent}>
       <View style={[styles.hero, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -289,15 +329,38 @@ export default function ProjectsListScreen() {
             Organize records by workflow, audit, inventory set, or research batch.
           </Text>
         </View>
-        <TouchableOpacity style={[styles.heroAction, { backgroundColor: colors.tint }]} onPress={openCreateModal}>
-          <Ionicons name="add" size={20} color="#FFFFFF" />
-          <Text style={styles.heroActionText}>New</Text>
+      </View>
+
+      <View style={styles.modeSwitcherRow}>
+        <TouchableOpacity
+          style={[
+            styles.modeChip,
+            { backgroundColor: `${colors.tint}16`, borderColor: colors.tint },
+          ]}
+          disabled
+        >
+          <Ionicons name="layers" size={16} color={colors.tint} />
+          <Text style={[styles.modeChipText, { color: colors.tint }]}>Projects</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.heroAction, styles.secondaryHeroAction, { borderColor: colors.border }]} onPress={openCollection}>
-          <Ionicons name="albums-outline" size={20} color={colors.text} />
-          <Text style={[styles.heroActionText, { color: colors.text }]}>Collection</Text>
+        <TouchableOpacity
+          style={[
+            styles.modeChip,
+            { backgroundColor: controlBg, borderColor: colors.border },
+          ]}
+          onPress={() => setActiveMode('collection')}
+        >
+          <Ionicons name="albums-outline" size={16} color={mutedText} />
+          <Text style={[styles.modeChipText, { color: mutedText }]}>Collection</Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        style={[styles.heroAction, { backgroundColor: colors.tint }]}
+        onPress={openCreateModal}
+      >
+        <Ionicons name="add" size={20} color="#FFFFFF" />
+        <Text style={styles.heroActionText}>New Project</Text>
+      </TouchableOpacity>
 
       <View style={styles.statsRow}>
         <View style={[styles.statTile, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -471,6 +534,28 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 14,
   },
+  modeSwitcherRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  modeChip: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    flexDirection: 'row',
+    gap: 6,
+    justifyContent: 'center',
+    minHeight: 40,
+    paddingHorizontal: 12,
+  },
+  modeChipInactive: {
+    opacity: 0.82,
+  },
+  modeChipText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
   hero: {
     alignItems: 'center',
     borderRadius: 8,
@@ -511,9 +596,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-  secondaryHeroAction: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
+  inlineModeContent: {
+    marginTop: 4,
   },
   statsRow: {
     flexDirection: 'row',
